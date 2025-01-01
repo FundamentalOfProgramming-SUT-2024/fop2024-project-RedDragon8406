@@ -1,10 +1,10 @@
-// menu.c
 #include <ncurses.h>
 #include <unistd.h>
 #include <string.h>
 #include "menu.h"
 #include "exit.h"
-#include "choices.h" // Include the choices header
+#include "choices.h"
+#include "design.h" // Include the design header
 
 void print_menu(WINDOW *menu_win, int highlight, int n_choices) {
     int x, y, i;
@@ -34,8 +34,9 @@ void show_main_menu() {
     noecho();
     cbreak(); // Line buffering disabled. Pass on everything
     curs_set(0); // Hide cursor
-    start_color();
-    init_pair(1, COLOR_WHITE, COLOR_BLUE);
+
+    // Initialize colors
+    init_colors();
 
     int height = 12;
     int width = 30;
@@ -44,7 +45,12 @@ void show_main_menu() {
 
     menu_win = newwin(height, width, starty, startx);
     keypad(menu_win, TRUE);
-    mvprintw(0, (COLS - strlen("Welcome to My Rogue Game!")) / 2, "Welcome to My Rogue Game!");
+
+    const char *welcome_text = "Welcome to My Rogue Game!";
+    attron(COLOR_PAIR(5)); // Set color pair for welcome text
+    mvprintw(0, (COLS - strlen(welcome_text)) / 2, "%s", welcome_text);
+    attroff(COLOR_PAIR(5)); // Turn off color pair for welcome text
+
     mvprintw(1, 0, "Use arrow keys to move, Enter to select");
     refresh();
     print_menu(menu_win, highlight, NUM_CHOICES);

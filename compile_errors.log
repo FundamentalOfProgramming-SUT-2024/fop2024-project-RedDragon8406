@@ -1,0 +1,12 @@
+exit.c: In function ‘show_exit_confirmation’:
+exit.c:74:21: warning: implicit declaration of function ‘exit’ [-Wimplicit-function-declaration]
+   74 |                     exit(0);
+      |                     ^~~~
+exit.c:9:1: note: include ‘<stdlib.h>’ or provide a declaration of ‘exit’
+    8 | #include "design.h" // Include the design header
+  +++ |+#include <stdlib.h>
+    9 | 
+exit.c:74:21: warning: incompatible implicit declaration of built-in function ‘exit’ [-Wbuiltin-declaration-mismatch]
+   74 |                     exit(0);
+      |                     ^~~~
+exit.c:74:21: note: include ‘<stdlib.h>’ or provide a declaration of ‘exit’
