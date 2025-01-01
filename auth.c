@@ -114,6 +114,7 @@ void authentication_window() {
     endwin();
 }
 
+
 void signup_window() {
     WINDOW *signup_win;
     int height = 17; 
@@ -217,6 +218,13 @@ void signup_window() {
                     return;
                 } else if (highlight == 5) {
                     // signup button
+                    if (strlen(username) == 0 || strlen(password) == 0 || strlen(email) == 0) {
+                        mvwprintw(signup_win, 14, 2, "All fields are required!");
+                        wrefresh(signup_win);
+                    } else {
+                        signup_user(username, password, email);
+                        return;
+                    }
                 }
                 break;
             default:
@@ -241,6 +249,34 @@ void signup_window() {
     }
 
     delwin(signup_win);
+    clear();
+    refresh();
+    show_main_menu();
+}
+
+
+void store_user_data(const char* username, const char* password, const char* email) {
+    char filepath[250];
+    snprintf(filepath, sizeof(filepath), "./%s%s.db", USERS_DIR, username);
+    FILE* file = fopen(filepath, "w");
+    if (file) {
+        fprintf(file, "%s\n", username);
+        fprintf(file, "%s\n", password);
+        fprintf(file, "%s\n", email);
+        fprintf(file, "0");
+        fclose(file);
+    } else {
+        mvprintw(0, 0, "Error creating user file.");
+        refresh();
+    }
+}
+
+
+void signup_user(const char* username, const char* password, const char* email) {
+    store_user_data(username, password, email);
+    mvprintw(0, 0, "User registered successfully!");
+    refresh();
+    getch();
     clear();
     refresh();
     show_main_menu();
