@@ -116,7 +116,7 @@ void authentication_window() {
 
 void signup_window() {
     WINDOW *signup_win;
-    int height = 17;
+    int height = 17; 
     int width = 50;
     int starty = (LINES - height) / 2;
     int startx = (COLS - width) / 2;
@@ -136,8 +136,8 @@ void signup_window() {
     mvwprintw(signup_win, 5, 2, "%s", password_label);
     mvwprintw(signup_win, 7, 2, "%s", email_label);
 
-    const char *back_button = "Back";
     const char *signup_button = "Sign Up";
+    const char *back_button = "Back";
 
     mvwprintw(signup_win, 10, (width - strlen(back_button)) / 2, "%s", back_button);
     mvwprintw(signup_win, 12, (width - strlen(signup_button)) / 2, "%s", signup_button);
@@ -146,6 +146,7 @@ void signup_window() {
     char password[MAX_PASSWORD_LENGTH] = "";
     char email[MAX_EMAIL_LENGTH] = "";
     int highlight = 1;
+    int cursor_pos = 0;
     int c;
 
     while (1) {
@@ -198,14 +199,16 @@ void signup_window() {
                     highlight = 5;
                 else
                     --highlight;
+                cursor_pos = (highlight == 1) ? strlen(username) : (highlight == 2) ? strlen(password) : (highlight == 3) ? strlen(email) : 0;
                 break;
             case KEY_DOWN:
                 if (highlight == 5)
                     highlight = 1;
                 else
                     ++highlight;
+                cursor_pos = (highlight == 1) ? strlen(username) : (highlight == 2) ? strlen(password) : (highlight == 3) ? strlen(email) : 0;
                 break;
-            case 10:
+            case 10: 
                 if (highlight == 4) { // back button
                     delwin(signup_win);
                     clear();
@@ -213,10 +216,26 @@ void signup_window() {
                     authentication_window();
                     return;
                 } else if (highlight == 5) {
-                    // signup
+                    // signup button
                 }
                 break;
             default:
+                if (highlight == 1 && isprint(c) && cursor_pos < MAX_USERNAME_LENGTH - 1) {
+                    username[cursor_pos++] = c;
+                    username[cursor_pos] = '\0';
+                } else if (highlight == 1 && c == KEY_BACKSPACE && cursor_pos > 0) {
+                    username[--cursor_pos] = '\0';
+                } else if (highlight == 2 && isprint(c) && cursor_pos < MAX_PASSWORD_LENGTH - 1) {
+                    password[cursor_pos++] = c;
+                    password[cursor_pos] = '\0';
+                } else if (highlight == 2 && c == KEY_BACKSPACE && cursor_pos > 0) {
+                    password[--cursor_pos] = '\0';
+                } else if (highlight == 3 && isprint(c) && cursor_pos < MAX_EMAIL_LENGTH - 1) {
+                    email[cursor_pos++] = c;
+                    email[cursor_pos] = '\0';
+                } else if (highlight == 3 && c == KEY_BACKSPACE && cursor_pos > 0) {
+                    email[--cursor_pos] = '\0';
+                }
                 break;
         }
     }
@@ -226,4 +245,3 @@ void signup_window() {
     refresh();
     show_main_menu();
 }
-
