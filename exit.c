@@ -5,24 +5,25 @@
 #include "exit.h"
 #include "menu.h"
 #include "choices.h"
-#include "design.h" // Include the design header
+#include "design.h"
+#include "main.h"
 
-// Prototype for print_menu function
 void print_menu(WINDOW *menu_win, int highlight, int n_choices);
 
-// Function to display the exit confirmation dialog
+
 void show_exit_confirmation(WINDOW *menu_win, int highlight) {
-    int choice = 1; // 0 for Yes, 1 for No
+    int choice = 1; // 0 for yes, 1 for no
     int c;
 
     wclear(menu_win);
+    // pre configuration
     int height = 7;
     int width = 40;
     int starty = (LINES - height) / 2;
     int startx = (COLS - width) / 2;
 
     WINDOW *exit_win = newwin(height, width, starty, startx);
-    keypad(exit_win, TRUE); // Enable keypad for exit_win
+    keypad(exit_win, TRUE); // enable keypad
     box(exit_win, 0, 0);
     
     const char *exit_text = "Are you sure you want to exit?";
@@ -31,17 +32,17 @@ void show_exit_confirmation(WINDOW *menu_win, int highlight) {
     mvwprintw(exit_win, 3, 14, "Yes");
     mvwprintw(exit_win, 3, 24, "No");
     wrefresh(exit_win);
-    curs_set(0); // Hide cursor
+    curs_set(0);
 
     while (1) {
-        if (choice == 0) { // Highlight Yes
-            wattron(exit_win, COLOR_PAIR(2)); // Apply green color
+        if (choice == 0) { // highlight Yes
+            wattron(exit_win, COLOR_PAIR(2)); // green color
             mvwprintw(exit_win, 3, 14, "Yes");
             wattroff(exit_win, COLOR_PAIR(2));
             mvwprintw(exit_win, 3, 24, "No");
-        } else { // Highlight No
+        } else { // highlight No
             mvwprintw(exit_win, 3, 14, "Yes");
-            wattron(exit_win, COLOR_PAIR(3)); // Apply red color
+            wattron(exit_win, COLOR_PAIR(3)); // red color
             mvwprintw(exit_win, 3, 24, "No");
             wattroff(exit_win, COLOR_PAIR(3));
         }
@@ -56,15 +57,15 @@ void show_exit_confirmation(WINDOW *menu_win, int highlight) {
             case KEY_RIGHT:
                 choice = 1;
                 break;
-            case 10: // Enter key
+            case 10: // enter key
                 if (choice == 0) {
-                    // User chose Yes
-                    delwin(exit_win); // Delete exit window
-                    clear(); // Clear the screen
-                    refresh(); // Refresh to apply changes
+                    // yes
+                    delwin(exit_win); 
+                    clear(); 
+                    refresh(); 
                     
                     const char *goodbye_text = "Goodbye! Press any key to exit...";
-                    attron(COLOR_PAIR(6)); // Apply custom exit message color
+                    attron(COLOR_PAIR(6)); 
                     mvprintw((LINES - 1) / 2, (COLS - strlen(goodbye_text)) / 2, "%s", goodbye_text);
                     attroff(COLOR_PAIR(6));
 
@@ -73,11 +74,11 @@ void show_exit_confirmation(WINDOW *menu_win, int highlight) {
                     endwin();
                     exit(0);
                 } else {
-                    // User chose No
+                    // no
                     wclear(exit_win);
                     wrefresh(exit_win);
                     delwin(exit_win);
-                    print_menu(menu_win, highlight, NUM_CHOICES);
+                    print_menu(menu_win, highlight, n_choices);
                     return;
                 }
         }
