@@ -7,8 +7,6 @@
 #include "menu.h"
 #include "choices.h" // Include the choices header
 
-#include <stdio.h>
-
 // Prototype for print_menu function
 void print_menu(WINDOW *menu_win, int highlight, int n_choices);
 
@@ -47,8 +45,6 @@ void show_exit_confirmation(WINDOW *menu_win, int highlight) {
 
         wrefresh(exit_win);
         c = wgetch(exit_win);
-        mvprintw(0, 0, "Key pressed: %d", c); // Debug print to show key codes
-        refresh();
         
         switch (c) {
             case KEY_LEFT:
@@ -60,11 +56,12 @@ void show_exit_confirmation(WINDOW *menu_win, int highlight) {
             case 10: // Enter key
                 if (choice == 0) {
                     // User chose Yes
-                    wclear(exit_win);
-                    box(exit_win, 0, 0);
-                    mvwprintw(exit_win, 1, (width - strlen("Goodbye! Press any key to exit...")) / 2, "Goodbye! Press any key to exit...");
-                    wrefresh(exit_win);
-                    wgetch(exit_win);
+                    delwin(exit_win); // Delete exit window
+                    clear(); // Clear the screen
+                    refresh(); // Refresh to apply changes
+                    mvprintw((LINES - 1) / 2, (COLS - strlen("Goodbye! Press any key to exit...")) / 2, "Goodbye! Press any key to exit...");
+                    refresh();
+                    getch();
                     endwin();
                     exit(0);
                 } else {
