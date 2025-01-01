@@ -3,12 +3,10 @@
 #include <regex.h>
 #include <ncurses.h>
 #include "menu.h"
-int main(){
-    menu();
-    
+#include "exit.h"
 
 
-
-
+int main() {
+    show_main_menu();
     return 0;
 }
