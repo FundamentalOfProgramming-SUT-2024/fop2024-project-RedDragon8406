@@ -255,7 +255,7 @@ void signup_window() {
 }
 
 
-void store_user_data(const char* username, const char* password, const char* email) {
+int store_user_data(const char* username, const char* password, const char* email) {
     char filepath[250];
     snprintf(filepath, sizeof(filepath), "./%s%s.db", USERS_DIR, username);
     FILE* file = fopen(filepath, "w");
@@ -265,19 +265,30 @@ void store_user_data(const char* username, const char* password, const char* ema
         fprintf(file, "%s\n", email);
         fprintf(file, "0");
         fclose(file);
+        return 1;
     } else {
         mvprintw(0, 0, "Error creating user file.");
         refresh();
+        return 0;
     }
 }
 
 
 void signup_user(const char* username, const char* password, const char* email) {
-    store_user_data(username, password, email);
-    mvprintw(0, 0, "User registered successfully!");
-    refresh();
-    getch();
-    clear();
-    refresh();
-    show_main_menu();
+    int temp_status=store_user_data(username, password, email);
+    if (temp_status){
+        mvprintw(0, 0, "User registered successfully!");
+        refresh();
+        getch();
+        clear();
+        refresh();
+        show_main_menu();
+    }
+    else{
+        refresh();
+        getch();
+        clear();
+        refresh();
+        signup_window();
+    }
 }
