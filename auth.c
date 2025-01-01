@@ -216,17 +216,15 @@ void signup_window() {
                     refresh();
                     authentication_window();
                     return;
-                } else if (highlight == 5) {
-                    // signup button
-                    if (strlen(username) == 0 || strlen(password) == 0 || strlen(email) == 0) {
-                        mvwprintw(signup_win, 14, 2, "All fields are required!");
-                        wrefresh(signup_win);
-                    } else {
-                        signup_user(username, password, email);
+
+
+                } else if (highlight == 5) { // sign up button
+                    if(signup_user(username,password,email)){
                         return;
                     }
                 }
                 break;
+
             default:
                 if (highlight == 1 && isprint(c) && cursor_pos < MAX_USERNAME_LENGTH - 1) {
                     username[cursor_pos++] = c;
@@ -273,22 +271,67 @@ int store_user_data(const char* username, const char* password, const char* emai
     }
 }
 
+int user_exists(const char* username) {
+    char filepath[250];
+    snprintf(filepath, sizeof(filepath), "./%s%s.db", USERS_DIR, username);
 
-void signup_user(const char* username, const char* password, const char* email) {
-    int temp_status=store_user_data(username, password, email);
-    if (temp_status){
-        mvprintw(0, 0, "User registered successfully!");
+    FILE* file = fopen(filepath, "r");
+    if (file) {
+        fclose(file);
+        return 1; // user exists
+    }
+    return 0; // username does not exist
+}
+
+int password_length_valid(const char* password) {
+    return strlen(password) >= 7;
+}
+
+
+
+int signup_user(const char* username, const char* password, const char* email) {
+    if (strlen(username) == 0 || strlen(password) == 0 || strlen(email) == 0) {
+        mvprintw(10, 2, "All fields are required! press a key to continue..");
+        refresh();
+        getch(); 
+        mvprintw(10, 2, "%*s", COLS - 4, "");
+        refresh();
+        return 0;
+    }
+    if (!password_length_valid(password)) {
+        mvprintw(10, 2, "Password must be at least 7 characters long. Press a key to continue...");
+        refresh();
+        getch();
+        mvprintw(10, 2, "%*s", COLS - 4, ""); 
+        refresh();
+        return 0;
+    }
+
+    if (user_exists(username)) {
+        mvprintw(10, 2, "Username already taken. Please choose another one. press a key to continue..");
+        refresh();
+        getch();
+        mvprintw(10, 2, "%*s", COLS - 4, "");
+        refresh();
+        return 0;
+    }
+
+    int temp_status = store_user_data(username, password, email);
+    if (temp_status) {  // -------------------- signup successful --------------------------
+        mvprintw(0, 0, "User registered successfully! press a key to continue..");
         refresh();
         getch();
         clear();
         refresh();
         show_main_menu();
-    }
-    else{
+        return 1;
+    } else {
+        mvprintw(10, 2, "Error registering user. Please try again. press a key to continue..");
         refresh();
         getch();
-        clear();
+        mvprintw(10, 2, "%*s", COLS - 4, "");
         refresh();
-        signup_window();
+        return 0;
     }
 }
+

@@ -13,6 +13,8 @@ int validate_email(const char* email);
 void signup_window();
 void authentication_window();
 int store_user_data(const char* username, const char* password, const char* email);
-void signup_user(const char* username, const char* password, const char* email) ;
+int signup_user(const char* username, const char* password, const char* email) ;
+int user_exists(const char* username);
+int password_length_valid(const char* password);
 
 #endif
