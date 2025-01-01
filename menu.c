@@ -6,7 +6,7 @@
 #include "choices.h"
 #include "design.h" 
 #include "main.h" // last include
-
+#include "auth.h"
 void print_menu(WINDOW *menu_win, int highlight, int n_choices);
 void handle_logged_in_choice(WINDOW *menu_win, int choice, int highlight);
 void handle_logged_out_choice(WINDOW *menu_win, int choice, int highlight);
@@ -154,10 +154,7 @@ void handle_logged_out_choice(WINDOW *menu_win, int choice, int highlight) {
             getch();
             break;
         case 3: // Login/Signup
-            mvprintw(23, 0, "Login/Signup clicked\n");
-            clrtoeol();
-            refresh();
-            getch();
+            authentication_window();
             break;
         case 4: // Scoreboard
             mvprintw(23, 0, "Scoreboard clicked (logged out)\n");
