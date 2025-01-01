@@ -17,5 +17,6 @@ int signup_user(const char* username, const char* password, const char* email) ;
 int user_exists(const char* username);
 int password_length_valid(const char* password);
 int password_final_validation(const char* password);
+int email_valid(const char* email);
 
 #endif

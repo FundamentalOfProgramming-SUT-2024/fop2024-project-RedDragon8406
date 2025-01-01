@@ -303,6 +303,21 @@ int password_final_validation(const char* password) {
     return lower && upper && digit;
 }
 
+int email_valid(const char* email) {
+    regex_t regex;
+    int regex_init;
+
+    const char* pattern = "^[^@]+@[^@]+\\.[^@]+$"; // the pattern
+    regex_init = regcomp(&regex, pattern, REG_EXTENDED | REG_ICASE); // some flags at the end
+    regex_init = regexec(&regex, email, 0, NULL, 0); // won't need to save any substring
+    regfree(&regex);
+
+    if (regex_init == 0) {
+        return 1; // Email is valid
+    }
+    return 0;
+}
+
 
 int signup_user(const char* username, const char* password, const char* email) {
     if (strlen(username) == 0 || strlen(password) == 0 || strlen(email) == 0) {
@@ -331,6 +346,15 @@ int signup_user(const char* username, const char* password, const char* email) {
         return 0;   
     }
 
+    if(!email_valid(email)){
+        mvprintw(10, 2, "Email is not valid! Press a key to continue...");
+        refresh();
+        getch();
+        mvprintw(10, 2, "%*s", COLS - 4, ""); 
+        refresh();
+        return 0;   
+    }
+
     if (user_exists(username)) {
         mvprintw(10, 2, "Username already taken. Please choose another one. press a key to continue..");
         refresh();
@@ -341,14 +365,14 @@ int signup_user(const char* username, const char* password, const char* email) {
     }
 
     int temp_status = store_user_data(username, password, email);
-    if (temp_status) {  // -------------------- signup successful --------------------------
-        mvprintw(0, 0, "User registered successfully! press a key to continue..");
-        refresh();
-        getch();
-        clear();
-        refresh();
-        show_main_menu();
-        return 1;
+    if (temp_status) {  // ---------------------------- signup successful ----------------------------------------
+        mvprintw(0, 0, "User registered successfully! press a key to continue..");                              //
+        refresh();                                                                                              //
+        getch();                                                                                                //
+        clear();                                                                                                //
+        refresh();                                                                                              //
+        show_main_menu();                                                                                       //
+        return 1;       // ---------------------------- signup successful ----------------------------------------
     } else {
         mvprintw(10, 2, "Error registering user. Please try again. press a key to continue..");
         refresh();

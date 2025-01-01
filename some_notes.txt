@@ -5,3 +5,5 @@ it to the middle and giving it some designs
 
 
 remember to put a cursor for when hovered over fields in singup
+
+there might be some issue whith refreshing the main menu
