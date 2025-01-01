@@ -287,6 +287,21 @@ int password_length_valid(const char* password) {
     return strlen(password) >= 7;
 }
 
+int password_final_validation(const char* password) {
+    int lower = 0, upper = 0, digit = 0;
+    for (int i = 0; i < strlen(password); i++) {
+        if (islower(password[i])) {
+        lower = 1;
+        }
+        if (isupper(password[i])) {
+        upper = 1;
+        }
+        if (isdigit(password[i])) {
+        digit = 1;
+        }
+    }
+    return lower && upper && digit;
+}
 
 
 int signup_user(const char* username, const char* password, const char* email) {
@@ -305,6 +320,15 @@ int signup_user(const char* username, const char* password, const char* email) {
         mvprintw(10, 2, "%*s", COLS - 4, ""); 
         refresh();
         return 0;
+    }
+
+    if(!password_final_validation(password)){
+        mvprintw(10, 2, "Password is not complex enough! Press a key to continue...");
+        refresh();
+        getch();
+        mvprintw(10, 2, "%*s", COLS - 4, ""); 
+        refresh();
+        return 0;   
     }
 
     if (user_exists(username)) {
