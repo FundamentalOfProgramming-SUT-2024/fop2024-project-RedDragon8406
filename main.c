@@ -5,12 +5,18 @@
 #include "menu.h"
 #include "exit.h"
 #include "main.h"
-
-int logged_in_state = 0;
-int n_choices = NUM_CHOICES_LOGGED_OUT;
+#include "auth.h"
 
 
+int n_choices;
 int main() {
+    check_logged_in_user();
     show_main_menu();
+    
+    if (current_user) {
+        save_user_data(current_user);
+        save_current_user(current_user);
+    }
+
     return 0;
 }

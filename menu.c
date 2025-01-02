@@ -13,6 +13,7 @@ void handle_logged_out_choice(WINDOW *menu_win, int choice, int highlight);
 
 
 void show_main_menu() {
+    n_choices = (current_user) ? NUM_CHOICES_LOGGED_IN : NUM_CHOICES_LOGGED_OUT;
     WINDOW *menu_win;
     int highlight = 1;
     int choice = 0;
@@ -67,7 +68,7 @@ void show_main_menu() {
         }
         print_menu(menu_win, highlight, n_choices);
 
-        if (logged_in_state) {
+        if (current_user) {
             handle_logged_in_choice(menu_win, choice, highlight);
         } else {
             handle_logged_out_choice(menu_win, choice, highlight);
@@ -126,10 +127,8 @@ void handle_logged_in_choice(WINDOW *menu_win, int choice, int highlight) {
             getch();
             break;
         case 6: // Logout
-            mvprintw(23, 0, "Logout clicked\n");
-            clrtoeol();
-            refresh();
-            getch();
+            logout_user();
+            show_main_menu();
             break;
         case 7: // Exit
             show_exit_confirmation(menu_win, highlight);
