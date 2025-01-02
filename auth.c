@@ -442,7 +442,7 @@ int email_valid(const char* email) {
     regex_t regex;
     int regex_init;
 
-    const char* pattern = "^[^@]+@[^@]+\\.[^@]+$"; // the pattern
+    const char* pattern = "^[^@]+@[^@.]+\\.[^@.]+$"; // the pattern
     regex_init = regcomp(&regex, pattern, REG_EXTENDED | REG_ICASE); // some flags at the end
     regex_init = regexec(&regex, email, 0, NULL, 0); // won't need to save any substring
     regfree(&regex);
