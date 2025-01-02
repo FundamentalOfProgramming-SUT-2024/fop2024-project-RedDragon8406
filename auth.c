@@ -10,6 +10,7 @@
 #include "main.h"
 #include "menu.h"
 #include "design.h"
+#include "settings.h"
 
 UserData* current_user = NULL;
 
@@ -634,7 +635,7 @@ int signup_user(const char* username, const char* password, const char* email) {
     }
 
     if (user_exists(username)) {
-        mvprintw(10, 2, "Username already taken. Please choose another one. press a key to continue..");
+        mvprintw(1, 2, "Username already taken. Please choose another one. press a key to continue..");
         refresh();
         getch();
         mvprintw(10, 2, "%*s", COLS - 4, "");
@@ -645,6 +646,7 @@ int signup_user(const char* username, const char* password, const char* email) {
     int temp_status = store_user_data(username, password, email);
     if (temp_status) {  // ---------------------------- signup successful ----------------------------------------
         save_new_user_list(username);
+        create_settings(username);
         mvprintw(0, 0, "User registered successfully! press a key to continue..");                              //
         refresh();                                                                                              //
         getch();                                                                                                //
