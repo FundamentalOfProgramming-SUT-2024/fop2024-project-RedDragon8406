@@ -5,8 +5,9 @@
 #include "exit.h"
 #include "choices.h"
 #include "design.h" 
-#include "main.h" // last include
+#include "main.h" 
 #include "auth.h"
+#include "scoreboard.h"  // last include
 void print_menu(WINDOW *menu_win, int highlight, int n_choices);
 void handle_logged_in_choice(WINDOW *menu_win, int choice, int highlight);
 void handle_logged_out_choice(WINDOW *menu_win, int choice, int highlight);
@@ -116,9 +117,8 @@ void handle_logged_in_choice(WINDOW *menu_win, int choice, int highlight) {
             break;
         case 4: // Scoreboard
             mvprintw(23, 0, "Scoreboard clicked (logged in)\n");
-            clrtoeol();
-            refresh();
             getch();
+            show_scoreboard();
             break;
         case 5: // Settings
             mvprintw(23, 0, "Settings clicked\n");
@@ -157,9 +157,8 @@ void handle_logged_out_choice(WINDOW *menu_win, int choice, int highlight) {
             break;
         case 4: // Scoreboard
             mvprintw(23, 0, "Scoreboard clicked (logged out)\n");
-            clrtoeol();
-            refresh();
             getch();
+            show_scoreboard();
             break;
         case 5: // Settings
             mvprintw(23, 0, "Settings clicked\n");
