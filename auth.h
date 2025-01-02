@@ -13,6 +13,7 @@ typedef struct {
     int status;
     int points;
     int golds;
+    int xp;
 } UserData;
 
 extern UserData* current_user;
@@ -33,4 +34,5 @@ int password_final_validation(const char* password);
 int email_valid(const char* email);
 int save_current_user(UserData* user_data);
 int load_current_user(UserData* user_data);
+int save_new_user_list(const char * username);
 #endif

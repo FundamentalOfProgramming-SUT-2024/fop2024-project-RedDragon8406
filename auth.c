@@ -401,6 +401,7 @@ int store_user_data(const char* username, const char* password, const char* emai
     fprintf(file, "STATUS 0\n");
     fprintf(file, "POINTS 0\n");
     fprintf(file, "GOLDS 0\n"); 
+    fprintf(file, "XP 0\n"); 
     fclose(file);
     return 1;
 }
@@ -462,6 +463,7 @@ int save_user_data(UserData* user_data) {
     fprintf(file, "STATUS %d\n", user_data->status);
     fprintf(file, "POINTS %d\n", user_data->points);
     fprintf(file, "GOLDS %d\n", user_data->golds);
+    fprintf(file, "XP %d\n", user_data->xp);
     fclose(file);
     return 1;
 }
@@ -494,6 +496,7 @@ int read_user_data(UserData* user_data) {
             if (sscanf(line, "STATUS %d", &user_data->status) == 1) continue;
             if (sscanf(line, "POINTS %d", &user_data->points) == 1) continue;
             if (sscanf(line, "GOLDS %d", &user_data->golds) == 1) continue;
+            if (sscanf(line, "XP %d", &user_data->xp) == 1) continue;
         }
         fclose(file);
         return 1;
@@ -536,6 +539,12 @@ int load_current_user(UserData* user_data) {
     return 0; // Failed to load username
 }
 
+int save_new_user_list(const char * username){
+    FILE * file = fopen("users_list.db","a");
+    fprintf(file, "%s\n", username);
+    fclose(file);
+    return 1;
+}
 
 int login_user(const char* username, const char* password) {
     // Maybe gonna change the algorythm later
@@ -635,6 +644,7 @@ int signup_user(const char* username, const char* password, const char* email) {
 
     int temp_status = store_user_data(username, password, email);
     if (temp_status) {  // ---------------------------- signup successful ----------------------------------------
+        save_new_user_list(username);
         mvprintw(0, 0, "User registered successfully! press a key to continue..");                              //
         refresh();                                                                                              //
         getch();                                                                                                //

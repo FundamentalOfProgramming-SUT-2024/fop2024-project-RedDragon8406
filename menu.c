@@ -115,9 +115,7 @@ void handle_logged_in_choice(WINDOW *menu_win, int choice, int highlight) {
             refresh();
             getch();
             break;
-        case 4: // Scoreboard
-            mvprintw(23, 0, "Scoreboard clicked (logged in)\n");
-            getch();
+        case 4: // Scoreboard;
             show_scoreboard();
             break;
         case 5: // Settings
@@ -156,8 +154,6 @@ void handle_logged_out_choice(WINDOW *menu_win, int choice, int highlight) {
             authentication_window();
             break;
         case 4: // Scoreboard
-            mvprintw(23, 0, "Scoreboard clicked (logged out)\n");
-            getch();
             show_scoreboard();
             break;
         case 5: // Settings
