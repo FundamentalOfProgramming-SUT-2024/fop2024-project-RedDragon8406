@@ -7,7 +7,8 @@
 #include "design.h" 
 #include "main.h" 
 #include "auth.h"
-#include "scoreboard.h"  // last include
+#include "scoreboard.h"  
+#include "profile.h" // last include
 void print_menu(WINDOW *menu_win, int highlight, int n_choices);
 void handle_logged_in_choice(WINDOW *menu_win, int choice, int highlight);
 void handle_logged_out_choice(WINDOW *menu_win, int choice, int highlight);
@@ -110,10 +111,7 @@ void handle_logged_in_choice(WINDOW *menu_win, int choice, int highlight) {
             getch();
             break;
         case 3: // Profile
-            mvprintw(23, 0, "Profile clicked\n");
-            clrtoeol();
-            refresh();
-            getch();
+            show_profile();
             break;
         case 4: // Scoreboard;
             show_scoreboard();

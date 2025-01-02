@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-source_files=("main.c" "menu.c" "exit.c" "choices.c" "design.c" "auth.c" "scoreboard.c")
+source_files=("main.c" "menu.c" "exit.c" "choices.c" "design.c" "auth.c" "scoreboard.c" "profile.c")
 
 
 gcc -o rogue "${source_files[@]}" -lncurses
