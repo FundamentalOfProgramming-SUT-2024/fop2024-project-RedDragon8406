@@ -3,7 +3,6 @@
 #include "auth.h"
 char *choices_logged_out[] = {
     "Start Game",
-    "Play as Guest",
     "Login/Signup",
     "Scoreboard",
     "Settings",

@@ -8,8 +8,8 @@
 #include "main.h" 
 #include "auth.h"
 #include "scoreboard.h"  
-#include "profile.h" // last include
-#include "settings.h"
+#include "profile.h" 
+#include "settings.h" // last include
 void print_menu(WINDOW *menu_win, int highlight, int n_choices);
 void handle_logged_in_choice(WINDOW *menu_win, int choice, int highlight);
 void handle_logged_out_choice(WINDOW *menu_win, int choice, int highlight);
@@ -140,22 +140,16 @@ void handle_logged_out_choice(WINDOW *menu_win, int choice, int highlight) {
             refresh();
             getch();
             break;
-        case 2: // Play as Guest
-            mvprintw(23, 0, "Play as Guest clicked\n");
-            clrtoeol();
-            refresh();
-            getch();
-            break;
-        case 3: // Login/Signup
+        case 2: // Login/Signup
             authentication_window();
             break;
-        case 4: // Scoreboard
+        case 3: // Scoreboard
             show_scoreboard();
             break;
-        case 5: // Settings
+        case 4: // Settings
             settings_window();
             break;
-        case 6: // Exit
+        case 5: // Exit
             show_exit_confirmation(menu_win, highlight);
             break;
         default:
