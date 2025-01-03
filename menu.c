@@ -9,7 +9,8 @@
 #include "auth.h"
 #include "scoreboard.h"  
 #include "profile.h" 
-#include "settings.h" // last include
+#include "settings.h" 
+#include "game.h" // last include
 void print_menu(WINDOW *menu_win, int highlight, int n_choices);
 void handle_logged_in_choice(WINDOW *menu_win, int choice, int highlight);
 void handle_logged_out_choice(WINDOW *menu_win, int choice, int highlight);
@@ -100,10 +101,7 @@ void print_menu(WINDOW *menu_win, int highlight, int n_choices) {
 void handle_logged_in_choice(WINDOW *menu_win, int choice, int highlight) {
     switch (choice) {
         case 1: // Start Game
-            mvprintw(23, 0, "Start Game clicked\n");
-            clrtoeol();
-            refresh();
-            getch();
+            StartGame();
             break;
         case 2: // Load Game
             mvprintw(23, 0, "Load Game clicked\n");
@@ -135,10 +133,7 @@ void handle_logged_in_choice(WINDOW *menu_win, int choice, int highlight) {
 void handle_logged_out_choice(WINDOW *menu_win, int choice, int highlight) {
     switch (choice) {
         case 1: // Start Game
-            mvprintw(23, 0, "Start Game clicked\n");
-            clrtoeol();
-            refresh();
-            getch();
+            StartGame();
             break;
         case 2: // Login/Signup
             authentication_window();
