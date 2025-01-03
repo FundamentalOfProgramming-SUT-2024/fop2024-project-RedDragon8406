@@ -16,4 +16,5 @@ void save_settings();
 void load_settings();
 void create_settings(const char * username);
 void settings_window();
+void set_default_settings();
 #endif 

@@ -74,8 +74,13 @@ void show_exit_confirmation(WINDOW *menu_win, int highlight) {
                     getch();
                     endwin();
                     // ------------------------------ exit part -------------------------------------
-                    save_settings();
-                    free(settings);
+                    if(current_user){
+                        save_settings();
+                    }
+                    else{
+                        set_default_settings();
+                    }
+                    // free(settings);
                     exit(0);
                     // ------------------------------ exit part -------------------------------------
                 } else {
