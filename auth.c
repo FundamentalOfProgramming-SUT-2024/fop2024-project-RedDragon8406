@@ -558,12 +558,12 @@ int login_user(const char* username, const char* password) {
             save_current_user(current_user);
             return 1; // Successful login
         } else {
-            free(current_user);
+            // free(current_user);
             current_user = NULL;
             return 0; // Failed login
         }
     } else {
-        free(current_user);
+        // free(current_user);
         current_user = NULL;
         return 0; // Failed to read user data
     }
