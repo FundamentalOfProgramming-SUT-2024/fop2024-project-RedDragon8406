@@ -13,7 +13,7 @@
 #define MaxHeightSubWindow 12
 #define MaxWidthSubwindow 40
 
-
+extern int current_level;
 
 typedef struct{
     int x;
@@ -21,15 +21,26 @@ typedef struct{
 } Point;
 
 typedef struct{
+    Point cord;
+} Door;
+
+typedef struct{
+    Door *from;
+    Door *to;
+    Point *cords;
+} Corridor;
+
+typedef struct{
     Point start;
     int height;
     int width;
+    Door **doors;
+    int door_number;
 } Room;
 
 typedef struct{
     Room **rooms;
     int len_rooms;
-    int level_number;
 } Level;
 
 
