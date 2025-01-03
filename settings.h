@@ -15,4 +15,5 @@ extern Settings* settings;
 void save_settings();
 void load_settings();
 void create_settings(const char * username);
+void settings_window();
 #endif 

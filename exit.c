@@ -7,7 +7,8 @@
 #include "choices.h"
 #include "design.h"
 #include "main.h"
-
+#include "settings.h"
+#include "auth.h"
 void print_menu(WINDOW *menu_win, int highlight, int n_choices);
 
 
@@ -72,7 +73,11 @@ void show_exit_confirmation(WINDOW *menu_win, int highlight) {
                     refresh();
                     getch();
                     endwin();
+                    // ------------------------------ exit part -------------------------------------
+                    save_settings();
+                    free(settings);
                     exit(0);
+                    // ------------------------------ exit part -------------------------------------
                 } else {
                     // no
                     wclear(exit_win);

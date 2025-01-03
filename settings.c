@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <ncurses.h>
 #include <string.h>
 #include "settings.h"
-
+#include "menu.h"
+#include "auth.h"
 
 Settings* settings=NULL;
 
@@ -63,3 +65,34 @@ void load_settings() {
     fclose(file);
 }
 
+void settings_window(){
+    WINDOW *settings_win;
+    int height = 20;
+    int width = 52;
+    int starty = (LINES - height) / 2;
+    int startx = (COLS - width) / 2;
+
+    settings_win = newwin(height, width, starty, startx);
+    keypad(settings_win, TRUE);
+    box(settings_win, 0, 0);
+
+    const char *title = "SETTINGS";
+    mvwprintw(settings_win, 1, (width - strlen(title)) / 2, "%s", title);
+
+    mvwprintw(settings_win, 3, 2, "Difficulty: ");
+    mvwprintw(settings_win, 3, 14, "%s",settings->difficulty);
+    mvwprintw(settings_win, 5, 2, "Hero's Color: ");
+    mvwprintw(settings_win, 5, 16, "%s",settings->user_color);
+
+    wrefresh(settings_win);
+
+    int ch;
+    while ((ch = wgetch(settings_win)) != KEY_BACKSPACE) {
+        continue;
+    }
+
+    delwin(settings_win);
+    clear();
+    refresh();
+    show_main_menu();
+}
