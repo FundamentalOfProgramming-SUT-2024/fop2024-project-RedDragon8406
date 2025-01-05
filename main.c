@@ -7,7 +7,9 @@
 #include "main.h"
 #include "auth.h"
 #include "settings.h"
-
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_mixer.h>
+#include <dirent.h>
 int n_choices;
 int main() {
     check_logged_in_user();

@@ -3,8 +3,8 @@
 
 source_files=("main.c" "menu.c" "exit.c" "choices.c" "design.c" "auth.c" "scoreboard.c" "profile.c" "settings.c" "game.c" "utils.c")
 
-
-gcc -o rogue "${source_files[@]}" -lncurses
+# -lSDL2 -lSDL2_mixer
+gcc -o rogue "${source_files[@]}" -lncurses 
 
 
 if [ $? -eq 0 ]; then
