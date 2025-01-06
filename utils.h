@@ -16,4 +16,5 @@ int check_wall_collide(Level* level,Room* room,Point next_move);
 void add_player_to_level(Level* level,Player* player);
 void handlePlayermove(Level *level,int ch,Player *player,WINDOW *gamewin);
 Corridor * in_corridor(Level *level,Point loc);
+int in_staircase(Level *level,Point loc);
 #endif

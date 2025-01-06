@@ -92,6 +92,13 @@ Corridor * in_corridor(Level *level,Point loc){
     return NULL;
 }
 
+int in_staircase(Level *level,Point loc){
+    if(loc.x==level->staircase->loc.x && loc.y==level->staircase->loc.y){
+        return 1;
+    }
+    return 0;
+}
+
 void handlePlayermove(Level *level,int ch,Player *player,WINDOW *gamewin){
     Point np;
     int nx;
@@ -129,6 +136,7 @@ void handlePlayermove(Level *level,int ch,Player *player,WINDOW *gamewin){
         player->loc.y=np.y;
     }
 }
+
 
 
 

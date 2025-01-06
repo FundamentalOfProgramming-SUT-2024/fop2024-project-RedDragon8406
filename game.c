@@ -32,6 +32,24 @@ void StartGame(){
     int c;
     while(1){
         PrintLevel(levels[current_level]);
+
+        if(in_staircase(levels[current_level],player->loc)){
+            if(current_level<3){
+                wclear(gamewin);
+                if(!levels_initialization[++current_level]){
+                    levels_initialization[current_level]=1;
+                    InitLevelRoom(levels[current_level]);
+                }
+                add_player_to_level(levels[current_level],player);
+                PrintLevel(levels[current_level]);
+            }else{
+                wclear(gamewin);
+                endwin();
+                refresh();
+                show_main_menu();
+            }
+        }
+        
         const char *title = "LEVEL: ";
         mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) / 2, "%s%d", title,current_level+1);
         c=wgetch(gamewin);
