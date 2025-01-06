@@ -16,7 +16,6 @@
 #define MaxWidthSubwindow 40
 
 extern int current_level;
-
 typedef struct{
     int x;
     int y;
@@ -66,7 +65,9 @@ typedef struct{
     Staircase *staircase;
 } Level;
 
-
+typedef struct{
+    Point loc;
+} Player;
 void StartGame();
 void PrintLevel(Level *level);
 

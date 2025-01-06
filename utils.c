@@ -38,6 +38,102 @@ int RXRG(int x_subwindow,int widthroom){
     return x;
 }
 
+
+void add_player_to_level(Level* level,Player* player){
+    player->loc.x=level->rooms[0]->start.x+1;
+    player->loc.y=level->rooms[0]->start.y+1;
+}
+
+Room * which_room(Level *level,Point loc){
+    for(int i=0;i<level->len_rooms;i++){
+        Room *room=level->rooms[i];
+        if(room->start.x < loc.x && loc.x < room->start.x+room->width-1 && 
+        room->start.y < loc.y && loc.y < room->start.y+room->height-1){
+            return level->rooms[i];
+        }
+    }
+    return NULL;
+}
+Door * is_door(Level*level, Point loc){
+    Room *room;
+    for(int j=0;j<level->len_rooms;j++){
+        room=level->rooms[j];
+        for(int i=0;i<room->door_number;i++){
+            if(room->doors[i]->loc.x == loc.x && room->doors[i]->loc.y == loc.y){
+                return room->doors[i];
+            }
+        }
+    }
+    return NULL;
+}
+int check_wall_collide(Level* level,Room* room,Point next_move){
+    if (which_room(level,next_move)==NULL){
+        if(is_door(level,next_move)!=NULL){
+            return 1;
+        }
+        return 0;
+    }
+    for(int i=0;i<room->pillars_number;i++){
+        if(next_move.x==room->pillars[i]->loc.x && next_move.y==room->pillars[i]->loc.y){
+            return 0;
+        }
+    }
+    return 1;
+}
+
+Corridor * in_corridor(Level *level,Point loc){
+    for(int i=0;i<level->corrs_number;i++){
+        for(int j=0;j<level->corrs[i]->locs_count;j++){
+            if(loc.x==level->corrs[i]->locs[j].x && loc.y==level->corrs[i]->locs[j].y){
+                return level->corrs[i];
+            }
+        }
+    }
+    return NULL;
+}
+
+void handlePlayermove(Level *level,int ch,Player *player,WINDOW *gamewin){
+    Point np;
+    int nx;
+    int ny;
+    switch (ch)
+    {
+    case 'w':
+        nx=player->loc.x;
+        ny=player->loc.y-1;
+        break;
+    case 'a':
+        nx=player->loc.x-1;
+        ny=player->loc.y;
+        break;
+    case 's':
+        nx=player->loc.x;
+        ny=player->loc.y+1;
+        break;
+    case 'd':
+        nx=player->loc.x+1;
+        ny=player->loc.y;
+        break;
+    default:
+        return;
+    }
+    np.x=nx;
+    np.y=ny;
+    Room *room=which_room(level,player->loc);
+    if(is_door(level,player->loc)!=NULL && (ch=='w' || ch=='s')){
+        player->loc.x=np.x;
+        player->loc.y=np.y;
+    }
+    else if(check_wall_collide(level,room,np) || in_corridor(level,np)!=NULL){
+        player->loc.x=np.x;
+        player->loc.y=np.y;
+    }
+}
+
+
+
+
+
 void initialize_doors(Room *room) {
     room->doors = malloc(room->door_number * sizeof(Door*));
     for (int i = 0; i < room->door_number; i++) {
@@ -147,6 +243,10 @@ void add_staircase_to_level(Level *level){
     level->staircase->loc.x=first_guess.x;
     level->staircase->loc.y=first_guess.y;
 }
+
+
+
+
 
 
 

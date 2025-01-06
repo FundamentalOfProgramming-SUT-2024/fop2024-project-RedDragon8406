@@ -7,9 +7,10 @@
 
 void InitLevelRoom(Level * level);
 int current_level;
-
 WINDOW * gamewin;
+Player *player;
 void StartGame(){
+    player=(Player *)malloc(sizeof(Player));
     current_level=0;
     Level **levels=(Level **)malloc(4*sizeof(Level *));
     for(int i=0;i<4;i++){
@@ -24,15 +25,13 @@ void StartGame(){
     clear();
     box(gamewin,0,0);
 
-
     InitLevelRoom(levels[0]);
-    InitLevelRoom(levels[1]);
-    InitLevelRoom(levels[2]);
-    InitLevelRoom(levels[3]);
-    PrintLevel(levels[0]);
+    int levels_initialization[4]={1,0,0,0};
+    add_player_to_level(levels[0],player);
     refresh();
     int c;
     while(1){
+        PrintLevel(levels[current_level]);
         const char *title = "LEVEL: ";
         mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) / 2, "%s%d", title,current_level+1);
         c=wgetch(gamewin);
@@ -46,18 +45,29 @@ void StartGame(){
         case 'p':
             if(current_level<3){
                 wclear(gamewin);
-                PrintLevel(levels[++current_level]);
+                if(!levels_initialization[++current_level]){
+                    levels_initialization[current_level]=1;
+                    InitLevelRoom(levels[current_level]);
+                }
+                add_player_to_level(levels[current_level],player);
+                PrintLevel(levels[current_level]);
             }
             break;
         case 'o':
             if(current_level>0){
                 wclear(gamewin);
-                PrintLevel(levels[--current_level]);
+                if(!levels_initialization[--current_level]){
+                    levels_initialization[current_level]=1;
+                    InitLevelRoom(levels[current_level]);
+                }
+                add_player_to_level(levels[current_level],player);
+                PrintLevel(levels[current_level]);
             }
             break;
         default:
             break;
         }
+        handlePlayermove(levels[current_level],c,player,gamewin);
     }
 }
 
@@ -140,5 +150,8 @@ void PrintLevel(Level* level){
             mvwprintw(gamewin, level->corrs[i]->locs[j].y, level->corrs[i]->locs[j].x,"#"); // corridors
         }
     }
-    mvwprintw(gamewin, level->staircase->loc.y, level->staircase->loc.x, "<");
+    mvwprintw(gamewin, level->staircase->loc.y, level->staircase->loc.x, "<"); // staircase
+    mvwprintw(gamewin, player->loc.y, player->loc.x, "@"); // player
 }
+
+
