@@ -1,8 +1,28 @@
 #include <ncurses.h>
-#include "design.h"
 #include <string.h>
+#include "design.h"
+#include "settings.h"
+#include "auth.h"
+#include "game.h"
+
 #define COLOR_CUSTOM_EXIT 8
 #define COLOR_CUSTOM_SILVER 9 
+#define PLAYER_WHITE 10
+#define PLAYER_BLUE 11
+#define PLAYER_GREEN 12
+
+
+int get_color_pair(const char *color_name) {
+    if (!strcmp(color_name, "white")) {
+        return PLAYER_WHITE;
+    } else if (!strcmp(color_name, "blue")) {
+        return PLAYER_BLUE;
+    } else if (!strcmp(color_name, "green")) {
+        return PLAYER_GREEN;
+    }
+    return 1;
+}
+
 
 void init_colors() {
     start_color();
@@ -17,6 +37,9 @@ void init_colors() {
     init_pair(5, COLOR_CYAN, COLOR_BLACK);   // welcome text color
     init_pair(6, COLOR_CUSTOM_EXIT, COLOR_BLACK); // goodbye text color
     init_pair(7, COLOR_CUSTOM_SILVER, COLOR_BLACK); // custom silver color
+    init_pair(PLAYER_WHITE, COLOR_WHITE, COLOR_BLACK);
+    init_pair(PLAYER_BLUE, COLOR_BLUE, COLOR_BLACK);
+    init_pair(PLAYER_GREEN, COLOR_GREEN, COLOR_BLACK);
 }
 
 void apply_logout_design(WINDOW *logout_win) {
@@ -34,3 +57,9 @@ void apply_logout_design(WINDOW *logout_win) {
     wrefresh(logout_win);
 }
 
+void PrintPlayer(WINDOW *gamewin, Player *player, Settings* settings){
+    int desired_color=get_color_pair(settings->user_color);
+    wattron(gamewin, COLOR_PAIR(desired_color));
+    mvwprintw(gamewin, player->loc.y, player->loc.x, "@");
+    wattroff(gamewin, COLOR_PAIR(desired_color));
+}

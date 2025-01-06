@@ -30,6 +30,7 @@ typedef struct{
     Door *node2;
     Point *locs;
     int locs_count;
+    int *show;
 } Corridor;
 
 
@@ -55,6 +56,8 @@ typedef struct{
     int pillars_number;
     Window *windows[2];
     int windows_number;
+
+    int show;
 } Room;
 
 typedef struct{
@@ -63,6 +66,7 @@ typedef struct{
     Corridor **corrs;
     int corrs_number;
     Staircase *staircase;
+    int show;
 } Level;
 
 typedef struct{

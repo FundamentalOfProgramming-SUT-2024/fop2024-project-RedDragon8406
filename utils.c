@@ -138,7 +138,32 @@ void handlePlayermove(Level *level,int ch,Player *player,WINDOW *gamewin){
 }
 
 
+int corr_index(Point loc, Corridor * corr){
+    for(int i=0;i<corr->locs_count;i++){
+        if(loc.x==corr->locs[i].x && loc.y==corr->locs[i].y){
+            return i;
+        }
+    }
+    return -1;
+}
 
+
+void handleVision(Level* level,Player* player){
+    Room* room=which_room(level,player->loc);
+    if(room!=NULL){
+        if(!room->show){
+            room->show=1;
+        }
+    }
+    Corridor * corr=in_corridor(level,player->loc);
+    if(corr!=NULL){
+        int index_corr=corr_index(player->loc,corr);
+        for(int i=index_corr;i<=index_corr+5 && i<corr->locs_count;i++){
+            corr->show[i]=1;
+        }
+    }
+
+}
 
 
 
@@ -450,4 +475,11 @@ void add_corridors_to_level(Level *level,WINDOW *gamewin){
         corrs[which]->locs[i+static_up+static_narrow].x=n1.x-static_narrow-1;
     }
     
+
+    for(int i=0;i<level->corrs_number;i++){
+        level->corrs[i]->show=(int *)malloc(level->corrs[i]->locs_count*sizeof(int));
+        for(int j=0;j<level->corrs[i]->locs_count;j++){
+            level->corrs[i]->show[j]=0;
+        }
+    }
 }

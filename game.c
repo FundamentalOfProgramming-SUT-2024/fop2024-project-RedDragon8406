@@ -1,10 +1,14 @@
 #include <ncurses.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
+#include <unistd.h>
 #include "game.h"
 #include "menu.h"
 #include "utils.h"
-
+#include "auth.h"
+#include "settings.h"
+#include "design.h"
 void InitLevelRoom(Level * level);
 int current_level;
 WINDOW * gamewin;
@@ -31,7 +35,10 @@ void StartGame(){
     refresh();
     int c;
     while(1){
+        handleVision(levels[current_level],player);
         PrintLevel(levels[current_level]);
+
+
 
         if(in_staircase(levels[current_level],player->loc)){
             if(current_level<3){
@@ -41,6 +48,7 @@ void StartGame(){
                     InitLevelRoom(levels[current_level]);
                 }
                 add_player_to_level(levels[current_level],player);
+                levels[current_level]->rooms[0]->show=1;
                 PrintLevel(levels[current_level]);
             }else{
                 wclear(gamewin);
@@ -49,7 +57,7 @@ void StartGame(){
                 show_main_menu();
             }
         }
-        
+
         const char *title = "LEVEL: ";
         mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) / 2, "%s%d", title,current_level+1);
         c=wgetch(gamewin);
@@ -68,6 +76,7 @@ void StartGame(){
                     InitLevelRoom(levels[current_level]);
                 }
                 add_player_to_level(levels[current_level],player);
+                levels[current_level]->rooms[0]->show=1;
                 PrintLevel(levels[current_level]);
             }
             break;
@@ -79,13 +88,26 @@ void StartGame(){
                     InitLevelRoom(levels[current_level]);
                 }
                 add_player_to_level(levels[current_level],player);
+                levels[current_level]->rooms[0]->show=1;
                 PrintLevel(levels[current_level]);
+            }
+            break;
+
+        case 'm':
+            if(levels[current_level]->show){
+                levels[current_level]->show=0;
+                wclear(gamewin);
+            }
+            else{
+                levels[current_level]->show=1;
             }
             break;
         default:
             break;
         }
         handlePlayermove(levels[current_level],c,player,gamewin);
+
+        usleep(10000);
     }
 }
 
@@ -106,7 +128,8 @@ void InitLevelRoom(Level * level){
             // mvwprintw(gamewin,3*basic_padding+MaxHeightSubWindow,basic_padding,"-----------------------------------------------------------------------------------------------------------------\n");
             // mvwprintw(gamewin,3*basic_padding+2*MaxHeightSubWindow,basic_padding+45 ,"------------------------------------------------------------------------------------------\n");
             Room * room=level->rooms[which];
-           
+            room->show=0;
+
             add_doors_to_room(room,which);
             add_pillars_to_room(room);
             add_windows_to_room(room);
@@ -122,14 +145,20 @@ void InitLevelRoom(Level * level){
     //     Room * room=level->rooms[which];
     //     mvwprintw(gamewin,38+(which),3,"{h:%d w:%d y:%d x:%d}",room->height,room->width,room->start.y,room->start.x);    
     // }
+    level->show=0;
 }
 
 
 
 
 void PrintLevel(Level* level){
+    mvwprintw(gamewin,3,1,"show:%d",level->show);
+    init_colors();
     for(int which=0;which<level->len_rooms;which++){
         Room * room=level->rooms[which];
+        if(!room->show && !level->show){
+            continue;
+        }
         for(int i=0;i<room->height;i++){
             for(int j=0;j<room->width;j++){
                 if(j==room->width-1 || j==0){
@@ -165,11 +194,16 @@ void PrintLevel(Level* level){
 
     for(int i=0;i<level->corrs_number;i++){
         for(int j=0;j<level->corrs[i]->locs_count;j++){
-            mvwprintw(gamewin, level->corrs[i]->locs[j].y, level->corrs[i]->locs[j].x,"#"); // corridors
+            if(level->corrs[i]->show[j] || level->show){
+                mvwprintw(gamewin, level->corrs[i]->locs[j].y, level->corrs[i]->locs[j].x,"#"); // corridors
+            }
         }
     }
-    mvwprintw(gamewin, level->staircase->loc.y, level->staircase->loc.x, "<"); // staircase
-    mvwprintw(gamewin, player->loc.y, player->loc.x, "@"); // player
+    if(level->rooms[level->len_rooms-1]->show || level->show){
+        mvwprintw(gamewin, level->staircase->loc.y, level->staircase->loc.x, "<"); // staircase
+    }
+
+    PrintPlayer(gamewin,player,settings);
 }
 
 
