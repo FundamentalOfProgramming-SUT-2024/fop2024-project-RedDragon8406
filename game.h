@@ -4,6 +4,8 @@
 #define win_height 45
 #define win_width 150
 
+#define basic_padding 5
+
 #define MaxHeightRoom 10
 #define MaxWidthRoom 35
 
@@ -21,14 +23,24 @@ typedef struct{
 } Point;
 
 typedef struct{
-    Point cord;
+    Point loc;
 } Door;
 
 typedef struct{
-    Door *from;
-    Door *to;
-    Point *cords;
+    Door *node1;
+    Door *node2;
+    Point *locs;
+    int locs_count;
 } Corridor;
+
+
+typedef struct{
+    Point loc;
+} Pillar;
+typedef struct{
+    Point loc;
+} Window;
+
 
 typedef struct{
     Point start;
@@ -36,11 +48,17 @@ typedef struct{
     int width;
     Door **doors;
     int door_number;
+    Pillar **pillars;
+    int pillars_number;
+    Window **windows;
+    int windows_number;
 } Room;
 
 typedef struct{
     Room **rooms;
     int len_rooms;
+    Corridor **corrs;
+    int corrs_number;
 } Level;
 
 

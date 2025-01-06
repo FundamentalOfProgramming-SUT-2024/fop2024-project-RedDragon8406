@@ -4,6 +4,7 @@
 source_files=("main.c" "menu.c" "exit.c" "choices.c" "design.c" "auth.c" "scoreboard.c" "profile.c" "settings.c" "game.c" "utils.c")
 
 # -lSDL2 -lSDL2_mixer
+# -fsanitize=address -g
 gcc -o rogue "${source_files[@]}" -lncurses 
 
 
