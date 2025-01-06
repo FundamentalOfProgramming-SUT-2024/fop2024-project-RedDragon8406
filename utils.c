@@ -2,7 +2,7 @@
 #include <string.h>
 #include "game.h"
 #include <ncurses.h>
-
+#include <time.h>
 /*
         |   |          |   |
         |   |          |   |        
@@ -97,7 +97,67 @@ void add_pillars_to_room(Room *room){
 }
 
 
-void add_corridors_to_room(Level *level,WINDOW *gamewin){
+void add_windows_to_room(Room *room){
+    int how_many;
+    // srand(time(NULL));
+    how_many = (rand() % 3);
+    int which;
+    if(how_many==1){
+        which= rand()%2;
+    }
+    room->windows_number=how_many;
+    for(int i=0;i<how_many;i++){
+        room->windows[i]=(Window *)malloc(sizeof(Window));
+    }
+    if(how_many==1){
+        if(which){
+            int y= (rand() % (room->height-2))+1;
+            room->windows[0]->loc.x=room->start.x+room->width-1;
+            room->windows[0]->loc.y=room->start.y+y;
+        }else{
+            int y= (rand() % (room->height-2))+1;
+            room->windows[0]->loc.x=room->start.x;
+            room->windows[0]->loc.y=room->start.y+y;
+        }
+        room->windows[0]->side=which;
+    }
+    else{
+        for(int i=0;i<room->windows_number;i++){
+            int y= (rand() % (room->height-2))+1;
+            room->windows[i]->loc.x=room->start.x + (i?room->width-1:0);
+            room->windows[i]->loc.y=room->start.y+y;
+            room->windows[i]->side=i;
+        }
+    }
+}
+
+void add_staircase_to_level(Level *level){
+    Room *room=level->rooms[level->len_rooms-1];
+    Point first_guess;
+    first_guess.x= (rand() % (room->width-4)) + 2 + room->start.x;
+    first_guess.y= (rand() % (room->height-4)) + 2 + room->start.y;
+    for(int j=0;j<room->pillars_number;j++){
+        if(first_guess.x==room->pillars[j]->loc.x && first_guess.y==room->pillars[j]->loc.y){
+            first_guess.x= (rand() % (room->width-4)) + 2 + room->start.x;
+            first_guess.y= (rand() % (room->height-4)) + 2 + room->start.y;
+            j=0;
+        }
+    }
+    level->staircase=(Staircase *)malloc(sizeof(Staircase));
+    level->staircase->loc.x=first_guess.x;
+    level->staircase->loc.y=first_guess.y;
+}
+
+
+
+
+
+
+
+
+
+
+void add_corridors_to_level(Level *level,WINDOW *gamewin){
     Room **rooms=level->rooms;
     level->corrs=(Corridor **)malloc(5*sizeof(Corridor));
     for(int i=0;i<5;i++){
