@@ -9,16 +9,42 @@
 #include "auth.h"
 #include "settings.h"
 #include "design.h"
+
+
+#define MAX_FOOD_COUNT 5
+#define FOOD_HEALTH 30
+
 void InitLevelRoom(Level * level);
 void StartGame();
 void PrintLevel(Level* level);
 void win_window();
+void lost_window();
+void food_window(Level *level,Player *player);
 int current_level;
 WINDOW * gamewin;
 Player *player;
 void StartGame(){
     player=(Player *)malloc(sizeof(Player));
     player->golds=0;
+    player->foods=(Food **)malloc(sizeof(Food *));
+    for(int i=0;i<MAX_FOOD_COUNT;i++){
+        player->foods[i]=(Food *)malloc(sizeof(Food));
+    }
+    player->foods_count=0;
+    if(!strcmp(settings->difficulty,"hard")){
+        player->health=100;
+    }
+    else if(!strcmp(settings->difficulty,"medium")){
+        player->health=140;
+    }
+    else if(!strcmp(settings->difficulty,"easy")){
+        player->health=200;
+    }
+    else{
+        player->health=0;
+    }
+
+
     current_level=0;
     Level **levels=(Level **)malloc(4*sizeof(Level *));
     for(int i=0;i<4;i++){
@@ -31,7 +57,7 @@ void StartGame(){
     noecho();
     keypad(gamewin,true);
     clear();
-    box(gamewin,0,0);
+    
 
     InitLevelRoom(levels[0]);
     int levels_initialization[4]={1,0,0,0};
@@ -39,11 +65,17 @@ void StartGame(){
     refresh();
     int c;
     while(1){
+        if(player->health<=0){
+            wclear(gamewin);
+            wrefresh(gamewin);
+            delwin(gamewin);
+            lost_window();
+        }
         handleVision(levels[current_level],player);
         PrintLevel(levels[current_level]);
 
 
-
+        
         if(in_staircase(levels[current_level],player->loc)){
             if(current_level<3){
                 wclear(gamewin);
@@ -65,6 +97,8 @@ void StartGame(){
         const char *title = "LEVEL: ";
         mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) / 2, "%s%d", title,current_level+1);
         mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4, "Golds: %d", player->golds);
+        mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4 - 10, "Foods: %d", player->foods_count);
+        mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4 + 12, "Health: %d ", player->health);
         c=wgetch(gamewin);
         switch (c){
         case KEY_BACKSPACE:
@@ -112,9 +146,17 @@ void StartGame(){
                 levels[current_level]->show=1;
             }
             break;
+        
+        case 'f':
+            wclear(gamewin);
+            wrefresh(gamewin);
+            food_window(levels[current_level],player);
+            break;
+
         default:
             break;
         }
+
         handlePlayermove(levels[current_level],c,player,gamewin);
 
         usleep(10000);
@@ -147,17 +189,16 @@ void InitLevelRoom(Level * level){
             for(int i=0;i<room->golds_number;i++){
                 if(!strcmp(settings->difficulty,"hard")){
                     room->golds[i]->value=1;
-                    player->health=50;
                 }
                 else if(!strcmp(settings->difficulty,"medium")){
                     room->golds[i]->value=2;
-                    player->health=70;
                 }
                 else if(!strcmp(settings->difficulty,"easy")){
                     room->golds[i]->value=3;
-                    player->health=100;
                 }
             }
+
+            add_foods_to_room(room);
             // mvwprintw(gamewin,0,0,"%d,%d",level->rooms[0]->doors[0]->loc.y,level->rooms[0]->doors[0]->loc.x);
             // mvwprintw(gamewin,0,0,"%d,%d",room->doors[3]->loc.y,room->doors[3]->loc.x);
 
@@ -177,6 +218,7 @@ void InitLevelRoom(Level * level){
 
 
 void PrintLevel(Level* level){
+    box(gamewin,0,0);
     mvwprintw(gamewin,3,1,"show:%d",level->show);
     init_colors();
     for(int which=0;which<level->len_rooms;which++){
@@ -209,7 +251,12 @@ void PrintLevel(Level* level){
                 }
                 for(int i=0;i<room->golds_number;i++){
                     if(!room->golds[i]->taken){
-                        PrintGold(gamewin,room->golds[i],settings);
+                        PrintGold(gamewin,room->golds[i],settings); // golds
+                    }
+                }
+                for(int i=0;i<room->foods_number;i++){
+                    if(!room->foods[i]->taken){
+                        PrintFood(gamewin,room->foods[i],settings); // foods
                     }
                 }
 
@@ -218,6 +265,8 @@ void PrintLevel(Level* level){
                 for(int i=0;i<room->door_number;i++){
                     mvwprintw(gamewin,38+(which),25+10*i,"(%d,%d)",room->doors[i]->loc.y,room->doors[i]->loc.x);
                 }
+                mvwprintw(gamewin,38+(which),45,"[%d]",room->foods_number);
+
             }
         }
     }
@@ -258,8 +307,78 @@ void win_window(){
     delwin(win_win);
     if(current_user!=NULL){
         current_user->golds+=player->golds;
-        current_user->points+=player->golds*5;
+        current_user->points+=player->golds*5; // winning points
+        current_user->points+=player->health*3; // winning points
         save_user_data(current_user); // temp
     }
     show_main_menu();
+}
+void lost_window(){
+    // pre configuration
+    int height = 7;
+    int width = 60;
+    int starty = (LINES - height) / 2;
+    int startx = (COLS - width) / 2;
+
+    WINDOW *lose_win = newwin(height, width, starty, startx);
+    keypad(lose_win, TRUE); // enable keypad
+    box(lose_win, 0, 0);
+    curs_set(0);
+    const char *lose_text = "You lost :( ! Press any key to return to main menu...";
+    mvwprintw(lose_win, 1, (width - strlen(lose_text)) / 2, "%s", lose_text);
+    wrefresh(lose_win);
+    wgetch(lose_win);
+    wclear(lose_win);
+    delwin(lose_win);
+    if(current_user!=NULL){
+        current_user->points+=player->golds; // losing points
+        save_user_data(current_user); // temp
+    }
+    show_main_menu();
+}
+void food_window(Level *level,Player *player){
+    // pre configuration
+    int height = 8;
+    int width = 40;
+    int starty = (LINES - height) / 2;
+    int startx = (COLS - width) / 2;
+
+    WINDOW *food_window = newwin(height, width, starty, startx);
+    keypad(food_window, TRUE); // enable keypad
+    box(food_window, 0, 0);
+    curs_set(0);
+    const char *food_intro = "number of remaining foods: ";
+    int c;
+    wrefresh(food_window);
+    while(1){
+        mvwprintw(food_window, 1, (width - strlen(food_intro)) / 2, "%s%d", food_intro,player->foods_count);
+        wattron(food_window, A_REVERSE);
+        mvwprintw(food_window, 3, (width - strlen("CONSUME FOOD")) / 2, "%s", "CONSUME FOOD");
+        wattroff(food_window, A_REVERSE);
+        if(!player->foods_count){
+            mvwprintw(food_window, 3, (width - strlen("CONSUME FOOD")) / 2, "%s", "CONSUME FOOD");
+        }
+
+        mvwprintw(food_window, 5, (width - 10) / 2, "Health: %d", player->health); // need some serious design
+
+        wrefresh(food_window);
+        c=wgetch(food_window);
+        switch(c){
+            case 10: // enter key
+                if(player->foods_count){
+                    player->health+=FOOD_HEALTH;
+                    player->foods_count--;
+                }
+                break;
+            case KEY_BACKSPACE:
+                wclear(food_window);
+                delwin(food_window);
+                PrintLevel(level);
+                return;
+            default:
+                break;
+        }
+    }
+
+
 }

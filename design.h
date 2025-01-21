@@ -10,4 +10,5 @@ void init_colors();
 void apply_logout_design(WINDOW *logout_win);
 void PrintPlayer(WINDOW *gamewin, Player *player, Settings* settings);
 void PrintGold(WINDOW *gamewin, Gold* gold , Settings* settings);
+void PrintFood(WINDOW *gamewin, Food* food , Settings* settings);
 #endif

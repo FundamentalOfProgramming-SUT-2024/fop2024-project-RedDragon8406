@@ -51,6 +51,12 @@ typedef struct{
     int value;
     int taken;
 } Gold;
+
+typedef struct{
+    Point loc;
+    int taken; 
+    int kind;
+} Food;
 typedef struct{
     Point start;
     int height;
@@ -63,7 +69,11 @@ typedef struct{
     int windows_number;
     Gold **golds;
     int golds_number;
+    Food **foods;
+    int foods_number;
+    
     int show;
+
 } Room;
 
 typedef struct{
@@ -79,6 +89,9 @@ typedef struct{
     Point loc;
     int golds;
     int health;
+    Food **foods;
+    int foods_count;
+
 } Player;
 void StartGame();
 void PrintLevel(Level *level);

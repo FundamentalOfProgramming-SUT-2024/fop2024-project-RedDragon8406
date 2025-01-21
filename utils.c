@@ -132,10 +132,12 @@ void handlePlayermove(Level *level,int ch,Player *player,WINDOW *gamewin){
     if(is_door(level,player->loc)!=NULL && (ch=='w' || ch=='s')){
         player->loc.x=np.x;
         player->loc.y=np.y;
+        player->health--;
     }
     else if(check_wall_collide(level,room,np) || in_corridor(level,np)!=NULL){
         player->loc.x=np.x;
         player->loc.y=np.y;
+        player->health--;
     }
 }
 
@@ -158,11 +160,27 @@ void handleVision(Level* level,Player* player){
         }
         for(int i=0;i<room->golds_number;i++){
             if(player->loc.x==room->golds[i]->loc.x && player->loc.y==room->golds[i]->loc.y){
+                if(room->golds[i]->taken){
+                    continue;
+                }
                 room->golds[i]->taken=1;
                 player->golds+=room->golds[i]->value;
                 break;
             }
         }
+        if(player->foods_count<5){
+            for(int i=0;i<room->foods_number;i++){
+                if(player->loc.x==room->foods[i]->loc.x && player->loc.y==room->foods[i]->loc.y){
+                    if(room->foods[i]->taken){
+                        continue;
+                    }
+                    room->foods[i]->taken=1;
+                    player->foods[player->foods_count++]=room->foods[i];
+                    break;
+                }
+            }
+        }
+
     }
     Corridor * corr=in_corridor(level,player->loc);
     if(corr!=NULL){
@@ -247,6 +265,7 @@ void add_golds_to_room(Room *room){
                 j=0;
                 first_guess.x= (rand() % (room->width-4)) + 2 + room->start.x;
                 first_guess.y= (rand() % (room->height-4)) + 2 + room->start.y;
+                break;
             }
         }
         for(int j=0;j<room->pillars_number;j++){
@@ -254,11 +273,50 @@ void add_golds_to_room(Room *room){
                 j=0;
                 first_guess.x= (rand() % (room->width-4)) + 2 + room->start.x;
                 first_guess.y= (rand() % (room->height-4)) + 2 + room->start.y;
+                break;
             }
         }
         room->golds[i]=(Gold *)malloc(sizeof(Gold));
         room->golds[i]->loc=first_guess;
         room->golds[i]->taken=0;
+    }
+}
+void add_foods_to_room(Room *room){
+    room->foods_number = rand() %((room->height*room->width)/30);
+    room->foods_number+=1;
+    room->foods=(Food **)malloc(room->foods_number*sizeof(Food *));
+    for(int i=0;i<room->foods_number;i++){
+        Point first_guess;        
+        first_guess.x= (rand() % (room->width-4)) + 2 + room->start.x;
+        first_guess.y= (rand() % (room->height-4)) + 2 + room->start.y;
+        for(int j=0;j<i;j++){
+            if(first_guess.x==room->foods[j]->loc.x && first_guess.y==room->foods[j]->loc.y){
+                j=0;
+                first_guess.x= (rand() % (room->width-4)) + 2 + room->start.x;
+                first_guess.y= (rand() % (room->height-4)) + 2 + room->start.y;
+                break;
+            }
+        }
+        for(int j=0;j<room->pillars_number;j++){
+            if(first_guess.x==room->pillars[j]->loc.x && first_guess.y==room->pillars[j]->loc.y){
+                j=0;
+                first_guess.x= (rand() % (room->width-4)) + 2 + room->start.x;
+                first_guess.y= (rand() % (room->height-4)) + 2 + room->start.y;
+                break;
+            }
+        }
+        for(int j=0;j<room->golds_number;j++){
+            if(first_guess.x==room->golds[j]->loc.x && first_guess.y==room->golds[j]->loc.y){
+                j=0;
+                first_guess.x= (rand() % (room->width-4)) + 2 + room->start.x;
+                first_guess.y= (rand() % (room->height-4)) + 2 + room->start.y;
+                break;
+            }
+        }
+        room->foods[i]=(Food *)malloc(sizeof(Food));
+        room->foods[i]->loc=first_guess;
+        room->foods[i]->taken=0;
+        room->foods[i]->kind=0; // temp
     }
 }
 

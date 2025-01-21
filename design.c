@@ -72,3 +72,8 @@ void PrintGold(WINDOW *gamewin, Gold* gold , Settings* settings){
     mvwprintw(gamewin,gold->loc.y,gold->loc.x,"G"); // golds
     wattroff(gamewin, COLOR_PAIR(COLOR_CUSTOM_GOLD));
 }
+void PrintFood(WINDOW *gamewin, Food* food , Settings* settings){
+    wattron(gamewin, COLOR_PAIR(COLOR_CYAN));
+    mvwprintw(gamewin,food->loc.y,food->loc.x,"F"); // golds
+    wattroff(gamewin, COLOR_PAIR(COLOR_CYAN));
+}

@@ -59,6 +59,12 @@
   "files.associations": {
     "*.embeddedhtml": "html",
     "utils.h": "c",
-    "menu.h": "c"
+    "menu.h": "c",
+    "auth.h": "c",
+    "settings.h": "c",
+    "design.h": "c",
+    "string.h": "c",
+    "ncurses.h": "c",
+    "game.h": "c"
   }
 }
