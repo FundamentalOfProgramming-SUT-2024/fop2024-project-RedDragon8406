@@ -10,6 +10,7 @@
 #define PLAYER_WHITE 10
 #define PLAYER_BLUE 11
 #define PLAYER_GREEN 12
+#define COLOR_CUSTOM_GOLD 13 
 
 
 int get_color_pair(const char *color_name) {
@@ -29,6 +30,7 @@ void init_colors() {
     
     init_color(COLOR_CUSTOM_EXIT, 142 * 4, 179 * 4, 219 * 4); // color for exit message
     init_color(COLOR_CUSTOM_SILVER, 192 * 4, 192 * 4, 192 * 4); // silver color
+    init_color(COLOR_CUSTOM_GOLD, 1000, 843, 0);
 
     init_pair(1, COLOR_WHITE, COLOR_BLUE);   // menu border color
     init_pair(2, COLOR_GREEN, COLOR_BLACK);  // yes button color
@@ -37,6 +39,7 @@ void init_colors() {
     init_pair(5, COLOR_CYAN, COLOR_BLACK);   // welcome text color
     init_pair(6, COLOR_CUSTOM_EXIT, COLOR_BLACK); // goodbye text color
     init_pair(7, COLOR_CUSTOM_SILVER, COLOR_BLACK); // custom silver color
+    init_pair(COLOR_CUSTOM_GOLD, COLOR_CUSTOM_GOLD, COLOR_BLACK); // custom silver color
     init_pair(PLAYER_WHITE, COLOR_WHITE, COLOR_BLACK);
     init_pair(PLAYER_BLUE, COLOR_BLUE, COLOR_BLACK);
     init_pair(PLAYER_GREEN, COLOR_GREEN, COLOR_BLACK);
@@ -62,4 +65,10 @@ void PrintPlayer(WINDOW *gamewin, Player *player, Settings* settings){
     wattron(gamewin, COLOR_PAIR(desired_color));
     mvwprintw(gamewin, player->loc.y, player->loc.x, "@");
     wattroff(gamewin, COLOR_PAIR(desired_color));
+}
+
+void PrintGold(WINDOW *gamewin, Gold* gold , Settings* settings){
+    wattron(gamewin, COLOR_PAIR(COLOR_CUSTOM_GOLD));
+    mvwprintw(gamewin,gold->loc.y,gold->loc.x,"G"); // golds
+    wattroff(gamewin, COLOR_PAIR(COLOR_CUSTOM_GOLD));
 }

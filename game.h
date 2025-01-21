@@ -47,6 +47,11 @@ typedef struct{
 } Staircase;
 
 typedef struct{
+    Point loc;
+    int value;
+    int taken;
+} Gold;
+typedef struct{
     Point start;
     int height;
     int width;
@@ -56,7 +61,8 @@ typedef struct{
     int pillars_number;
     Window *windows[2];
     int windows_number;
-
+    Gold **golds;
+    int golds_number;
     int show;
 } Room;
 
@@ -71,6 +77,8 @@ typedef struct{
 
 typedef struct{
     Point loc;
+    int golds;
+    int health;
 } Player;
 void StartGame();
 void PrintLevel(Level *level);

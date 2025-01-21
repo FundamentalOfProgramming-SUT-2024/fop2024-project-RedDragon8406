@@ -10,11 +10,15 @@
 #include "settings.h"
 #include "design.h"
 void InitLevelRoom(Level * level);
+void StartGame();
+void PrintLevel(Level* level);
+void win_window();
 int current_level;
 WINDOW * gamewin;
 Player *player;
 void StartGame(){
     player=(Player *)malloc(sizeof(Player));
+    player->golds=0;
     current_level=0;
     Level **levels=(Level **)malloc(4*sizeof(Level *));
     for(int i=0;i<4;i++){
@@ -51,21 +55,27 @@ void StartGame(){
                 levels[current_level]->rooms[0]->show=1;
                 PrintLevel(levels[current_level]);
             }else{
-                wclear(gamewin);
-                endwin();
-                refresh();
-                show_main_menu();
+                wclear(gamewin); //  // maybe not?
+                wrefresh(gamewin);
+                delwin(gamewin);
+                win_window();
             }
         }
 
         const char *title = "LEVEL: ";
         mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) / 2, "%s%d", title,current_level+1);
+        mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4, "Golds: %d", player->golds);
         c=wgetch(gamewin);
         switch (c){
         case KEY_BACKSPACE:
             clear();
             endwin();
             refresh();
+            if(current_user!=NULL){
+                current_user->golds+=player->golds;
+                current_user->points+=player->golds*5;
+                save_user_data(current_user); // temp
+            }
             show_main_menu();
             break;
         case 'p':
@@ -133,6 +143,21 @@ void InitLevelRoom(Level * level){
             add_doors_to_room(room,which);
             add_pillars_to_room(room);
             add_windows_to_room(room);
+            add_golds_to_room(room);
+            for(int i=0;i<room->golds_number;i++){
+                if(!strcmp(settings->difficulty,"hard")){
+                    room->golds[i]->value=1;
+                    player->health=50;
+                }
+                else if(!strcmp(settings->difficulty,"medium")){
+                    room->golds[i]->value=2;
+                    player->health=70;
+                }
+                else if(!strcmp(settings->difficulty,"easy")){
+                    room->golds[i]->value=3;
+                    player->health=100;
+                }
+            }
             // mvwprintw(gamewin,0,0,"%d,%d",level->rooms[0]->doors[0]->loc.y,level->rooms[0]->doors[0]->loc.x);
             // mvwprintw(gamewin,0,0,"%d,%d",room->doors[3]->loc.y,room->doors[3]->loc.x);
 
@@ -182,6 +207,11 @@ void PrintLevel(Level* level){
                 for(int i=0;i<room->windows_number;i++){
                     mvwprintw(gamewin,room->windows[i]->loc.y,room->windows[i]->loc.x,"="); // windows
                 }
+                for(int i=0;i<room->golds_number;i++){
+                    if(!room->golds[i]->taken){
+                        PrintGold(gamewin,room->golds[i],settings);
+                    }
+                }
 
 
                 mvwprintw(gamewin,38+(which),3,"{h:%d w:%d y:%d x:%d}",room->height,room->width,room->start.y,room->start.x);
@@ -207,3 +237,29 @@ void PrintLevel(Level* level){
 }
 
 
+
+
+void win_window(){
+    // pre configuration
+    int height = 7;
+    int width = 50;
+    int starty = (LINES - height) / 2;
+    int startx = (COLS - width) / 2;
+
+    WINDOW *win_win = newwin(height, width, starty, startx);
+    keypad(win_win, TRUE); // enable keypad
+    box(win_win, 0, 0);
+    curs_set(0);
+    const char *win_text = "You Won! Press any key to return to main menu...";
+    mvwprintw(win_win, 1, (width - strlen(win_text)) / 2, "%s", win_text);
+    wrefresh(win_win);
+    wgetch(win_win);
+    wclear(win_win);
+    delwin(win_win);
+    if(current_user!=NULL){
+        current_user->golds+=player->golds;
+        current_user->points+=player->golds*5;
+        save_user_data(current_user); // temp
+    }
+    show_main_menu();
+}

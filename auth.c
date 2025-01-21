@@ -556,6 +556,7 @@ int login_user(const char* username, const char* password) {
             current_user->status = 1;
             save_user_data(current_user); // to save the status of being logged in ( maybe gonna delete that later )
             save_current_user(current_user);
+            settings->user=current_user;
             return 1; // Successful login
         } else {
             // free(current_user);

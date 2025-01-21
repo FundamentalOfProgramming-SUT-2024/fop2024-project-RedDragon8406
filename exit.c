@@ -88,7 +88,7 @@ void show_exit_confirmation(WINDOW *menu_win, int highlight) {
                     wclear(exit_win);
                     wrefresh(exit_win);
                     delwin(exit_win);
-                    print_menu(menu_win, highlight, n_choices);
+                    show_main_menu();
                     return;
                 }
         }

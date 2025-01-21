@@ -1,8 +1,10 @@
 #include <stdlib.h>
 #include <string.h>
-#include "game.h"
 #include <ncurses.h>
 #include <time.h>
+#include "game.h"
+#include "settings.h"
+#include "auth.h"
 /*
         |   |          |   |
         |   |          |   |        
@@ -154,6 +156,13 @@ void handleVision(Level* level,Player* player){
         if(!room->show){
             room->show=1;
         }
+        for(int i=0;i<room->golds_number;i++){
+            if(player->loc.x==room->golds[i]->loc.x && player->loc.y==room->golds[i]->loc.y){
+                room->golds[i]->taken=1;
+                player->golds+=room->golds[i]->value;
+                break;
+            }
+        }
     }
     Corridor * corr=in_corridor(level,player->loc);
     if(corr!=NULL){
@@ -207,7 +216,7 @@ void add_doors_to_room(Room *room,int which) {
 
 void add_pillars_to_room(Room *room){
     room->pillars_number= rand() % ((room->height*room->width)/30);
-    room->pillars=(Pillar **)malloc(room->pillars_number*sizeof(Pillar));
+    room->pillars=(Pillar **)malloc(room->pillars_number*sizeof(Pillar *));
     for(int i=0;i<room->pillars_number;i++){
         Point first_guess;
         first_guess.x= (rand() % (room->width-4)) + 2 + room->start.x;
@@ -222,6 +231,34 @@ void add_pillars_to_room(Room *room){
         room->pillars[i]=(Pillar *)malloc(sizeof(Pillar));
         room->pillars[i]->loc.x=first_guess.x;
         room->pillars[i]->loc.y=first_guess.y;
+    }
+}
+
+void add_golds_to_room(Room *room){
+    room->golds_number = rand() %((room->height*room->width)/30);
+    room->golds_number+=2;
+    room->golds=(Gold **)malloc(room->golds_number*sizeof(Gold *));
+    for(int i=0;i<room->golds_number;i++){
+        Point first_guess;        
+        first_guess.x= (rand() % (room->width-4)) + 2 + room->start.x;
+        first_guess.y= (rand() % (room->height-4)) + 2 + room->start.y;
+        for(int j=0;j<i;j++){
+            if(first_guess.x==room->golds[j]->loc.x && first_guess.y==room->golds[j]->loc.y){
+                j=0;
+                first_guess.x= (rand() % (room->width-4)) + 2 + room->start.x;
+                first_guess.y= (rand() % (room->height-4)) + 2 + room->start.y;
+            }
+        }
+        for(int j=0;j<room->pillars_number;j++){
+            if(first_guess.x==room->pillars[j]->loc.x && first_guess.y==room->pillars[j]->loc.y){
+                j=0;
+                first_guess.x= (rand() % (room->width-4)) + 2 + room->start.x;
+                first_guess.y= (rand() % (room->height-4)) + 2 + room->start.y;
+            }
+        }
+        room->golds[i]=(Gold *)malloc(sizeof(Gold));
+        room->golds[i]->loc=first_guess;
+        room->golds[i]->taken=0;
     }
 }
 
