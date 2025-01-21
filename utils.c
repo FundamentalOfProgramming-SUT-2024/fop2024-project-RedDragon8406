@@ -2,6 +2,7 @@
 #include <string.h>
 #include <ncurses.h>
 #include <time.h>
+#include <locale.h>
 #include "game.h"
 #include "settings.h"
 #include "auth.h"
@@ -257,24 +258,25 @@ void add_golds_to_room(Room *room){
     room->golds_number+=2;
     room->golds=(Gold **)malloc(room->golds_number*sizeof(Gold *));
     for(int i=0;i<room->golds_number;i++){
+        int check=0;
         Point first_guess;        
         first_guess.x= (rand() % (room->width-4)) + 2 + room->start.x;
         first_guess.y= (rand() % (room->height-4)) + 2 + room->start.y;
         for(int j=0;j<i;j++){
             if(first_guess.x==room->golds[j]->loc.x && first_guess.y==room->golds[j]->loc.y){
-                j=0;
-                first_guess.x= (rand() % (room->width-4)) + 2 + room->start.x;
-                first_guess.y= (rand() % (room->height-4)) + 2 + room->start.y;
+                check=1;
                 break;
             }
         }
         for(int j=0;j<room->pillars_number;j++){
             if(first_guess.x==room->pillars[j]->loc.x && first_guess.y==room->pillars[j]->loc.y){
-                j=0;
-                first_guess.x= (rand() % (room->width-4)) + 2 + room->start.x;
-                first_guess.y= (rand() % (room->height-4)) + 2 + room->start.y;
+                check=1;
                 break;
             }
+        }
+        if(check){
+            i--;
+            continue;
         }
         room->golds[i]=(Gold *)malloc(sizeof(Gold));
         room->golds[i]->loc=first_guess;
@@ -286,37 +288,108 @@ void add_foods_to_room(Room *room){
     room->foods_number+=1;
     room->foods=(Food **)malloc(room->foods_number*sizeof(Food *));
     for(int i=0;i<room->foods_number;i++){
+        int check=0;
         Point first_guess;        
         first_guess.x= (rand() % (room->width-4)) + 2 + room->start.x;
         first_guess.y= (rand() % (room->height-4)) + 2 + room->start.y;
         for(int j=0;j<i;j++){
             if(first_guess.x==room->foods[j]->loc.x && first_guess.y==room->foods[j]->loc.y){
-                j=0;
-                first_guess.x= (rand() % (room->width-4)) + 2 + room->start.x;
-                first_guess.y= (rand() % (room->height-4)) + 2 + room->start.y;
+                check=1;
                 break;
             }
         }
         for(int j=0;j<room->pillars_number;j++){
             if(first_guess.x==room->pillars[j]->loc.x && first_guess.y==room->pillars[j]->loc.y){
-                j=0;
-                first_guess.x= (rand() % (room->width-4)) + 2 + room->start.x;
-                first_guess.y= (rand() % (room->height-4)) + 2 + room->start.y;
+                check=1;
                 break;
             }
         }
         for(int j=0;j<room->golds_number;j++){
             if(first_guess.x==room->golds[j]->loc.x && first_guess.y==room->golds[j]->loc.y){
-                j=0;
-                first_guess.x= (rand() % (room->width-4)) + 2 + room->start.x;
-                first_guess.y= (rand() % (room->height-4)) + 2 + room->start.y;
+                check=1;
                 break;
             }
+        }
+        if(check){
+            i--;    
+            continue;
         }
         room->foods[i]=(Food *)malloc(sizeof(Food));
         room->foods[i]->loc=first_guess;
         room->foods[i]->taken=0;
         room->foods[i]->kind=0; // temp
+    }
+}
+void add_weapons_to_room(Room *room){
+    room->weapons_number = rand() %((room->height*room->width)/30);
+    room->weapons_number+=1;
+    room->weapons=(Weapon **)malloc(room->weapons_number*sizeof(Weapon *));
+    for(int i=0;i<room->weapons_number;i++){
+        int check=0;
+        Point first_guess;        
+        first_guess.x= (rand() % (room->width-4)) + 2 + room->start.x;
+        first_guess.y= (rand() % (room->height-4)) + 2 + room->start.y;
+        for(int j=0;j<i;j++){
+            if((first_guess.x==room->weapons[j]->loc.x && first_guess.y==room->weapons[j]->loc.y) ||
+             (first_guess.x+1==room->weapons[j]->loc.x && first_guess.y==room->weapons[j]->loc.y) ||
+             (first_guess.x-1==room->weapons[j]->loc.x && first_guess.y==room->weapons[j]->loc.y) ){
+                check=1;
+                break;
+            }
+        }
+        for(int j=0;j<room->pillars_number;j++){
+            if((first_guess.x==room->pillars[j]->loc.x && first_guess.y==room->pillars[j]->loc.y) ||
+            (first_guess.x+1==room->pillars[j]->loc.x && first_guess.y==room->pillars[j]->loc.y)
+            ){
+                check=1;
+                break;
+            }
+        }
+        for(int j=0;j<room->golds_number;j++){
+            if((first_guess.x==room->golds[j]->loc.x && first_guess.y==room->golds[j]->loc.y )||
+            (first_guess.x+1==room->golds[j]->loc.x && first_guess.y==room->golds[j]->loc.y)
+            ){
+                check=1;
+                break;
+            }
+        }
+        for(int j=0;j<room->foods_number;j++){
+            if((first_guess.x==room->foods[j]->loc.x && first_guess.y==room->foods[j]->loc.y) || 
+            (first_guess.x+1==room->foods[j]->loc.x && first_guess.y==room->foods[j]->loc.y)){ // temp
+                check=1;
+                break;
+            }
+        }
+        if(check){
+            i--;
+            continue;   
+        }
+        room->weapons[i]=(Weapon *)malloc(sizeof(Weapon));
+        room->weapons[i]->loc=first_guess;
+        // first_guess.x++;
+        // room->weapons[i]->nloc=first_guess;
+        room->weapons[i]->taken=0;
+        room->weapons[i]->weapon= rand () % 5;
+        switch(room->weapons[i]->weapon){
+            case MACE:
+                strcpy(room->weapons[i]->code,"\u2692");
+                break;
+            case DAGGER:
+                strcpy(room->weapons[i]->code,"\U0001F5E1");
+                break;
+            case WAND:
+                strcpy(room->weapons[i]->code,"\U0001FA84");
+                break;
+            case ARROW:
+                strcpy(room->weapons[i]->code,"\u27B3");
+                break;
+            case SWORD:
+                strcpy(room->weapons[i]->code,"\u2694");
+                break;
+            default:
+                strcpy(room->weapons[i]->code,"W");
+                break;
+        }
     }
 }
 

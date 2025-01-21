@@ -5,7 +5,7 @@ source_files=("main.c" "menu.c" "exit.c" "choices.c" "design.c" "auth.c" "scoreb
 
 # -lSDL2 -lSDL2_mixer
 # -fsanitize=address -g
-gcc -o rogue "${source_files[@]}" -lncurses 
+gcc -o rogue "${source_files[@]}" -lncursesw -Wall 
 
 
 if [ $? -eq 0 ]; then

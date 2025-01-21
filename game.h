@@ -9,13 +9,23 @@
 #define MaxHeightRoom 10
 #define MaxWidthRoom 35
 
-#define MinHeightRoom 5 // it's actually 4| 0 , 1->4 , 5 as for the walls
-#define MinWidthRoom 5 // same thing
+#define MinHeightRoom 8 // it's actually 4| 0 , 1->4 , 5 as for the walls
+#define MinWidthRoom 8 // same thing
 
 #define MaxHeightSubWindow 12
 #define MaxWidthSubwindow 40
 
 extern int current_level;
+
+
+typedef enum{
+    MACE,
+    DAGGER,
+    WAND,
+    ARROW,
+    SWORD
+} Wep;
+
 typedef struct{
     int x;
     int y;
@@ -54,6 +64,14 @@ typedef struct{
 
 typedef struct{
     Point loc;
+    Point nloc;
+    Wep weapon;
+    char code[20];
+    int taken;
+} Weapon;
+
+typedef struct{
+    Point loc;
     int taken; 
     int kind;
 } Food;
@@ -71,7 +89,8 @@ typedef struct{
     int golds_number;
     Food **foods;
     int foods_number;
-    
+    Weapon **weapons;
+    int weapons_number;
     int show;
 
 } Room;
@@ -84,6 +103,7 @@ typedef struct{
     Staircase *staircase;
     int show;
 } Level;
+
 
 typedef struct{
     Point loc;

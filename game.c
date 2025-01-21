@@ -3,6 +3,7 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
+#include <locale.h>
 #include "game.h"
 #include "menu.h"
 #include "utils.h"
@@ -199,6 +200,7 @@ void InitLevelRoom(Level * level){
             }
 
             add_foods_to_room(room);
+            add_weapons_to_room(room);
             // mvwprintw(gamewin,0,0,"%d,%d",level->rooms[0]->doors[0]->loc.y,level->rooms[0]->doors[0]->loc.x);
             // mvwprintw(gamewin,0,0,"%d,%d",room->doors[3]->loc.y,room->doors[3]->loc.x);
 
@@ -257,6 +259,11 @@ void PrintLevel(Level* level){
                 for(int i=0;i<room->foods_number;i++){
                     if(!room->foods[i]->taken){
                         PrintFood(gamewin,room->foods[i],settings); // foods
+                    }
+                }
+                for(int i=0;i<room->weapons_number;i++){
+                    if(!room->weapons[i]->taken){
+                        mvwprintw(gamewin,room->weapons[i]->loc.y,room->weapons[i]->loc.x,"%s", room->weapons[i]->code); // weapons
                     }
                 }
 

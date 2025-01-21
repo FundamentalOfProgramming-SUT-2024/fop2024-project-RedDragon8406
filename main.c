@@ -4,6 +4,7 @@
 #include <regex.h>
 #include <ncurses.h>
 #include <time.h>
+#include <locale.h>
 #include "menu.h"
 #include "exit.h"
 #include "main.h"
@@ -14,6 +15,8 @@
 #include <dirent.h>
 int n_choices;
 int main() {
+
+    setlocale(LC_ALL, "");
     srand(time(NULL));
     check_logged_in_user();
     load_settings();
