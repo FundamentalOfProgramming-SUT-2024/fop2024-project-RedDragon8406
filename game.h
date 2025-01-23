@@ -105,13 +105,18 @@ typedef struct{
 } Level;
 
 
+#define MAX_FOOD_COUNT 5
+#define MAX_WEAPON_COUNT 10
 typedef struct{
     Point loc;
     int golds;
     int health;
     Food **foods;
     int foods_count;
-
+    Weapon ** weapons;
+    int weapons_count;
+    Weapon *current_weapon;
+    int cw_index;
 } Player;
 void StartGame();
 void PrintLevel(Level *level);

@@ -169,7 +169,7 @@ void handleVision(Level* level,Player* player){
                 break;
             }
         }
-        if(player->foods_count<5){
+        if(player->foods_count<MAX_FOOD_COUNT){
             for(int i=0;i<room->foods_number;i++){
                 if(player->loc.x==room->foods[i]->loc.x && player->loc.y==room->foods[i]->loc.y){
                     if(room->foods[i]->taken){
@@ -177,6 +177,18 @@ void handleVision(Level* level,Player* player){
                     }
                     room->foods[i]->taken=1;
                     player->foods[player->foods_count++]=room->foods[i];
+                    break;
+                }
+            }
+        }
+        if(player->weapons_count<MAX_WEAPON_COUNT){
+            for(int i=0;i<room->weapons_number;i++){
+                if(player->loc.x==room->weapons[i]->loc.x && player->loc.y==room->weapons[i]->loc.y){
+                    if(room->weapons[i]->taken){
+                        continue;
+                    }
+                    room->weapons[i]->taken=1;
+                    player->weapons[player->weapons_count++]=room->weapons[i];
                     break;
                 }
             }

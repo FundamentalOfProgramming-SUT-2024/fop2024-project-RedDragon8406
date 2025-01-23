@@ -12,7 +12,7 @@
 #include "design.h"
 
 
-#define MAX_FOOD_COUNT 5
+
 #define FOOD_HEALTH 30
 
 void InitLevelRoom(Level * level);
@@ -21,29 +21,14 @@ void PrintLevel(Level* level);
 void win_window();
 void lost_window();
 void food_window(Level *level,Player *player);
+void weapon_window(Level *level,Player *player);
+void init_player();
+
 int current_level;
 WINDOW * gamewin;
 Player *player;
 void StartGame(){
-    player=(Player *)malloc(sizeof(Player));
-    player->golds=0;
-    player->foods=(Food **)malloc(sizeof(Food *));
-    for(int i=0;i<MAX_FOOD_COUNT;i++){
-        player->foods[i]=(Food *)malloc(sizeof(Food));
-    }
-    player->foods_count=0;
-    if(!strcmp(settings->difficulty,"hard")){
-        player->health=100;
-    }
-    else if(!strcmp(settings->difficulty,"medium")){
-        player->health=140;
-    }
-    else if(!strcmp(settings->difficulty,"easy")){
-        player->health=200;
-    }
-    else{
-        player->health=0;
-    }
+    init_player();
 
 
     current_level=0;
@@ -99,6 +84,7 @@ void StartGame(){
         mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) / 2, "%s%d", title,current_level+1);
         mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4, "Golds: %d", player->golds);
         mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4 - 10, "Foods: %d", player->foods_count);
+        mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4 - 22, "Weapons: %d", player->weapons_count);
         mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4 + 12, "Health: %d ", player->health);
         c=wgetch(gamewin);
         switch (c){
@@ -153,7 +139,11 @@ void StartGame(){
             wrefresh(gamewin);
             food_window(levels[current_level],player);
             break;
-
+        case 'i':
+            wclear(gamewin);
+            wrefresh(gamewin);
+            weapon_window(levels[current_level],player);
+            break;
         default:
             break;
         }
@@ -388,4 +378,105 @@ void food_window(Level *level,Player *player){
     }
 
 
+}
+
+void weapon_window(Level *level,Player *player){
+    // pre configuration
+    int height = 30;
+    int width = 50;
+    int starty = (LINES - height) / 2;
+    int startx = (COLS - width) / 2;
+
+    WINDOW *weapon_window = newwin(height, width, starty, startx);
+    keypad(weapon_window, TRUE); // enable keypad
+    box(weapon_window, 0, 0);
+    curs_set(0);
+    const char *weapon_intro = "number of weapons collected: ";
+    int c;
+    wrefresh(weapon_window);
+    mvwprintw(weapon_window, 1, (width - strlen(weapon_intro)) / 2, "%s%d/%d", weapon_intro,player->weapons_count,MAX_WEAPON_COUNT);
+    int highlight=player->cw_index;
+    while(1){
+        for(int i=0;i<player->weapons_count;i++){
+            mvwprintw(weapon_window,4+2*i,5,"weapon %d: %s                        ",i+1,player->weapons[i]->code);
+            if(i==player->cw_index){
+                mvwprintw(weapon_window,4+2*i,5,"weapon %d: %s <--- selecetd weapon",i+1,player->weapons[i]->code);
+            }
+            if(i==highlight){
+                wattron(weapon_window,A_REVERSE);
+                mvwprintw(weapon_window,4+2*i,5,"weapon %d:",i+1);
+                wattroff(weapon_window,A_REVERSE);
+            }
+        }
+        wrefresh(weapon_window);
+        c=wgetch(weapon_window);
+        switch(c){
+            case KEY_BACKSPACE:
+                wclear(weapon_window);
+                delwin(weapon_window);
+                PrintLevel(level);
+                return;
+
+            case KEY_DOWN:
+                highlight++;
+                if(highlight<player->weapons_count){
+                    continue;
+                }
+                else{
+                    highlight=0;
+                }
+                break;
+            case KEY_UP:
+                highlight--;
+                if(highlight>=0){
+                    continue;
+                }
+                else{
+                    highlight=player->weapons_count-1;
+                }
+                break;
+            case 10: // enter
+                player->cw_index=highlight;
+                player->current_weapon=player->weapons[player->cw_index];
+                break;
+            default:
+                break;
+        }
+    }
+
+
+}
+
+
+void init_player(){
+    player=(Player *)malloc(sizeof(Player));
+    player->golds=0;
+    player->foods=(Food **)malloc(MAX_FOOD_COUNT*sizeof(Food *));
+    for(int i=0;i<MAX_FOOD_COUNT;i++){
+        player->foods[i]=(Food *)malloc(sizeof(Food));
+    }
+    player->foods_count=0;
+    if(!strcmp(settings->difficulty,"hard")){
+        player->health=100;
+    }
+    else if(!strcmp(settings->difficulty,"medium")){
+        player->health=140;
+    }
+    else if(!strcmp(settings->difficulty,"easy")){
+        player->health=200;
+    }
+    else{
+        player->health=0;
+    }
+
+    player->weapons_count=1;
+    player->weapons=(Weapon **)malloc(MAX_WEAPON_COUNT*sizeof(Food *));
+    for(int i=0;i<MAX_WEAPON_COUNT;i++){
+        player->weapons[i]=(Weapon *)malloc(sizeof(Weapon));
+    }
+    player->weapons[0]->weapon=MACE;
+    strcpy(player->weapons[0]->code,"\u2692");
+    player->weapons[0]->taken=1;
+    player->current_weapon=player->weapons[0];
+    player->cw_index=0;
 }
