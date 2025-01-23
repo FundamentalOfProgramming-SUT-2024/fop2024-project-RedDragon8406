@@ -26,6 +26,13 @@ typedef enum{
     SWORD
 } Wep;
 
+
+typedef enum{
+    SPEED,
+    DAMAGE,
+    HEALTH
+} Pot;
+
 typedef struct{
     int x;
     int y;
@@ -72,6 +79,13 @@ typedef struct{
 
 typedef struct{
     Point loc;
+    Pot potion;
+    char code[20];
+    int taken;
+} Potion;
+
+typedef struct{
+    Point loc;
     int taken; 
     int kind;
 } Food;
@@ -91,6 +105,9 @@ typedef struct{
     int foods_number;
     Weapon **weapons;
     int weapons_number;
+    Potion **potions;
+    int potions_number;
+
     int show;
 
 } Room;
@@ -107,6 +124,7 @@ typedef struct{
 
 #define MAX_FOOD_COUNT 5
 #define MAX_WEAPON_COUNT 10
+#define MAX_POTION_COUNT 15
 typedef struct{
     Point loc;
     int golds;
@@ -117,6 +135,11 @@ typedef struct{
     int weapons_count;
     Weapon *current_weapon;
     int cw_index;
+    Potion ** potions;
+    int potions_count;
+    int spc;
+    int hpc;
+    int dpc;
 } Player;
 void StartGame();
 void PrintLevel(Level *level);

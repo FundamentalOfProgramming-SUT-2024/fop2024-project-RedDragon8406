@@ -22,6 +22,7 @@ void win_window();
 void lost_window();
 void food_window(Level *level,Player *player);
 void weapon_window(Level *level,Player *player);
+void potion_window(Level *level,Player *player);
 void init_player();
 
 int current_level;
@@ -85,7 +86,8 @@ void StartGame(){
         mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4, "Golds: %d", player->golds);
         mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4 - 10, "Foods: %d", player->foods_count);
         mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4 - 22, "Weapons: %d", player->weapons_count);
-        mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4 + 12, "Health: %d ", player->health);
+        mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4 + 12, "Potions: %d ", player->potions_count);
+        mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4 + 24, "Health: %d ", player->health);
         c=wgetch(gamewin);
         switch (c){
         case KEY_BACKSPACE:
@@ -144,6 +146,11 @@ void StartGame(){
             wrefresh(gamewin);
             weapon_window(levels[current_level],player);
             break;
+        case 'u':
+            wclear(gamewin);
+            wrefresh(gamewin);;
+            potion_window(levels[current_level],player);
+            break;
         default:
             break;
         }
@@ -190,6 +197,7 @@ void InitLevelRoom(Level * level){
             }
 
             add_foods_to_room(room);
+            add_potions_to_room(room);
             add_weapons_to_room(room);
             // mvwprintw(gamewin,0,0,"%d,%d",level->rooms[0]->doors[0]->loc.y,level->rooms[0]->doors[0]->loc.x);
             // mvwprintw(gamewin,0,0,"%d,%d",room->doors[3]->loc.y,room->doors[3]->loc.x);
@@ -254,6 +262,11 @@ void PrintLevel(Level* level){
                 for(int i=0;i<room->weapons_number;i++){
                     if(!room->weapons[i]->taken){
                         mvwprintw(gamewin,room->weapons[i]->loc.y,room->weapons[i]->loc.x,"%s", room->weapons[i]->code); // weapons
+                    }
+                }
+                for(int i=0;i<room->potions_number;i++){
+                    if(!room->potions[i]->taken){
+                        mvwprintw(gamewin,room->potions[i]->loc.y,room->potions[i]->loc.x,"%s", room->potions[i]->code); // potions
                     }
                 }
 
@@ -448,6 +461,46 @@ void weapon_window(Level *level,Player *player){
 }
 
 
+void potion_window(Level *level,Player *player){
+    // pre configuration
+    int height = 20;
+    int width = 50;
+    int starty = (LINES - height) / 2;
+    int startx = (COLS - width) / 2;
+
+    WINDOW *potion_window = newwin(height, width, starty, startx);
+    keypad(potion_window, TRUE); // enable keypad
+    box(potion_window, 0, 0);
+    curs_set(0);
+    const char *potion_intro = "number of potions collected: ";
+    int c;
+    wrefresh(potion_window);
+    mvwprintw(potion_window, 1, (width - strlen(potion_intro)) / 2, "%s%d/%d", potion_intro,player->potions_count,MAX_POTION_COUNT);
+    while(1){
+        mvwprintw(potion_window,4,5,"speed potion %s : %d","\U0001F37E",player->spc);
+        mvwprintw(potion_window,6,5,"health potion %s : %d","\U0001F377",player->hpc);
+        mvwprintw(potion_window,8,5,"damage potion %s : %d","\U0001F37C",player->dpc);
+        
+
+        wrefresh(potion_window);
+        c=wgetch(potion_window);
+        switch(c){
+            case KEY_BACKSPACE:
+                wclear(potion_window);
+                delwin(potion_window);
+                PrintLevel(level);
+                return;
+            default:
+                break;
+        }
+    }
+
+
+}
+
+
+
+
 void init_player(){
     player=(Player *)malloc(sizeof(Player));
     player->golds=0;
@@ -479,4 +532,14 @@ void init_player(){
     player->weapons[0]->taken=1;
     player->current_weapon=player->weapons[0];
     player->cw_index=0;
+
+
+    player->potions_count=0;
+    player->spc=0;
+    player->hpc=0;
+    player->dpc=0;
+    player->potions=(Potion **)malloc(MAX_POTION_COUNT*sizeof(Potion *));
+    for(int i=0;i<MAX_POTION_COUNT;i++){
+        player->potions[i]=(Potion *)malloc(sizeof(Potion));
+    }
 }

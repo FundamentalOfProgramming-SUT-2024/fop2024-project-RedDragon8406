@@ -194,6 +194,30 @@ void handleVision(Level* level,Player* player){
             }
         }
 
+        if(player->potions_count<MAX_POTION_COUNT){
+            for(int i=0;i<room->potions_number;i++){
+                if(player->loc.x==room->potions[i]->loc.x && player->loc.y==room->potions[i]->loc.y){
+                    if(room->potions[i]->taken){
+                        continue;
+                    }
+                    room->potions[i]->taken=1;
+                    player->potions[player->potions_count++]=room->potions[i];
+                    switch(room->potions[i]->potion){
+                        case SPEED:
+                            player->spc++;
+                            break;
+                        case HEALTH:
+                            player->hpc++;
+                            break;
+                        case DAMAGE:
+                            player->dpc++;
+                            break;
+                    }
+                    break;
+                }
+            }
+        }
+
     }
     Corridor * corr=in_corridor(level,player->loc);
     if(corr!=NULL){
@@ -295,6 +319,7 @@ void add_golds_to_room(Room *room){
         room->golds[i]->taken=0;
     }
 }
+
 void add_foods_to_room(Room *room){
     room->foods_number = rand() %((room->height*room->width)/30);
     room->foods_number+=1;
@@ -332,9 +357,75 @@ void add_foods_to_room(Room *room){
         room->foods[i]->kind=0; // temp
     }
 }
+
+
+void add_potions_to_room(Room *room){
+    room->potions_number = rand() %((room->height*room->width)/40);
+    room->potions=(Potion **)malloc(room->potions_number*sizeof(Potion *));
+    for(int i=0;i<room->potions_number;i++){
+        int check=0;
+        Point first_guess;        
+        first_guess.x= (rand() % (room->width-4)) + 2 + room->start.x;
+        first_guess.y= (rand() % (room->height-4)) + 2 + room->start.y;
+        for(int j=0;j<i;j++){
+            if((first_guess.x==room->potions[j]->loc.x && first_guess.y==room->potions[j]->loc.y) ||
+             (first_guess.x+1==room->potions[j]->loc.x && first_guess.y==room->potions[j]->loc.y) ||
+             (first_guess.x-1==room->potions[j]->loc.x && first_guess.y==room->potions[j]->loc.y) ){
+                check=1;
+                break;
+            }
+        }
+        for(int j=0;j<room->pillars_number;j++){
+            if((first_guess.x==room->pillars[j]->loc.x && first_guess.y==room->pillars[j]->loc.y) ||
+            (first_guess.x+1==room->pillars[j]->loc.x && first_guess.y==room->pillars[j]->loc.y)
+            ){
+                check=1;
+                break;
+            }
+        }
+        for(int j=0;j<room->golds_number;j++){
+            if((first_guess.x==room->golds[j]->loc.x && first_guess.y==room->golds[j]->loc.y )||
+            (first_guess.x+1==room->golds[j]->loc.x && first_guess.y==room->golds[j]->loc.y)
+            ){
+                check=1;
+                break;
+            }
+        }
+        for(int j=0;j<room->foods_number;j++){
+            if((first_guess.x==room->foods[j]->loc.x && first_guess.y==room->foods[j]->loc.y) || 
+            (first_guess.x+1==room->foods[j]->loc.x && first_guess.y==room->foods[j]->loc.y)){ // temp
+                check=1;
+                break;
+            }
+        }
+        if(check){
+            i--;
+            continue;   
+        }
+        room->potions[i]=(Potion *)malloc(sizeof(Potion));
+        room->potions[i]->loc=first_guess;
+        room->potions[i]->taken=0;
+        room->potions[i]->potion= rand () % 3;
+        switch(room->potions[i]->potion){
+            case SPEED:
+                strcpy(room->potions[i]->code,"\U0001F37E");
+                break;
+            case HEALTH:
+                strcpy(room->potions[i]->code,"\U0001F377");
+                break;
+            case DAMAGE:
+                strcpy(room->potions[i]->code,"\U0001F37C");
+                break;
+            default:
+                strcpy(room->potions[i]->code,"P");
+                break;
+        }
+    }
+}
+
+
 void add_weapons_to_room(Room *room){
-    room->weapons_number = rand() %((room->height*room->width)/30);
-    room->weapons_number+=1;
+    room->weapons_number = rand() %((room->height*room->width)/40);
     room->weapons=(Weapon **)malloc(room->weapons_number*sizeof(Weapon *));
     for(int i=0;i<room->weapons_number;i++){
         int check=0;
@@ -368,6 +459,13 @@ void add_weapons_to_room(Room *room){
         for(int j=0;j<room->foods_number;j++){
             if((first_guess.x==room->foods[j]->loc.x && first_guess.y==room->foods[j]->loc.y) || 
             (first_guess.x+1==room->foods[j]->loc.x && first_guess.y==room->foods[j]->loc.y)){ // temp
+                check=1;
+                break;
+            }
+        }
+        for(int j=0;j<room->potions_number;j++){
+            if((first_guess.x==room->potions[j]->loc.x && first_guess.y==room->potions[j]->loc.y) || 
+            (first_guess.x+1==room->potions[j]->loc.x && first_guess.y==room->potions[j]->loc.y)){ // temp
                 check=1;
                 break;
             }
