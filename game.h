@@ -61,6 +61,7 @@ typedef struct{
 
 typedef struct{
     Point loc;
+    char c;
 } Staircase;
 
 typedef struct{
@@ -116,6 +117,7 @@ typedef struct{
     Trap **traps;
     int traps_number;
     int show;
+    
 
 } Room;
 
@@ -125,6 +127,7 @@ typedef struct{
     Corridor **corrs;
     int corrs_number;
     Staircase *staircase;
+    Staircase *bstaircase;
     int show;
     int showtrap;
 } Level;

@@ -80,6 +80,18 @@ void StartGame(){
                 win_window();
             }
         }
+        else if(in_bstaircase(levels[current_level],player->loc)){
+            if(current_level>0){
+                wclear(gamewin);
+                if(!levels_initialization[--current_level]){
+                    levels_initialization[current_level]=1;
+                    InitLevelRoom(levels[current_level]);
+                }
+                add_player_to_level(levels[current_level],player);
+                levels[current_level]->rooms[0]->show=1;
+                PrintLevel(levels[current_level]);
+            }
+        }
 
         const char *title = "LEVEL: ";
         mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) / 2, "%s%d", title,current_level+1);
@@ -204,9 +216,9 @@ void InitLevelRoom(Level * level){
             }
 
             add_foods_to_room(room);
+            add_traps_to_room(room);
             add_potions_to_room(room);
             add_weapons_to_room(room);
-            add_traps_to_room(room);
             // mvwprintw(gamewin,0,0,"%d,%d",level->rooms[0]->doors[0]->loc.y,level->rooms[0]->doors[0]->loc.x);
             // mvwprintw(gamewin,0,0,"%d,%d",room->doors[3]->loc.y,room->doors[3]->loc.x);
 
@@ -307,7 +319,10 @@ void PrintLevel(Level* level){
         }
     }
     if(level->rooms[level->len_rooms-1]->show || level->show){
-        mvwprintw(gamewin, level->staircase->loc.y, level->staircase->loc.x, "<"); // staircase
+        mvwprintw(gamewin, level->staircase->loc.y, level->staircase->loc.x, "%c",level->staircase->c); // staircase
+    }
+    if(level->rooms[0]->show || level->show){
+        mvwprintw(gamewin, level->bstaircase->loc.y, level->bstaircase->loc.x, "%c",level->bstaircase->c); // staircase
     }
 
     PrintPlayer(gamewin,player,settings);

@@ -101,6 +101,12 @@ int in_staircase(Level *level,Point loc){
     }
     return 0;
 }
+int in_bstaircase(Level *level,Point loc){
+    if(loc.x==level->bstaircase->loc.x && loc.y==level->bstaircase->loc.y){
+        return 1;
+    }
+    return 0;
+}
 
 void handlePlayermove(Level *level,int ch,Player *player,WINDOW *gamewin){
     Point np;
@@ -544,8 +550,9 @@ void add_weapons_to_room(Room *room){
             }
         }
         for(int j=0;j<room->potions_number;j++){
-            if((first_guess.x==room->potions[j]->loc.x && first_guess.y==room->potions[j]->loc.y) || 
-            (first_guess.x+1==room->potions[j]->loc.x && first_guess.y==room->potions[j]->loc.y)){ // temp
+            if((first_guess.x==room->potions[j]->loc.x && first_guess.y==room->potions[j]->loc.y) ||
+             (first_guess.x+1==room->potions[j]->loc.x && first_guess.y==room->potions[j]->loc.y) ||
+             (first_guess.x-1==room->potions[j]->loc.x && first_guess.y==room->potions[j]->loc.y) ){
                 check=1;
                 break;
             }
@@ -584,6 +591,126 @@ void add_weapons_to_room(Room *room){
 }
 
 
+void add_staircase_to_level(Level *level){
+    Room *room=level->rooms[level->len_rooms-1];
+    Point first_guess;
+    for(int i=0;i<1;i++){
+        int check=0;     
+        first_guess.x= (rand() % (room->width-4)) + 2 + room->start.x;
+        first_guess.y= (rand() % (room->height-4)) + 2 + room->start.y;
+        for(int j=0;j<room->pillars_number;j++){
+            if(first_guess.x==room->pillars[j]->loc.x && first_guess.y==room->pillars[j]->loc.y){
+                check=1;
+                break;
+            }
+        }
+        for(int j=0;j<room->golds_number;j++){
+            if(first_guess.x==room->golds[j]->loc.x && first_guess.y==room->golds[j]->loc.y){
+                check=1;
+                break;
+            }
+        }
+        for(int j=0;j<room->foods_number;j++){
+            if(first_guess.x==room->foods[j]->loc.x && first_guess.y==room->foods[j]->loc.y){
+                check=1;
+                break;
+            }
+        }
+        for(int j=0;j<room->traps_number;j++){
+            if(first_guess.x==room->traps[j]->loc.x && first_guess.y==room->traps[j]->loc.y){
+                check=1;
+                break;
+            }
+        }
+        for(int j=0;j<room->potions_number;j++){
+            if((first_guess.x==room->potions[j]->loc.x && first_guess.y==room->potions[j]->loc.y) ||
+             (first_guess.x+1==room->potions[j]->loc.x && first_guess.y==room->potions[j]->loc.y) ||
+             (first_guess.x-1==room->potions[j]->loc.x && first_guess.y==room->potions[j]->loc.y) ){
+                check=1;
+                break;
+            }
+        }
+        for(int j=0;j<room->weapons_number;j++){
+            if((first_guess.x==room->weapons[j]->loc.x && first_guess.y==room->weapons[j]->loc.y) ||
+             (first_guess.x+1==room->weapons[j]->loc.x && first_guess.y==room->weapons[j]->loc.y) ||
+             (first_guess.x-1==room->weapons[j]->loc.x && first_guess.y==room->weapons[j]->loc.y) ){
+                check=1;
+                break;
+            }
+        }
+        if(check){
+            i--;
+            continue;   
+        }
+    }       
+    level->staircase=(Staircase *)malloc(sizeof(Staircase));
+    level->staircase->loc.x=first_guess.x;
+    level->staircase->loc.y=first_guess.y;
+    level->staircase->c='>';
+
+
+    room=level->rooms[0];
+    Point second_guess;
+    for(int i=0;i<1;i++){
+        int check=0;     
+        second_guess.x= (rand() % (room->width-4)) + 2 + room->start.x;
+        second_guess.y= (rand() % (room->height-4)) + 2 + room->start.y;
+        for(int j=0;j<room->pillars_number;j++){
+            if(second_guess.x==room->pillars[j]->loc.x && second_guess.y==room->pillars[j]->loc.y){
+                check=1;
+                break;
+            }
+        }
+        for(int j=0;j<room->golds_number;j++){
+            if(second_guess.x==room->golds[j]->loc.x && second_guess.y==room->golds[j]->loc.y){
+                check=1;
+                break;
+            }
+        }
+        for(int j=0;j<room->foods_number;j++){
+            if(second_guess.x==room->foods[j]->loc.x && second_guess.y==room->foods[j]->loc.y){
+                check=1;
+                break;
+            }
+        }
+        for(int j=0;j<room->traps_number;j++){
+            if(second_guess.x==room->traps[j]->loc.x && second_guess.y==room->traps[j]->loc.y){
+                check=1;
+                break;
+            }
+        }
+        for(int j=0;j<room->potions_number;j++){
+            if((second_guess.x==room->potions[j]->loc.x && second_guess.y==room->potions[j]->loc.y) ||
+             (second_guess.x+1==room->potions[j]->loc.x && second_guess.y==room->potions[j]->loc.y) ||
+             (second_guess.x-1==room->potions[j]->loc.x && second_guess.y==room->potions[j]->loc.y) ){
+                check=1;
+                break;
+            }
+        }
+        for(int j=0;j<room->weapons_number;j++){
+            if((second_guess.x==room->weapons[j]->loc.x && second_guess.y==room->weapons[j]->loc.y) ||
+             (second_guess.x+1==room->weapons[j]->loc.x && second_guess.y==room->weapons[j]->loc.y) ||
+             (second_guess.x-1==room->weapons[j]->loc.x && second_guess.y==room->weapons[j]->loc.y) ){
+                check=1;
+                break;
+            }
+        }
+        if(check){
+            i--;
+            continue;   
+        }
+    }       
+    level->bstaircase=(Staircase *)malloc(sizeof(Staircase));
+    level->bstaircase->loc.x=second_guess.x;
+    level->bstaircase->loc.y=second_guess.y;
+    level->bstaircase->c='<';
+
+
+
+}
+
+
+
 
 
 void add_windows_to_room(Room *room){
@@ -619,24 +746,6 @@ void add_windows_to_room(Room *room){
         }
     }
 }
-
-void add_staircase_to_level(Level *level){
-    Room *room=level->rooms[level->len_rooms-1];
-    Point first_guess;
-    first_guess.x= (rand() % (room->width-4)) + 2 + room->start.x;
-    first_guess.y= (rand() % (room->height-4)) + 2 + room->start.y;
-    for(int j=0;j<room->pillars_number;j++){
-        if(first_guess.x==room->pillars[j]->loc.x && first_guess.y==room->pillars[j]->loc.y){
-            first_guess.x= (rand() % (room->width-4)) + 2 + room->start.x;
-            first_guess.y= (rand() % (room->height-4)) + 2 + room->start.y;
-            j=0;
-        }
-    }
-    level->staircase=(Staircase *)malloc(sizeof(Staircase));
-    level->staircase->loc.x=first_guess.x;
-    level->staircase->loc.y=first_guess.y;
-}
-
 
 
 

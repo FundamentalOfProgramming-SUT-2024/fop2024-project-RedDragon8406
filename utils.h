@@ -17,6 +17,7 @@ void add_player_to_level(Level* level,Player* player);
 void handlePlayermove(Level *level,int ch,Player *player,WINDOW *gamewin);
 Corridor * in_corridor(Level *level,Point loc);
 int in_staircase(Level *level,Point loc);
+int in_bstaircase(Level *level,Point loc);
 int corr_index(Point loc, Corridor * corr);
 void handleVision(Level* level,Player* player);
 void add_golds_to_room(Room *room);
