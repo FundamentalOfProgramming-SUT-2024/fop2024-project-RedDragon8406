@@ -10,7 +10,7 @@
 #define MaxWidthRoom 35
 
 #define MinHeightRoom 8 // it's actually 4| 0 , 1->4 , 5 as for the walls
-#define MinWidthRoom 8 // same thing
+#define MinWidthRoom 12 // same thing
 
 #define MaxHeightSubWindow 12
 #define MaxWidthSubwindow 40
@@ -89,6 +89,12 @@ typedef struct{
     int taken; 
     int kind;
 } Food;
+
+typedef struct{
+    Point loc;
+    int taken;
+    int show;
+} Trap;
 typedef struct{
     Point start;
     int height;
@@ -107,7 +113,8 @@ typedef struct{
     int weapons_number;
     Potion **potions;
     int potions_number;
-
+    Trap **traps;
+    int traps_number;
     int show;
 
 } Room;
@@ -119,6 +126,7 @@ typedef struct{
     int corrs_number;
     Staircase *staircase;
     int show;
+    int showtrap;
 } Level;
 
 

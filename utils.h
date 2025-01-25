@@ -23,5 +23,6 @@ void add_golds_to_room(Room *room);
 void add_foods_to_room(Room *room);
 void add_weapons_to_room(Room *room);
 void add_potions_to_room(Room *room);
+void add_traps_to_room(Room *room);
 
 #endif

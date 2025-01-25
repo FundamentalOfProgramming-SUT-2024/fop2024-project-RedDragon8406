@@ -151,6 +151,13 @@ void StartGame(){
             wrefresh(gamewin);;
             potion_window(levels[current_level],player);
             break;
+        case 't':
+            if(levels[current_level]->showtrap){
+                levels[current_level]->showtrap=0;
+            }else{
+                levels[current_level]->showtrap=1;
+            }
+            break;
         default:
             break;
         }
@@ -199,6 +206,7 @@ void InitLevelRoom(Level * level){
             add_foods_to_room(room);
             add_potions_to_room(room);
             add_weapons_to_room(room);
+            add_traps_to_room(room);
             // mvwprintw(gamewin,0,0,"%d,%d",level->rooms[0]->doors[0]->loc.y,level->rooms[0]->doors[0]->loc.x);
             // mvwprintw(gamewin,0,0,"%d,%d",room->doors[3]->loc.y,room->doors[3]->loc.x);
 
@@ -212,6 +220,7 @@ void InitLevelRoom(Level * level){
     //     mvwprintw(gamewin,38+(which),3,"{h:%d w:%d y:%d x:%d}",room->height,room->width,room->start.y,room->start.x);    
     // }
     level->show=0;
+    level->showtrap=0;
 }
 
 
@@ -270,10 +279,19 @@ void PrintLevel(Level* level){
                     }
                 }
 
+                for(int i=0;i<room->traps_number;i++){
+                    if(room->traps[i]->taken){
+                        mvwprintw(gamewin,room->traps[i]->loc.y,room->traps[i]->loc.x,"^"); // traps
+                    }
+                    else if(level->showtrap){
+                        mvwprintw(gamewin,room->traps[i]->loc.y,room->traps[i]->loc.x,"T"); // traps
+                    }
+                }
+
 
                 mvwprintw(gamewin,38+(which),3,"{h:%d w:%d y:%d x:%d}",room->height,room->width,room->start.y,room->start.x);
                 for(int i=0;i<room->door_number;i++){
-                    mvwprintw(gamewin,38+(which),25+10*i,"(%d,%d)",room->doors[i]->loc.y,room->doors[i]->loc.x);
+                    mvwprintw(gamewin,38+(which),25+10*i,"(%d,%d)",room->doors[i]->loc.y,room->doors[i]->loc.x); //doors
                 }
                 mvwprintw(gamewin,38+(which),45,"[%d]",room->foods_number);
 
