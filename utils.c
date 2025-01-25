@@ -136,6 +136,11 @@ void handlePlayermove(Level *level,int ch,Player *player,WINDOW *gamewin){
     np.x=nx;
     np.y=ny;
     Room *room=which_room(level,player->loc);
+    if(is_door(level,np)!=NULL && !is_door(level,np)->show){
+        is_door(level,np)->show=1;
+        is_door(level,np)->whereto->show=1;   
+        return;
+    }
     if(is_door(level,player->loc)!=NULL && (ch=='w' || ch=='s')){
         player->loc.x=np.x;
         player->loc.y=np.y;
@@ -295,6 +300,25 @@ void add_doors_to_room(Room *room,int which) {
         room->doors[0]->loc.y = room->start.y + room->height-1;
         room->doors[1]->loc.x = room->start.x + (rand() %( room->width-2)) + 1; // top
         room->doors[1]->loc.y = room->start.y;
+    }
+}
+
+void add_lockshow_to_level(Level *level){
+    for(int i=0;i<level->len_rooms;i++){
+        for(int j=0;j<level->rooms[i]->door_number;j++){
+            if(level->rooms[i]->doors[j]->kind==PASS){
+                level->rooms[i]->doors[j]->locked=1;
+            }else{
+                level->rooms[i]->doors[j]->locked=0;
+            }
+
+            if(level->rooms[i]->doors[j]->kind==HIDDEN){
+                level->rooms[i]->doors[j]->show=0;
+            }else{
+                level->rooms[i]->doors[j]->show=1;
+            }
+        }
+
     }
 }
 
@@ -747,9 +771,15 @@ void add_windows_to_room(Room *room){
     }
 }
 
-
-
+int set_kind(){
+    int kind = rand() % 6;
+    if(kind>=2){
+        kind=2;
+    }
+    return kind;
+}
 void add_corridors_to_level(Level *level,WINDOW *gamewin){
+    int kind;
     Room **rooms=level->rooms;
     level->corrs=(Corridor **)malloc(5*sizeof(Corridor));
     for(int i=0;i<5;i++){
@@ -789,8 +819,11 @@ void add_corridors_to_level(Level *level,WINDOW *gamewin){
         corrs[which]->locs[i+static_down+static_narrow].x=n1.x+static_narrow+1;
         corrs[which]->locs[i+static_down+static_narrow].y=n1.y+static_down-i;
     }
-
-
+    
+    kind = set_kind();
+    corrs[which]->node1->kind=kind;
+    corrs[which]->node2->kind=kind;
+    corrs[which]->node1->whereto=corrs[which]->node2;
 
     which++; // -------------------------------------------- second --------------------------------------------
     corrs[which]->node1=(Door *)malloc(sizeof(Door));
@@ -821,6 +854,10 @@ void add_corridors_to_level(Level *level,WINDOW *gamewin){
         corrs[which]->locs[i+static_up+static_narrow].x=n1.x+static_narrow+1;
     }
 
+    kind = set_kind();
+    corrs[which]->node1->kind=kind;
+    corrs[which]->node2->kind=kind;
+    corrs[which]->node1->whereto=corrs[which]->node2;
 
     which++; // -------------------------------------------- third --------------------------------------------
     corrs[which]->node1=(Door *)malloc(sizeof(Door));
@@ -872,6 +909,11 @@ void add_corridors_to_level(Level *level,WINDOW *gamewin){
     mvwprintw(gamewin,0,win_width/2,"%d %d %d",static_down,static_narrow,down);
 
 
+    kind = set_kind();
+    corrs[which]->node1->kind=kind;
+    corrs[which]->node2->kind=kind;
+    corrs[which]->node1->whereto=corrs[which]->node2;
+
     which++; // -------------------------------------------- fourth --------------------------------------------
     corrs[which]->node1=(Door *)malloc(sizeof(Door));
     corrs[which]->node2=(Door *)malloc(sizeof(Door));
@@ -903,6 +945,10 @@ void add_corridors_to_level(Level *level,WINDOW *gamewin){
         corrs[which]->locs[i+static_down+static_narrow].y=n1.y+static_down-i;
     }
 
+    kind = set_kind();
+    corrs[which]->node1->kind=kind;
+    corrs[which]->node2->kind=kind;
+    corrs[which]->node1->whereto=corrs[which]->node2;
 
     which++; // -------------------------------------------- fifth --------------------------------------------
     corrs[which]->node1=(Door *)malloc(sizeof(Door));
@@ -941,4 +987,9 @@ void add_corridors_to_level(Level *level,WINDOW *gamewin){
             level->corrs[i]->show[j]=0;
         }
     }
+
+    kind = set_kind();
+    corrs[which]->node1->kind=kind;
+    corrs[which]->node2->kind=kind;
+    corrs[which]->node1->whereto=corrs[which]->node2;
 }

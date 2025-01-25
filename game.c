@@ -227,6 +227,7 @@ void InitLevelRoom(Level * level){
     }
     add_corridors_to_level(level,gamewin);
     add_staircase_to_level(level);
+    add_lockshow_to_level(level);
     // for(int which=0;which<6;which++){
     //     Room * room=level->rooms[which];
     //     mvwprintw(gamewin,38+(which),3,"{h:%d w:%d y:%d x:%d}",room->height,room->width,room->start.y,room->start.x);    
@@ -261,9 +262,7 @@ void PrintLevel(Level* level){
                 if(i==0 && (j==0 || j==room->width-1)){
                     mvwprintw(gamewin,i+room->start.y,j+room->start.x," "); //room-edges
                 }
-                for(int k=0;k<room->door_number;k++){
-                    mvwprintw(gamewin,room->doors[k]->loc.y,room->doors[k]->loc.x,"+"); // doors
-                }
+                PrintDoor(gamewin,room);
                 for(int k=0;k<room->pillars_number;k++){
                     mvwprintw(gamewin,room->pillars[k]->loc.y,room->pillars[k]->loc.x,"O"); // pillars
                 }
@@ -303,7 +302,7 @@ void PrintLevel(Level* level){
 
                 mvwprintw(gamewin,38+(which),3,"{h:%d w:%d y:%d x:%d}",room->height,room->width,room->start.y,room->start.x);
                 for(int i=0;i<room->door_number;i++){
-                    mvwprintw(gamewin,38+(which),25+10*i,"(%d,%d)",room->doors[i]->loc.y,room->doors[i]->loc.x); //doors
+                    mvwprintw(gamewin,38+(which),25+10*i,"(%d,%d|%d)",room->doors[i]->loc.y,room->doors[i]->loc.x,room->doors[i]->kind); //doors
                 }
                 mvwprintw(gamewin,38+(which),45,"[%d]",room->foods_number);
 

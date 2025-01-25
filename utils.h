@@ -25,5 +25,5 @@ void add_foods_to_room(Room *room);
 void add_weapons_to_room(Room *room);
 void add_potions_to_room(Room *room);
 void add_traps_to_room(Room *room);
-
+void add_lockshow_to_level(Level *level);
 #endif

@@ -33,13 +33,23 @@ typedef enum{
     HEALTH
 } Pot;
 
+typedef enum{
+    HIDDEN,
+    PASS,
+    NORMAL
+} DODOULEG;
+
 typedef struct{
     int x;
     int y;
 } Point;
 
-typedef struct{
+typedef struct _door{
     Point loc;
+    DODOULEG kind;
+    int locked;
+    int show;
+    struct _door *whereto;
 } Door;
 
 typedef struct{

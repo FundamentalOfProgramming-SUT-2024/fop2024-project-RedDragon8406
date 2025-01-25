@@ -4,7 +4,8 @@
 #include "settings.h"
 #include "auth.h"
 #include "game.h"
-
+#include "utils.h"
+#include "main.h"
 #define COLOR_CUSTOM_EXIT 8
 #define COLOR_CUSTOM_SILVER 9 
 #define PLAYER_WHITE 10
@@ -76,4 +77,31 @@ void PrintFood(WINDOW *gamewin, Food* food , Settings* settings){
     wattron(gamewin, COLOR_PAIR(COLOR_CYAN));
     mvwprintw(gamewin,food->loc.y,food->loc.x,"F"); // golds
     wattroff(gamewin, COLOR_PAIR(COLOR_CYAN));
+}
+
+void PrintDoor(WINDOW *gamewin, Room * room){
+    for(int k=0;k<room->door_number;k++){
+        if(!room->doors[k]->show){
+            continue;
+        }
+        switch(room->doors[k]->kind){
+            case HIDDEN:
+                mvwprintw(gamewin,room->doors[k]->loc.y,room->doors[k]->loc.x,"?"); // doors
+                break;
+            case PASS:
+                if(room->doors[k]->locked){
+                    wattron(gamewin,COLOR_PAIR(3));
+                    mvwprintw(gamewin,room->doors[k]->loc.y,room->doors[k]->loc.x,"\u2761"); // doors
+                    wattroff(gamewin,COLOR_PAIR(3));
+                }else{
+                    wattron(gamewin,COLOR_PAIR(2));
+                    mvwprintw(gamewin,room->doors[k]->loc.y,room->doors[k]->loc.x,"\u2761"); // doors
+                    wattroff(gamewin,COLOR_PAIR(2));
+                }
+                break;
+            case NORMAL:
+                mvwprintw(gamewin,room->doors[k]->loc.y,room->doors[k]->loc.x,"+"); // doors
+                break;
+        }
+    }
 }
