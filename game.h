@@ -44,12 +44,15 @@ typedef struct{
     int y;
 } Point;
 
+typedef struct{
+    Point loc;
+} Gen;
+
 typedef struct _door{
     Point loc;
     DODOULEG kind;
     int locked;
     int show;
-    struct _door *whereto;
 } Door;
 
 typedef struct{
@@ -106,6 +109,8 @@ typedef struct{
     int taken;
     int show;
 } Trap;
+
+
 typedef struct{
     Point start;
     int height;
@@ -127,7 +132,8 @@ typedef struct{
     Trap **traps;
     int traps_number;
     int show;
-    
+    int shouldgen;
+    Gen *gen;
 
 } Room;
 

@@ -138,7 +138,6 @@ void handlePlayermove(Level *level,int ch,Player *player,WINDOW *gamewin){
     Room *room=which_room(level,player->loc);
     if(is_door(level,np)!=NULL && !is_door(level,np)->show){
         is_door(level,np)->show=1;
-        is_door(level,np)->whereto->show=1;   
         return;
     }
     if(is_door(level,player->loc)!=NULL && (ch=='w' || ch=='s')){
@@ -317,6 +316,7 @@ void add_lockshow_to_level(Level *level){
             }else{
                 level->rooms[i]->doors[j]->show=1;
             }
+
         }
 
     }
@@ -734,7 +734,75 @@ void add_staircase_to_level(Level *level){
 }
 
 
+void add_gen(Level *level){
+    for(int i=0;i<level->len_rooms;i++){
+        if(!level->rooms[i]->shouldgen){
+            continue;
+        }
 
+        Room *room=level->rooms[i];
+        Point first_guess;
+        for(int i=0;i<1;i++){
+            int check=0;     
+            first_guess.x= (rand() % (room->width-4)) + 2 + room->start.x;
+            first_guess.y= (rand() % (room->height-4)) + 2 + room->start.y;
+            for(int j=0;j<room->pillars_number;j++){
+                if(first_guess.x==room->pillars[j]->loc.x && first_guess.y==room->pillars[j]->loc.y){
+                    check=1;
+                    break;
+                }
+            }
+            for(int j=0;j<room->golds_number;j++){
+                if(first_guess.x==room->golds[j]->loc.x && first_guess.y==room->golds[j]->loc.y){
+                    check=1;
+                    break;
+                }
+            }
+            for(int j=0;j<room->foods_number;j++){
+                if(first_guess.x==room->foods[j]->loc.x && first_guess.y==room->foods[j]->loc.y){
+                    check=1;
+                    break;
+                }
+            }
+            for(int j=0;j<room->traps_number;j++){
+                if(first_guess.x==room->traps[j]->loc.x && first_guess.y==room->traps[j]->loc.y){
+                    check=1;
+                    break;
+                }
+            }
+            for(int j=0;j<room->potions_number;j++){
+                if((first_guess.x==room->potions[j]->loc.x && first_guess.y==room->potions[j]->loc.y) ||
+                    (first_guess.x+1==room->potions[j]->loc.x && first_guess.y==room->potions[j]->loc.y) ||
+                    (first_guess.x-1==room->potions[j]->loc.x && first_guess.y==room->potions[j]->loc.y) ){
+                    check=1;
+                    break;
+                }
+            }
+            for(int j=0;j<room->weapons_number;j++){
+                if((first_guess.x==room->weapons[j]->loc.x && first_guess.y==room->weapons[j]->loc.y) ||
+                    (first_guess.x+1==room->weapons[j]->loc.x && first_guess.y==room->weapons[j]->loc.y) ||
+                    (first_guess.x-1==room->weapons[j]->loc.x && first_guess.y==room->weapons[j]->loc.y) ){
+                    check=1;
+                    break;
+                }
+            }
+            if(!i){
+                if(first_guess.x==level->bstaircase->loc.x && first_guess.y==level->bstaircase->loc.y){
+                    check=1;
+                    break;
+                }
+            }
+            if(check){
+                i--;
+                continue;   
+            }
+        }
+
+        room->gen=(Gen *)malloc(sizeof(Gen));
+        room->gen->loc=first_guess;
+
+    }
+}
 
 
 void add_windows_to_room(Room *room){
@@ -779,13 +847,16 @@ int set_kind(){
     return kind;
 }
 void add_corridors_to_level(Level *level,WINDOW *gamewin){
+    for(int i=0;i<level->len_rooms;i++){
+        level->rooms[i]->shouldgen=0;
+    }
     int kind;
     Room **rooms=level->rooms;
-    level->corrs=(Corridor **)malloc(5*sizeof(Corridor));
-    for(int i=0;i<5;i++){
+    level->corrs_number=5;
+    level->corrs=(Corridor **)malloc(level->corrs_number*sizeof(Corridor));
+    for(int i=0;i<level->corrs_number;i++){
         level->corrs[i]=(Corridor *)malloc(sizeof(Corridor));
     }
-    level->corrs_number=5;
     Corridor **corrs=level->corrs;
     int which,random_down,random_up,static_down,static_up,static_narrow,down;
     Point n1,n2;
@@ -823,7 +894,9 @@ void add_corridors_to_level(Level *level,WINDOW *gamewin){
     kind = set_kind();
     corrs[which]->node1->kind=kind;
     corrs[which]->node2->kind=kind;
-    corrs[which]->node1->whereto=corrs[which]->node2;
+    if(kind==PASS){
+        level->rooms[which]->shouldgen=1;
+    }
 
     which++; // -------------------------------------------- second --------------------------------------------
     corrs[which]->node1=(Door *)malloc(sizeof(Door));
@@ -857,7 +930,9 @@ void add_corridors_to_level(Level *level,WINDOW *gamewin){
     kind = set_kind();
     corrs[which]->node1->kind=kind;
     corrs[which]->node2->kind=kind;
-    corrs[which]->node1->whereto=corrs[which]->node2;
+    if(kind==PASS){
+        level->rooms[which]->shouldgen=1;
+    }
 
     which++; // -------------------------------------------- third --------------------------------------------
     corrs[which]->node1=(Door *)malloc(sizeof(Door));
@@ -912,7 +987,9 @@ void add_corridors_to_level(Level *level,WINDOW *gamewin){
     kind = set_kind();
     corrs[which]->node1->kind=kind;
     corrs[which]->node2->kind=kind;
-    corrs[which]->node1->whereto=corrs[which]->node2;
+    if(kind==PASS){
+        level->rooms[which]->shouldgen=1;
+    }
 
     which++; // -------------------------------------------- fourth --------------------------------------------
     corrs[which]->node1=(Door *)malloc(sizeof(Door));
@@ -948,7 +1025,9 @@ void add_corridors_to_level(Level *level,WINDOW *gamewin){
     kind = set_kind();
     corrs[which]->node1->kind=kind;
     corrs[which]->node2->kind=kind;
-    corrs[which]->node1->whereto=corrs[which]->node2;
+    if(kind==PASS){
+        level->rooms[which]->shouldgen=1;
+    }
 
     which++; // -------------------------------------------- fifth --------------------------------------------
     corrs[which]->node1=(Door *)malloc(sizeof(Door));
@@ -991,5 +1070,9 @@ void add_corridors_to_level(Level *level,WINDOW *gamewin){
     kind = set_kind();
     corrs[which]->node1->kind=kind;
     corrs[which]->node2->kind=kind;
-    corrs[which]->node1->whereto=corrs[which]->node2;
+    if(kind==PASS){
+        level->rooms[which]->shouldgen=1;
+    }
+
+
 }

@@ -228,6 +228,7 @@ void InitLevelRoom(Level * level){
     add_corridors_to_level(level,gamewin);
     add_staircase_to_level(level);
     add_lockshow_to_level(level);
+    add_gen(level);
     // for(int which=0;which<6;which++){
     //     Room * room=level->rooms[which];
     //     mvwprintw(gamewin,38+(which),3,"{h:%d w:%d y:%d x:%d}",room->height,room->width,room->start.y,room->start.x);    
@@ -289,6 +290,9 @@ void PrintLevel(Level* level){
                         mvwprintw(gamewin,room->potions[i]->loc.y,room->potions[i]->loc.x,"%s", room->potions[i]->code); // potions
                     }
                 }
+                if(room->shouldgen){
+                    mvwprintw(gamewin,room->gen->loc.y,room->gen->loc.x,"&"); // password generator
+                }
 
                 for(int i=0;i<room->traps_number;i++){
                     if(room->traps[i]->taken){
@@ -302,9 +306,10 @@ void PrintLevel(Level* level){
 
                 mvwprintw(gamewin,38+(which),3,"{h:%d w:%d y:%d x:%d}",room->height,room->width,room->start.y,room->start.x);
                 for(int i=0;i<room->door_number;i++){
-                    mvwprintw(gamewin,38+(which),25+10*i,"(%d,%d|%d)",room->doors[i]->loc.y,room->doors[i]->loc.x,room->doors[i]->kind); //doors
+                    mvwprintw(gamewin,38+(which),25+15*i,"(%d,%d|%d)",room->doors[i]->loc.y,room->doors[i]->loc.x,room->doors[i]->kind); //doors
                 }
-                mvwprintw(gamewin,38+(which),45,"[%d]",room->foods_number);
+                mvwprintw(gamewin,38+(which),55,"[%d]",room->foods_number);
+                mvwprintw(gamewin,38+(which),62,"[%d]",room->shouldgen);
 
             }
         }
