@@ -30,6 +30,6 @@ void add_gen(Level *level);
 int generatepassword();
 void unlockdoor(Level *level, Player *player, Door *first);
 int handlegeneration(Level *level, Player *player);
-
+int ReverseNumber(int num);
 
 #endif

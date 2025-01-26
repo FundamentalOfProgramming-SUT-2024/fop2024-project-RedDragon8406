@@ -65,6 +65,7 @@
     "design.h": "c",
     "string.h": "c",
     "ncurses.h": "c",
-    "game.h": "c"
+    "game.h": "c",
+    "stdlib.h": "c"
   }
 }

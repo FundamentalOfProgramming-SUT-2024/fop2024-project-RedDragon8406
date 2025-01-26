@@ -138,8 +138,13 @@ int handlegeneration(Level *level, Player *player){
                 if(!room->gen->generated){
                     room->gen->password=generatepassword();
                     room->gen->generated=1;
+                    FirstTime=time(NULL);
+                    player->should_pass=1;
                 }
                 return 1;
+            }
+            if(!player->should_pass){
+                room->gen->generated=0;
             }
         }
     }
@@ -180,15 +185,19 @@ void handlePlayermove(Level *level,int ch,Player *player,WINDOW *gamewin){
         return;
     }
     if(is_door(level,np)!=NULL && is_door(level,np)->kind==PASS){
-        unlockdoor(level,player,(Door *)is_door(level,np));
-        return;
-        // if(in_corridor(level,player->loc)==NULL){
-        //     if(!player->should_pass){
-        //         return;
-        //     }else{
-        //         player->should_pass=0;
-        //     }
-        // }
+        for(;room->tries<3;room->tries++){
+            if(in_corridor(level,player->loc)==NULL){
+                int takenpass=importpasswin(level,player, room->tries);
+                if(takenpass==-1){
+                    return;
+                }
+                if(room->gen->password==takenpass){
+                    unlockdoor(level,player,(Door *)is_door(level,np));   
+                    return;
+                }
+            }
+        }
+        return; // locker room
     }
 
 
@@ -203,6 +212,22 @@ void handlePlayermove(Level *level,int ch,Player *player,WINDOW *gamewin){
         player->health--;
     }
 }
+
+
+
+int ReverseNumber(int num){
+    int reversed = 0;
+    
+    while (num != 0) {
+        reversed = reversed * 10 + num % 10;
+        num /= 10;
+    }
+    return reversed;
+}
+
+
+
+
 
 
 int corr_index(Point loc, Corridor * corr){

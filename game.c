@@ -24,14 +24,19 @@ void food_window(Level *level,Player *player);
 void weapon_window(Level *level,Player *player);
 void potion_window(Level *level,Player *player);
 void password_window(Level *level, Player *player);
+int importpasswin(Level *level, Player *player, int howmany);
 void init_player();
 
+
+time_t FirstTime,SecondTime;
 int current_level;
 WINDOW * gamewin;
 Player *player;
 void StartGame(){
     init_player();
-
+    
+    FirstTime=time(NULL);
+    SecondTime=time(NULL); // just some inits
 
     current_level=0;
     Level **levels=(Level **)malloc(4*sizeof(Level *));
@@ -59,6 +64,16 @@ void StartGame(){
             delwin(gamewin);
             lost_window();
         }
+        if(player->should_pass){
+            SecondTime=time(NULL);
+            double timedifference;
+            timedifference= difftime(SecondTime,FirstTime);
+            if(timedifference>10){
+                player->should_pass=0;
+                handlegeneration(levels[current_level],player);
+            }
+        }
+
         handleVision(levels[current_level],player);
         PrintLevel(levels[current_level]);
 
@@ -175,7 +190,11 @@ void StartGame(){
             if(handlegeneration(levels[current_level],player)){
                 password_window(levels[current_level],player);
             }
-            player->should_pass=1;
+            break;
+        case '\'':
+            if(which_room(levels[current_level],player->loc)!=NULL){
+                which_room(levels[current_level],player->loc)->tries=0;
+            }
             break;
         default:
             break;
@@ -206,6 +225,7 @@ void InitLevelRoom(Level * level){
             Room * room=level->rooms[which];
             room->show=0;
             room->index=which;
+            room->tries=0;
 
             add_doors_to_room(room,which);
             add_pillars_to_room(room);
@@ -299,7 +319,10 @@ void PrintLevel(Level* level){
                     }
                 }
                 if(room->shouldgen){
+                    init_pair(51,51,COLOR_BLACK);
+                    wattron(gamewin,COLOR_PAIR(51));
                     mvwprintw(gamewin,room->gen->loc.y,room->gen->loc.x,"&"); // password generator
+                    wattroff(gamewin,COLOR_PAIR(51));
                 }
 
                 for(int i=0;i<room->traps_number;i++){
@@ -317,7 +340,12 @@ void PrintLevel(Level* level){
                     mvwprintw(gamewin,38+(which),25+15*i,"(%d,%d|%d)",room->doors[i]->loc.y,room->doors[i]->loc.x,room->doors[i]->kind); //doors
                 }
                 mvwprintw(gamewin,38+(which),55,"[%d]",room->foods_number);
-                mvwprintw(gamewin,38+(which),62,"[%d]",room->shouldgen);
+
+                if(room->gen){
+                    mvwprintw(gamewin,5,1,"pass:[%.4d]",room->gen->generated? room->gen->password : 0);
+                }else{
+                    mvwprintw(gamewin,5,1,"           ");
+                }
 
             }
         }
@@ -336,7 +364,9 @@ void PrintLevel(Level* level){
     if(level->rooms[0]->show || level->show){
         mvwprintw(gamewin, level->bstaircase->loc.y, level->bstaircase->loc.x, "%c",level->bstaircase->c); // staircase
     }
-
+    if(which_room(level,player->loc)==NULL){
+        mvwprintw(gamewin,5,1,"           ");
+    }
     PrintPlayer(gamewin,player,settings);
 }
 
@@ -558,7 +588,14 @@ void password_window(Level *level,Player *player){
     int c;
     wrefresh(password_window);
     mvwprintw(password_window, 1, (width - strlen(password_intro)) / 2, "%s", password_intro);
-    mvwprintw(password_window, 4, (width - 4) / 2, "%d", which_room(level,player->loc)->gen->password);
+
+
+    int pass=which_room(level,player->loc)->gen->password;
+    int random= rand() % 5;
+    if(!random){
+        pass=ReverseNumber(pass);
+    }
+    mvwprintw(password_window, 4, (width - 4) / 2, "%d", pass);
     while(1){
         wrefresh(password_window);
         c=wgetch(password_window);
@@ -622,4 +659,66 @@ void init_player(){
 
 
     player->should_pass=0;
+}
+
+int importpasswin(Level *level, Player *player, int howmany){
+    // pre configuration
+    int height = 10;
+    int width = 40;
+    int starty = (LINES - height) / 2;
+    int startx = (COLS - width) / 2;
+
+    WINDOW *password_window = newwin(height, width, starty, startx);
+    keypad(password_window, TRUE); // enable keypad
+    box(password_window, 0, 0);
+    const char *password_intro = "enter the password : ";
+    init_pair(226,226,COLOR_BLACK);
+    init_pair(202,202,COLOR_BLACK);
+    switch(howmany){
+        case 0:
+            mvwprintw(password_window, 1, (width - strlen(password_intro)) / 2, "%s", password_intro);
+            break;
+        case 1:
+            wattron(password_window,COLOR_PAIR(226));
+            mvwprintw(password_window, 1, (width - strlen(password_intro)) / 2, "%s", password_intro);
+            wattroff(password_window,COLOR_PAIR(226));
+            break;
+        case 2:
+            wattron(password_window,COLOR_PAIR(202));
+            mvwprintw(password_window, 1, (width - strlen(password_intro)) / 2, "%s", password_intro);
+            wattroff(password_window,COLOR_PAIR(202));
+            break;
+        default:
+            break;
+    }
+    int c;
+    mvwprintw(password_window, 5, (width - 4) / 2, "----");
+    wrefresh(password_window);
+    while(1){
+        mvwprintw(password_window,1,1,"%d",howmany);
+        echo();
+        int takenpass=0;
+        mvwscanw(password_window,4,(width-4)/2,"%d",&takenpass);
+        mvwprintw(password_window, 6, (width - 4) / 2, "%d",takenpass);
+        wrefresh(password_window);
+        noecho();
+        mvwprintw(password_window, 8, (width - 11) / 2, "press enter");
+        c=wgetch(password_window);
+        switch(c){
+            case KEY_BACKSPACE:
+                wclear(password_window);
+                delwin(password_window);
+                return -1;
+            case 10:
+                wclear(password_window);
+                delwin(password_window);
+                return takenpass;
+            default:
+                break;
+        }
+        mvwprintw(password_window, 4, (width - 4) / 2, "    ");
+        mvwprintw(password_window, 6, (width - 4) / 2, "    ");
+        
+    }
+    return -1;
 }

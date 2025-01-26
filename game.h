@@ -1,6 +1,8 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include <time.h>
+
 #define win_height 45
 #define win_width 150
 
@@ -16,7 +18,7 @@
 #define MaxWidthSubwindow 40
 
 extern int current_level;
-
+extern time_t FirstTime,SecondTime;
 
 typedef enum{
     MACE,
@@ -138,7 +140,7 @@ typedef struct{
     int show;
     int shouldgen;
     Gen *gen;
-
+    int tries;
 } Room;
 
 typedef struct{
@@ -175,5 +177,6 @@ typedef struct{
 } Player;
 void StartGame();
 void PrintLevel(Level *level);
+int importpasswin(Level *level, Player *player, int howmany);
 
 #endif
