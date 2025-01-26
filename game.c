@@ -23,6 +23,7 @@ void lost_window();
 void food_window(Level *level,Player *player);
 void weapon_window(Level *level,Player *player);
 void potion_window(Level *level,Player *player);
+void password_window(Level *level, Player *player);
 void init_player();
 
 int current_level;
@@ -170,6 +171,12 @@ void StartGame(){
                 levels[current_level]->showtrap=1;
             }
             break;
+        case 'g':
+            if(handlegeneration(levels[current_level],player)){
+                password_window(levels[current_level],player);
+            }
+            player->should_pass=1;
+            break;
         default:
             break;
         }
@@ -198,6 +205,7 @@ void InitLevelRoom(Level * level){
             // mvwprintw(gamewin,3*basic_padding+2*MaxHeightSubWindow,basic_padding+45 ,"------------------------------------------------------------------------------------------\n");
             Room * room=level->rooms[which];
             room->show=0;
+            room->index=which;
 
             add_doors_to_room(room,which);
             add_pillars_to_room(room);
@@ -535,6 +543,38 @@ void potion_window(Level *level,Player *player){
 
 }
 
+void password_window(Level *level,Player *player){
+    // pre configuration
+    int height = 10;
+    int width = 40;
+    int starty = (LINES - height) / 2;
+    int startx = (COLS - width) / 2;
+
+    WINDOW *password_window = newwin(height, width, starty, startx);
+    keypad(password_window, TRUE); // enable keypad
+    box(password_window, 0, 0);
+    curs_set(0);
+    const char *password_intro = "here is the password: ";
+    int c;
+    wrefresh(password_window);
+    mvwprintw(password_window, 1, (width - strlen(password_intro)) / 2, "%s", password_intro);
+    mvwprintw(password_window, 4, (width - 4) / 2, "%d", which_room(level,player->loc)->gen->password);
+    while(1){
+        wrefresh(password_window);
+        c=wgetch(password_window);
+        switch(c){
+            case KEY_BACKSPACE:
+                wclear(password_window);
+                delwin(password_window);
+                return;
+            default:
+                break;
+        }
+    }
+
+
+}
+
 
 
 
@@ -579,4 +619,7 @@ void init_player(){
     for(int i=0;i<MAX_POTION_COUNT;i++){
         player->potions[i]=(Potion *)malloc(sizeof(Potion));
     }
+
+
+    player->should_pass=0;
 }

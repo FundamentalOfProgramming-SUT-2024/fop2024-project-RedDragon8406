@@ -108,6 +108,45 @@ int in_bstaircase(Level *level,Point loc){
     return 0;
 }
 
+
+
+void unlockdoor(Level *level, Player *player, Door *first){
+    if(which_room(level,player->loc) != NULL){
+        Door *second;
+        for(int i=0;i<level->corrs_number;i++){
+            if(level->corrs[i]->node1==first){
+                second = level->corrs[i]->node2;
+                break;
+            }
+        }
+        first->kind=UNLOCKED;
+        second->kind=UNLOCKED;
+    }
+}
+
+int generatepassword(){
+    int pass= (rand() % 9000) + 1000;
+    return pass;
+}
+
+
+int handlegeneration(Level *level, Player *player){
+    Room *room=which_room(level,player->loc);
+    if(room != NULL){
+        if(room->shouldgen){
+            if(room->gen->loc.x==player->loc.x && room->gen->loc.y==player->loc.y){
+                if(!room->gen->generated){
+                    room->gen->password=generatepassword();
+                    room->gen->generated=1;
+                }
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+
+
 void handlePlayermove(Level *level,int ch,Player *player,WINDOW *gamewin){
     Point np;
     int nx;
@@ -140,6 +179,19 @@ void handlePlayermove(Level *level,int ch,Player *player,WINDOW *gamewin){
         is_door(level,np)->show=1;
         return;
     }
+    if(is_door(level,np)!=NULL && is_door(level,np)->kind==PASS){
+        unlockdoor(level,player,(Door *)is_door(level,np));
+        return;
+        // if(in_corridor(level,player->loc)==NULL){
+        //     if(!player->should_pass){
+        //         return;
+        //     }else{
+        //         player->should_pass=0;
+        //     }
+        // }
+    }
+
+
     if(is_door(level,player->loc)!=NULL && (ch=='w' || ch=='s')){
         player->loc.x=np.x;
         player->loc.y=np.y;
@@ -169,6 +221,8 @@ void handleVision(Level* level,Player* player){
         if(!room->show){
             room->show=1;
         }
+
+
         for(int i=0;i<room->golds_number;i++){
             if(player->loc.x==room->golds[i]->loc.x && player->loc.y==room->golds[i]->loc.y){
                 if(room->golds[i]->taken){
@@ -800,7 +854,8 @@ void add_gen(Level *level){
 
         room->gen=(Gen *)malloc(sizeof(Gen));
         room->gen->loc=first_guess;
-
+        room->gen->generated=0;
+        room->gen->password=0;
     }
 }
 

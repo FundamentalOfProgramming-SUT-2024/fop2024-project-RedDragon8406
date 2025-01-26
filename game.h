@@ -36,7 +36,8 @@ typedef enum{
 typedef enum{
     HIDDEN,
     PASS,
-    NORMAL
+    NORMAL,
+    UNLOCKED
 } DODOULEG;
 
 typedef struct{
@@ -46,6 +47,8 @@ typedef struct{
 
 typedef struct{
     Point loc;
+    int generated;
+    int password;
 } Gen;
 
 typedef struct _door{
@@ -112,6 +115,7 @@ typedef struct{
 
 
 typedef struct{
+    int index;
     Point start;
     int height;
     int width;
@@ -167,6 +171,7 @@ typedef struct{
     int spc;
     int hpc;
     int dpc;
+    int should_pass;
 } Player;
 void StartGame();
 void PrintLevel(Level *level);

@@ -27,4 +27,9 @@ void add_potions_to_room(Room *room);
 void add_traps_to_room(Room *room);
 void add_lockshow_to_level(Level *level);
 void add_gen(Level *level);
+int generatepassword();
+void unlockdoor(Level *level, Player *player, Door *first);
+int handlegeneration(Level *level, Player *player);
+
+
 #endif

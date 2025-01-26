@@ -89,15 +89,14 @@ void PrintDoor(WINDOW *gamewin, Room * room){
                 mvwprintw(gamewin,room->doors[k]->loc.y,room->doors[k]->loc.x,"?"); // doors
                 break;
             case PASS:
-                if(room->doors[k]->locked){
-                    wattron(gamewin,COLOR_PAIR(3));
-                    mvwprintw(gamewin,room->doors[k]->loc.y,room->doors[k]->loc.x,"\u2761"); // doors
-                    wattroff(gamewin,COLOR_PAIR(3));
-                }else{
-                    wattron(gamewin,COLOR_PAIR(2));
-                    mvwprintw(gamewin,room->doors[k]->loc.y,room->doors[k]->loc.x,"\u2761"); // doors
-                    wattroff(gamewin,COLOR_PAIR(2));
-                }
+                wattron(gamewin,COLOR_PAIR(3));
+                mvwprintw(gamewin,room->doors[k]->loc.y,room->doors[k]->loc.x,"\u2761"); // doors
+                wattroff(gamewin,COLOR_PAIR(3));
+                break;
+            case UNLOCKED:
+                wattron(gamewin,COLOR_PAIR(2));
+                mvwprintw(gamewin,room->doors[k]->loc.y,room->doors[k]->loc.x,"\u2761"); // doors
+                wattroff(gamewin,COLOR_PAIR(2));
                 break;
             case NORMAL:
                 mvwprintw(gamewin,room->doors[k]->loc.y,room->doors[k]->loc.x,"+"); // doors
