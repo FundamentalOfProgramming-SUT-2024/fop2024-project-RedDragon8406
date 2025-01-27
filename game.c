@@ -68,7 +68,7 @@ void StartGame(){
             SecondTime=time(NULL);
             double timedifference;
             timedifference= difftime(SecondTime,FirstTime);
-            if(timedifference>10){
+            if(timedifference>30){ // seconds available
                 player->should_pass=0;
                 handlegeneration(levels[current_level],player);
             }
@@ -116,6 +116,7 @@ void StartGame(){
         mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4 - 22, "Weapons: %d", player->weapons_count);
         mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4 + 12, "Potions: %d ", player->potions_count);
         mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4 + 24, "Health: %d ", player->health);
+        mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) / 2 - 10, "AKEYS:%d ", player->akey_count);
         c=wgetch(gamewin);
         switch (c){
         case KEY_BACKSPACE:
@@ -263,6 +264,16 @@ void InitLevelRoom(Level * level){
     // }
     level->show=0;
     level->showtrap=0;
+    int vich= rand() % level->len_rooms;
+    for(int i=0;i<level->len_rooms;i++){
+        if(vich==i){
+            level->rooms[i]->shouldkey=1;
+            level->wroomkey=i;
+        }else{
+            level->rooms[i]->shouldkey=0;
+        }
+    }
+    add_akey(level);
 }
 
 
@@ -325,30 +336,34 @@ void PrintLevel(Level* level){
                     wattroff(gamewin,COLOR_PAIR(51));
                 }
 
-                for(int i=0;i<room->traps_number;i++){
-                    if(room->traps[i]->taken){
-                        mvwprintw(gamewin,room->traps[i]->loc.y,room->traps[i]->loc.x,"^"); // traps
-                    }
-                    else if(level->showtrap){
-                        mvwprintw(gamewin,room->traps[i]->loc.y,room->traps[i]->loc.x,"T"); // traps
-                    }
-                }
 
-
-                mvwprintw(gamewin,38+(which),3,"{h:%d w:%d y:%d x:%d}",room->height,room->width,room->start.y,room->start.x);
-                for(int i=0;i<room->door_number;i++){
-                    mvwprintw(gamewin,38+(which),25+15*i,"(%d,%d|%d)",room->doors[i]->loc.y,room->doors[i]->loc.x,room->doors[i]->kind); //doors
-                }
-                mvwprintw(gamewin,38+(which),55,"[%d]",room->foods_number);
-
-                if(room->gen){
-                    mvwprintw(gamewin,5,1,"pass:[%.4d]",room->gen->generated? room->gen->password : 0);
-                }else{
-                    mvwprintw(gamewin,5,1,"           ");
-                }
 
             }
         }
+        for(int i=0;i<room->traps_number;i++){
+            if(room->traps[i]->taken){
+                mvwprintw(gamewin,room->traps[i]->loc.y,room->traps[i]->loc.x,"^"); // traps
+            }
+            else if(level->showtrap){
+                mvwprintw(gamewin,room->traps[i]->loc.y,room->traps[i]->loc.x,"T"); // traps
+            }
+        }
+        mvwprintw(gamewin,38+(which),3,"{h:%d w:%d y:%d x:%d}",room->height,room->width,room->start.y,room->start.x);
+        for(int i=0;i<room->door_number;i++){
+            mvwprintw(gamewin,38+(which),25+11*i,"(%d,%d|%d)",room->doors[i]->loc.y,room->doors[i]->loc.x,room->doors[i]->kind); //doors
+        }
+        mvwprintw(gamewin,38+(which),47,"[%d]",room->foods_number);
+        mvwprintw(gamewin,38+(which),53,"sk:(%d)",room->shouldkey);
+    }
+
+
+    if(which_room(level,player->loc)!=NULL){
+        if(which_room(level,player->loc)->shouldgen){
+            mvwprintw(gamewin,5,1,"pass:[%.4d]",which_room(level,player->loc)->gen->generated?
+             which_room(level,player->loc)->gen->password : 0);
+        }
+    }else{
+        mvwprintw(gamewin,5,1,"hehe           ");
     }
 
     for(int i=0;i<level->corrs_number;i++){
@@ -364,9 +379,21 @@ void PrintLevel(Level* level){
     if(level->rooms[0]->show || level->show){
         mvwprintw(gamewin, level->bstaircase->loc.y, level->bstaircase->loc.x, "%c",level->bstaircase->c); // staircase
     }
+
+    if(level->rooms[level->wroomkey]->show || level->show){
+        if(!level->akey->taken){
+            init_pair(94,94,COLOR_BLACK);
+            wattron(gamewin,COLOR_PAIR(94));
+            mvwprintw(gamewin, level->akey->loc.y, level->akey->loc.x,"\u25B3"); // ancient key
+            wattroff(gamewin,COLOR_PAIR(94));
+        }
+    }
+
     if(which_room(level,player->loc)==NULL){
         mvwprintw(gamewin,5,1,"           ");
     }
+
+
     PrintPlayer(gamewin,player,settings);
 }
 
@@ -591,7 +618,7 @@ void password_window(Level *level,Player *player){
 
 
     int pass=which_room(level,player->loc)->gen->password;
-    int random= rand() % 5;
+    int random= rand() % 2; // int random= rand() % 5; for 20% chance of being reversed
     if(!random){
         pass=ReverseNumber(pass);
     }
@@ -615,56 +642,11 @@ void password_window(Level *level,Player *player){
 
 
 
-void init_player(){
-    player=(Player *)malloc(sizeof(Player));
-    player->golds=0;
-    player->foods=(Food **)malloc(MAX_FOOD_COUNT*sizeof(Food *));
-    for(int i=0;i<MAX_FOOD_COUNT;i++){
-        player->foods[i]=(Food *)malloc(sizeof(Food));
-    }
-    player->foods_count=0;
-    if(!strcmp(settings->difficulty,"hard")){
-        player->health=100;
-    }
-    else if(!strcmp(settings->difficulty,"medium")){
-        player->health=140;
-    }
-    else if(!strcmp(settings->difficulty,"easy")){
-        player->health=200;
-    }
-    else{
-        player->health=0;
-    }
-
-    player->weapons_count=1;
-    player->weapons=(Weapon **)malloc(MAX_WEAPON_COUNT*sizeof(Food *));
-    for(int i=0;i<MAX_WEAPON_COUNT;i++){
-        player->weapons[i]=(Weapon *)malloc(sizeof(Weapon));
-    }
-    player->weapons[0]->weapon=MACE;
-    strcpy(player->weapons[0]->code,"\u2692");
-    player->weapons[0]->taken=1;
-    player->current_weapon=player->weapons[0];
-    player->cw_index=0;
-
-
-    player->potions_count=0;
-    player->spc=0;
-    player->hpc=0;
-    player->dpc=0;
-    player->potions=(Potion **)malloc(MAX_POTION_COUNT*sizeof(Potion *));
-    for(int i=0;i<MAX_POTION_COUNT;i++){
-        player->potions[i]=(Potion *)malloc(sizeof(Potion));
-    }
-
-
-    player->should_pass=0;
-}
 
 int importpasswin(Level *level, Player *player, int howmany){
     // pre configuration
-    int height = 10;
-    int width = 40;
+    int height = 25;
+    int width = 80;
     int starty = (LINES - height) / 2;
     int startx = (COLS - width) / 2;
 
@@ -694,15 +676,87 @@ int importpasswin(Level *level, Player *player, int howmany){
     int c;
     mvwprintw(password_window, 5, (width - 4) / 2, "----");
     wrefresh(password_window);
+    int highlight=1;
+    char texts[3][50];
+    strcpy(texts[0],"unlock with usable key");
+    strcpy(texts[1],"use password");
+    strcpy(texts[2],"combine two broken keys");
+    
+
+    int valid_to_unlock=0, valid_to_combine=0;
+
+
+    init_pair(82,82,COLOR_BLACK);
+    init_pair(124,124,COLOR_BLACK);
+    init_pair(31,31,COLOR_BLACK);
     while(1){
-        mvwprintw(password_window,1,1,"%d",howmany);
-        echo();
-        int takenpass=0;
-        mvwscanw(password_window,4,(width-4)/2,"%d",&takenpass);
-        mvwprintw(password_window, 6, (width - 4) / 2, "%d",takenpass);
+        valid_to_combine=0;
+        valid_to_unlock=0;
+        sort_keys(player,1);
+        for(int i=0;i<player->akey_count;i++){
+            if(!player->akeys[i]->broken){
+                valid_to_unlock=1;
+                break;
+            }
+        }
+        for(int i=0;i<player->akey_count;i++){
+            if(player->akeys[i]->broken){
+                valid_to_combine+=1;
+            }
+        }
+        if(valid_to_combine>=2){
+            valid_to_combine=1;
+        }else{
+            valid_to_combine=0;
+        }
+
+
+        mvwprintw(password_window, 8, (width - strlen(texts[0])) * 1 / 4 - 7,"%s", texts[0]);
+        mvwprintw(password_window, 8, (width - strlen(texts[1])) * 2 / 4,"%s", texts[1]);
+        mvwprintw(password_window, 8, (width - strlen(texts[2])) * 3 / 4 + 9,"%s", texts[2]);
+        switch(highlight){
+            case 0:
+                if(valid_to_unlock){
+                    wattron(password_window,COLOR_PAIR(82));
+                    mvwprintw(password_window, 8, (width - strlen(texts[0])) * 1 / 4 - 7,"%s", texts[0]);
+                    wattroff(password_window,COLOR_PAIR(82));
+                }else{
+                    wattron(password_window,COLOR_PAIR(124));
+                    mvwprintw(password_window, 8, (width - strlen(texts[0])) * 1 / 4 - 7,"%s", texts[0]);
+                    wattroff(password_window,COLOR_PAIR(124));
+                }
+                break;
+            case 1:
+                wattron(password_window,COLOR_PAIR(31));
+                mvwprintw(password_window, 8, (width - strlen(texts[1])) * 2 / 4,"%s", texts[1]);
+                wattroff(password_window,COLOR_PAIR(31));
+                break;
+            case 2:
+                if(valid_to_combine){
+                    wattron(password_window,COLOR_PAIR(82));
+                    mvwprintw(password_window, 8, (width - strlen(texts[2])) * 3 / 4 + 9,"%s", texts[2]);
+                    wattroff(password_window,COLOR_PAIR(82));
+                }else{
+                    wattron(password_window,COLOR_PAIR(124));
+                    mvwprintw(password_window, 8, (width - strlen(texts[2])) * 3 / 4 + 9,"%s", texts[2]);
+                    wattroff(password_window,COLOR_PAIR(124));
+                }
+                break;
+        }
+        mvwprintw(password_window,1,1,"%d",player->akey_count);
+        mvwprintw(password_window,3,1,"%d",valid_to_unlock);
+        mvwprintw(password_window,5,1,"%d",valid_to_combine);
+        for(int i=0;i<MAX_AKEY_COUNT;i++){
+            mvwprintw(password_window, 10+2*i, 3, "                          ");
+        }
+        for(int i=0;i<player->akey_count;i++){
+            mvwprintw(password_window, 10+2*i, 3, "Key[%d]: %s",i,!player->akeys[i]->broken?"Usable":"Broken");
+        }
+
+        mvwprintw(password_window, 4, (width - 4) / 2, "    ");
+        mvwprintw(password_window, 6, (width - 4) / 2, "    ");
         wrefresh(password_window);
-        noecho();
-        mvwprintw(password_window, 8, (width - 11) / 2, "press enter");
+
         c=wgetch(password_window);
         switch(c){
             case KEY_BACKSPACE:
@@ -710,15 +764,125 @@ int importpasswin(Level *level, Player *player, int howmany){
                 delwin(password_window);
                 return -1;
             case 10:
-                wclear(password_window);
-                delwin(password_window);
-                return takenpass;
+                switch(highlight){
+                    case 0:
+                        if(valid_to_unlock){
+                            sort_keys(player,-1);
+                            player->akey_count-=1;
+                            wclear(password_window);
+                            delwin(password_window);
+                            return which_room(level,player->loc)->gen->password;
+                        }
+                        break;
+                    case 1:
+                        mvwprintw(password_window, 8, (width - strlen(texts[1])) * 2 / 4,"%s", texts[1]);
+                        init_pair(193,193,COLOR_BLACK);
+                        wattron(password_window,COLOR_PAIR(193));
+                        mvwprintw(password_window, 5, (width - 4) / 2, "----");
+
+                        echo();
+                        int takenpass=0;
+                        mvwscanw(password_window,4,(width-4)/2,"%d",&takenpass);
+                        noecho();
+                        wattroff(password_window,COLOR_PAIR(193));
+                        wclear(password_window);
+                        delwin(password_window);
+                        return takenpass;
+                        break;
+                    case 2:
+                        if(valid_to_combine){
+                            int x = player->akey_count-1;
+                            while(x>=0 && player->akeys[x]->broken){
+                                x--;    
+                            }
+                            player->akeys[x+1]->broken=0;
+                            player->akey_count -= 1;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+                break;
+            case KEY_RIGHT:
+                if(highlight<2){
+                    highlight++;
+                }else{
+                    highlight=0;
+                }
+                break;
+            case KEY_LEFT:
+                if(highlight>0){
+                    highlight--;
+                }else{
+                    highlight=2;
+                }
+                break;
+
             default:
                 break;
         }
-        mvwprintw(password_window, 4, (width - 4) / 2, "    ");
-        mvwprintw(password_window, 6, (width - 4) / 2, "    ");
+
         
     }
     return -1;
+}
+
+
+
+
+
+void init_player(){
+    player=(Player *)malloc(sizeof(Player));
+    player->golds=0;
+    player->foods=(Food **)malloc(MAX_FOOD_COUNT*sizeof(Food *));
+    for(int i=0;i<MAX_FOOD_COUNT;i++){
+        player->foods[i]=(Food *)malloc(sizeof(Food));
+    }
+    player->foods_count=0;
+    if(!strcmp(settings->difficulty,"hard")){
+        player->health=200;
+    }
+    else if(!strcmp(settings->difficulty,"medium")){
+        player->health=300;
+    }
+    else if(!strcmp(settings->difficulty,"easy")){
+        player->health=400;
+    }
+    else{
+        player->health=0;
+    }
+
+    player->weapons_count=1;
+    player->weapons=(Weapon **)malloc(MAX_WEAPON_COUNT*sizeof(Food *));
+    for(int i=0;i<MAX_WEAPON_COUNT;i++){
+        player->weapons[i]=(Weapon *)malloc(sizeof(Weapon));
+    }
+    player->weapons[0]->weapon=MACE;
+    strcpy(player->weapons[0]->code,"\u2692");
+    player->weapons[0]->taken=1;
+    player->current_weapon=player->weapons[0];
+    player->cw_index=0;
+
+
+    player->potions_count=0;
+    player->spc=0;
+    player->hpc=0;
+    player->dpc=0;
+    player->potions=(Potion **)malloc(MAX_POTION_COUNT*sizeof(Potion *));
+    for(int i=0;i<MAX_POTION_COUNT;i++){
+        player->potions[i]=(Potion *)malloc(sizeof(Potion));
+    }
+
+    player->akeys=(aKey **)malloc(MAX_AKEY_COUNT*sizeof(aKey *));
+    for(int i=0;i<MAX_AKEY_COUNT;i++){
+        player->akeys[i]=(aKey *)malloc(sizeof(aKey));
+    }
+    player->should_pass=0;
+    player->akey_count=0;
+    // player->akeys[player->akey_count]->taken=1;
+    // player->akeys[player->akey_count++]->broken=1;
+    // player->akeys[player->akey_count]->taken=1;
+    // player->akeys[player->akey_count++]->broken=1;
+    // player->akeys[player->akey_count]->taken=1;
+    // player->akeys[player->akey_count++]->broken=1;
 }

@@ -115,6 +115,12 @@ typedef struct{
     int show;
 } Trap;
 
+typedef struct{
+    Point loc;
+    int taken;
+    int broken;
+} aKey;
+
 
 typedef struct{
     int index;
@@ -141,7 +147,9 @@ typedef struct{
     int shouldgen;
     Gen *gen;
     int tries;
+    int shouldkey;
 } Room;
+
 
 typedef struct{
     Room **rooms;
@@ -152,12 +160,15 @@ typedef struct{
     Staircase *bstaircase;
     int show;
     int showtrap;
+    aKey * akey;
+    int wroomkey;
 } Level;
 
 
 #define MAX_FOOD_COUNT 5
 #define MAX_WEAPON_COUNT 10
 #define MAX_POTION_COUNT 15
+#define MAX_AKEY_COUNT 4
 typedef struct{
     Point loc;
     int golds;
@@ -174,6 +185,8 @@ typedef struct{
     int hpc;
     int dpc;
     int should_pass;
+    aKey **akeys;
+    int akey_count;
 } Player;
 void StartGame();
 void PrintLevel(Level *level);

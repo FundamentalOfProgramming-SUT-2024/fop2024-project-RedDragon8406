@@ -152,6 +152,26 @@ int handlegeneration(Level *level, Player *player){
 }
 
 
+void sort_keys(Player *player, int reversed){
+    for(int i=0;i<player->akey_count;i++){
+        for(int j=i;j<player->akey_count;j++){
+            if(reversed==1){
+                if(player->akeys[j]->broken<player->akeys[i]->broken){
+                    aKey *temp=player->akeys[i];
+                    player->akeys[i]=player->akeys[j];
+                    player->akeys[j]=temp;
+                }
+            }else{
+                if(player->akeys[j]->broken>player->akeys[i]->broken){
+                    aKey *temp=player->akeys[i];
+                    player->akeys[i]=player->akeys[j];
+                    player->akeys[j]=temp;
+                }
+            }
+        }
+    }
+}
+
 void handlePlayermove(Level *level,int ch,Player *player,WINDOW *gamewin){
     Point np;
     int nx;
@@ -245,6 +265,14 @@ void handleVision(Level* level,Player* player){
     if(room!=NULL){
         if(!room->show){
             room->show=1;
+        }
+        if(player->akey_count < MAX_AKEY_COUNT){
+            if(player->loc.x==level->akey->loc.x && player->loc.y==level->akey->loc.y){
+                if(!level->akey->taken){
+                    level->akey->taken=1;
+                    player->akeys[player->akey_count++]=level->akey;
+                }
+            }
         }
 
 
@@ -814,12 +842,12 @@ void add_staircase_to_level(Level *level){
 
 
 void add_gen(Level *level){
-    for(int i=0;i<level->len_rooms;i++){
-        if(!level->rooms[i]->shouldgen){
+    for(int iter=0;iter<level->len_rooms;iter++){
+        if(!level->rooms[iter]->shouldgen){
             continue;
         }
 
-        Room *room=level->rooms[i];
+        Room *room=level->rooms[iter];
         Point first_guess;
         for(int i=0;i<1;i++){
             int check=0;     
@@ -865,10 +893,9 @@ void add_gen(Level *level){
                     break;
                 }
             }
-            if(!i){
+            if(!iter){
                 if(first_guess.x==level->bstaircase->loc.x && first_guess.y==level->bstaircase->loc.y){
                     check=1;
-                    break;
                 }
             }
             if(check){
@@ -884,6 +911,86 @@ void add_gen(Level *level){
     }
 }
 
+
+void add_akey(Level *level){
+    Room *room=level->rooms[level->wroomkey];
+    Point first_guess;
+    for(int i=0;i<1;i++){
+        int check=0;     
+        first_guess.x= (rand() % (room->width-4)) + 2 + room->start.x;
+        first_guess.y= (rand() % (room->height-4)) + 2 + room->start.y;
+        for(int j=0;j<room->pillars_number;j++){
+            if(first_guess.x==room->pillars[j]->loc.x && first_guess.y==room->pillars[j]->loc.y){
+                check=1;
+                break;
+            }
+        }
+        for(int j=0;j<room->golds_number;j++){
+            if(first_guess.x==room->golds[j]->loc.x && first_guess.y==room->golds[j]->loc.y){
+                check=1;
+                break;
+            }
+        }
+        for(int j=0;j<room->foods_number;j++){
+            if(first_guess.x==room->foods[j]->loc.x && first_guess.y==room->foods[j]->loc.y){
+                check=1;
+                break;
+            }
+        }
+        for(int j=0;j<room->traps_number;j++){
+            if(first_guess.x==room->traps[j]->loc.x && first_guess.y==room->traps[j]->loc.y){
+                check=1;
+                break;
+            }
+        }
+        for(int j=0;j<room->potions_number;j++){
+            if((first_guess.x==room->potions[j]->loc.x && first_guess.y==room->potions[j]->loc.y) ||
+                (first_guess.x+1==room->potions[j]->loc.x && first_guess.y==room->potions[j]->loc.y) ||
+                (first_guess.x-1==room->potions[j]->loc.x && first_guess.y==room->potions[j]->loc.y) ){
+                check=1;
+                break;
+            }
+        }
+        for(int j=0;j<room->weapons_number;j++){
+            if((first_guess.x==room->weapons[j]->loc.x && first_guess.y==room->weapons[j]->loc.y) ||
+                (first_guess.x+1==room->weapons[j]->loc.x && first_guess.y==room->weapons[j]->loc.y) ||
+                (first_guess.x-1==room->weapons[j]->loc.x && first_guess.y==room->weapons[j]->loc.y) ){
+                check=1;
+                break;
+            }
+        }
+        if(!level->wroomkey){
+            if(first_guess.x==level->bstaircase->loc.x && first_guess.y==level->bstaircase->loc.y){
+                check=1;
+            }
+        }
+        if(level->wroomkey==level->len_rooms-1){
+            if(first_guess.x==level->staircase->loc.x && first_guess.y==level->staircase->loc.y){
+                check=1;
+            }
+        }
+        if(room->shouldgen){
+            if(first_guess.x==room->gen->loc.x && first_guess.y==room->gen->loc.y){
+                check=1;
+            }
+        }
+        if(check){
+            i--;
+            continue;   
+        }
+    }
+
+    level->akey=(aKey *)malloc(sizeof(aKey));
+    level->akey->loc=first_guess;
+    level->akey->taken=0;
+    int randomnum;
+    randomnum = rand() % 2; //  randomnum = rand() % 10; for being broken by 10%
+    if(!randomnum){
+        level->akey->broken=1;
+    }else{
+        level->akey->broken=0;
+    }
+}    
 
 void add_windows_to_room(Room *room){
     int how_many;
@@ -918,6 +1025,9 @@ void add_windows_to_room(Room *room){
         }
     }
 }
+
+
+
 
 int set_kind(){
     int kind = rand() % 6;
@@ -976,6 +1086,7 @@ void add_corridors_to_level(Level *level,WINDOW *gamewin){
     corrs[which]->node2->kind=kind;
     if(kind==PASS){
         level->rooms[which]->shouldgen=1;
+        
     }
 
     which++; // -------------------------------------------- second --------------------------------------------
@@ -1069,6 +1180,7 @@ void add_corridors_to_level(Level *level,WINDOW *gamewin){
     corrs[which]->node2->kind=kind;
     if(kind==PASS){
         level->rooms[which]->shouldgen=1;
+
     }
 
     which++; // -------------------------------------------- fourth --------------------------------------------
