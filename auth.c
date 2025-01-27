@@ -13,7 +13,7 @@
 #include "settings.h"
 
 UserData* current_user = NULL;
-
+char temppass[MAX_PASSWORD_LENGTH];
 void authentication_window() {
     WINDOW *auth_win;
     int highlight = 1;
@@ -35,7 +35,7 @@ void authentication_window() {
     auth_win = newwin(height, width, starty, startx);
     keypad(auth_win, TRUE);
 
-    const char *options[] = {
+    char *options[] = {
         "Login",
         "Signup",
         "Continue as Guest"
@@ -43,10 +43,10 @@ void authentication_window() {
     int n_options = 3;
 
     box(auth_win, 0, 0);
-    const char *title = "Login/Signup/Guest";
+    char *title = "Login/Signup/Guest";
     mvwprintw(auth_win, 1, (width - strlen(title)) / 2, "%s", title);
 
-    const char *backspace_message = "Press Backspace to return to main menu";
+    char *backspace_message = "Press Backspace to return to main menu";
     mvwprintw(auth_win, height - 2, (width - strlen(backspace_message)) / 2, "%s", backspace_message);
 
     refresh();
@@ -130,17 +130,17 @@ void login_window() {
     keypad(login_win, TRUE);
     box(login_win, 0, 0);
 
-    const char *title = "LOGIN";
+    char *title = "LOGIN";
     mvwprintw(login_win, 1, (width - strlen(title)) / 2, "%s", title);
 
-    const char *username_label = "Username:";
-    const char *password_label = "Password:";
+    char *username_label = "Username:";
+    char *password_label = "Password:";
 
     mvwprintw(login_win, 3, 2, "%s", username_label);
     mvwprintw(login_win, 5, 2, "%s", password_label);
 
-    const char *back_button = "Back";
-    const char *login_button = "Login";
+    char *back_button = "Back";
+    char *login_button = "Login";
 
     mvwprintw(login_win, 10, (width - strlen(back_button)) / 2, "%s", back_button);
     mvwprintw(login_win, 12, (width - strlen(login_button)) / 2, "%s", login_button);
@@ -212,7 +212,7 @@ void login_window() {
                 }else if (highlight == 4) { // Login button
                     // Perform login logic
                     if (login_user(username, password)) {
-                        const char *success_message = "Login successful! Press a key to continue...";
+                        char *success_message = "Login successful! Press a key to continue...";
                         mvwprintw(login_win, 14, (width - strlen(success_message)) / 2, "%s", success_message);
                         wrefresh(login_win);
                         getch();
@@ -222,7 +222,7 @@ void login_window() {
                         show_main_menu();
                         return;
                     } else {
-                        const char *failed_message = "Invalid username or password. Press a key to continue...";
+                        char *failed_message = "Invalid username or password. Press a key to continue...";
                         mvwprintw(login_win, 14, (width - strlen(failed_message)) / 2, "%s", failed_message);
                         wrefresh(login_win);
                         getch();
@@ -253,6 +253,19 @@ void login_window() {
     show_main_menu();
 }
 
+
+char * random_password(){
+    for(int i=0;i<7;i++){
+        temppass[i]= (rand() % (127 - 33)) + 33;
+    }
+    temppass[7]='\0';
+    if(password_final_validation(temppass)){
+        return temppass;
+    }else{
+        return random_password(temppass);
+    }
+}
+
 void signup_window() {
     WINDOW *signup_win;
     int height = 17; 
@@ -264,22 +277,24 @@ void signup_window() {
     keypad(signup_win, TRUE);
     box(signup_win, 0, 0);
 
-    const char *title = "Sign Up";
+    char *title = "Sign Up";
     mvwprintw(signup_win, 1, (width - strlen(title)) / 2, "%s", title);
 
-    const char *username_label = "Username:";
-    const char *password_label = "Password:";
-    const char *email_label = "Email:";
+    char *username_label = "Username:";
+    char *password_label = "Password:";
+    char *email_label = "Email:";
 
     mvwprintw(signup_win, 3, 2, "%s", username_label);
     mvwprintw(signup_win, 5, 2, "%s", password_label);
     mvwprintw(signup_win, 7, 2, "%s", email_label);
 
-    const char *signup_button = "Sign Up";
-    const char *back_button = "Back";
+    char *signup_button = "Sign Up";
+    char *back_button = "Back";
+    char *random_button = "Random Password";
 
     mvwprintw(signup_win, 10, (width - strlen(back_button)) / 2, "%s", back_button);
     mvwprintw(signup_win, 12, (width - strlen(signup_button)) / 2, "%s", signup_button);
+    mvwprintw(signup_win, 14, (width - strlen(random_button)) / 2, "%s", random_button);
 
     char username[MAX_USERNAME_LENGTH] = "";
     char password[MAX_PASSWORD_LENGTH] = "";
@@ -328,6 +343,13 @@ void signup_window() {
         } else {
             mvwprintw(signup_win, 12, (width - strlen(signup_button)) / 2, "%s", signup_button);
         }
+        if (highlight == 6) {
+            wattron(signup_win, A_REVERSE);
+            mvwprintw(signup_win, 14, (width - strlen(random_button)) / 2, "%s", random_button);
+            wattroff(signup_win, A_REVERSE);
+        } else {
+            mvwprintw(signup_win, 14, (width - strlen(random_button)) / 2, "%s", random_button);
+        }
 
         wrefresh(signup_win);
         c = wgetch(signup_win);
@@ -335,32 +357,42 @@ void signup_window() {
         switch (c) {
             case KEY_UP:
                 if (highlight == 1)
-                    highlight = 5;
+                    highlight = 6;
                 else
                     --highlight;
                 cursor_pos = (highlight == 1) ? strlen(username) : (highlight == 2) ? strlen(password) : (highlight == 3) ? strlen(email) : 0;
                 break;
             case KEY_DOWN:
-                if (highlight == 5)
+                if (highlight == 6)
                     highlight = 1;
                 else
                     ++highlight;
                 cursor_pos = (highlight == 1) ? strlen(username) : (highlight == 2) ? strlen(password) : (highlight == 3) ? strlen(email) : 0;
                 break;
             case 10: 
-                if (highlight == 4) { // back button
-                    delwin(signup_win);
-                    clear();
-                    refresh();
-                    authentication_window();
-                    return;
-
-
-                } else if (highlight == 5) { // sign up button
-                    if(signup_user(username,password,email)){
+                switch (highlight)
+                {
+                    case 1:
+                    case 2:
+                    case 3:
+                        highlight++;
+                        break;
+                    case 4:
+                        delwin(signup_win);
+                        clear();
+                        refresh();
+                        authentication_window();
                         return;
+                    case 5:
+                        if(signup_user(username,password,email)){
+                            return;
+                        }
+                    case 6:
+                        strcpy(password,random_password());
+                        break;
+                    default:
+                        break;
                     }
-                }
                 break;
 
             default:
@@ -392,7 +424,7 @@ void signup_window() {
 
 
 
-int store_user_data(const char* username, const char* password, const char* email) {
+int store_user_data(char* username, char* password, char* email) {
     char filepath[250];
     snprintf(filepath, sizeof(filepath), "./%s%s.db", USERS_DIR, username);
     FILE* file = fopen(filepath, "w");
@@ -407,7 +439,7 @@ int store_user_data(const char* username, const char* password, const char* emai
     return 1;
 }
 
-int user_exists(const char* username) {
+int user_exists(char* username) {
     char filepath[250];
     snprintf(filepath, sizeof(filepath), "./%s%s.db", USERS_DIR, username);
 
@@ -419,11 +451,11 @@ int user_exists(const char* username) {
     return 0; // username does not exist
 }
 
-int password_length_valid(const char* password) {
+int password_length_valid(char* password) {
     return strlen(password) >= 7;
 }
 
-int password_final_validation(const char* password) {
+int password_final_validation(char* password) {
     int lower = 0, upper = 0, digit = 0;
     for (int i = 0; i < strlen(password); i++) {
         if (islower(password[i])) {
@@ -439,11 +471,11 @@ int password_final_validation(const char* password) {
     return lower && upper && digit;
 }
 
-int email_valid(const char* email) {
+int email_valid(char* email) {
     regex_t regex;
     int regex_init;
 
-    const char* pattern = "^[^@]+@[^@.]+\\.[^@.]+$"; // the pattern
+    char* pattern = "^[^@]+@[^@.]+\\.[^@.]+$"; // the pattern
     regex_init = regcomp(&regex, pattern, REG_EXTENDED | REG_ICASE); // some flags at the end
     regex_init = regexec(&regex, email, 0, NULL, 0); // won't need to save any substring
     regfree(&regex);
@@ -540,14 +572,14 @@ int load_current_user(UserData* user_data) {
     return 0; // Failed to load username
 }
 
-int save_new_user_list(const char * username){
+int save_new_user_list(char * username){
     FILE * file = fopen("users_list.db","a");
     fprintf(file, "%s\n", username);
     fclose(file);
     return 1;
 }
 
-int login_user(const char* username, const char* password) {
+int login_user(char* username, char* password) {
     // Maybe gonna change the algorythm later
     current_user = malloc(sizeof(UserData));
     strncpy(current_user->username, username, MAX_USERNAME_LENGTH);
@@ -598,7 +630,7 @@ void logout_user(void) {
     }
 }
 
-int signup_user(const char* username, const char* password, const char* email) {
+int signup_user(char* username, char* password, char* email) {
     // Gonna give it some design later
     if (strlen(username) == 0 || strlen(password) == 0 || strlen(email) == 0) {
         mvprintw(10, 2, "All fields are required! press a key to continue..");
