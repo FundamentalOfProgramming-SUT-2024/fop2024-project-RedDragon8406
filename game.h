@@ -203,6 +203,7 @@ typedef struct{
     int should_pass;
     aKey **akeys;
     int akey_count;
+    int passive;
 } Player;
 void StartGame();
 void PrintLevel(Level *level);

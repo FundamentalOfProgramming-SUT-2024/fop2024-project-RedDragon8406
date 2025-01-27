@@ -203,6 +203,9 @@ void StartGame(){
         case 'q':
             defuse_traps(levels[current_level],player);
             break;
+        case 'r':
+            player->passive = (player->passive + 1) % 2;
+            break;
         default:
             break;
         }
@@ -925,6 +928,7 @@ void init_player(){
     }
     player->should_pass=0;
     player->akey_count=0;
+    player->passive=0;
     // player->akeys[player->akey_count]->taken=1;
     // player->akeys[player->akey_count++]->broken=1;
     // player->akeys[player->akey_count]->taken=1;

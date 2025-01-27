@@ -314,7 +314,7 @@ void handleVision(Level* level,Player* player){
             }
 
 
-            if(room->rt==NIGHTMARE){
+            if(room->rt==NIGHTMARE || player->passive){
                 return;
             }
 
