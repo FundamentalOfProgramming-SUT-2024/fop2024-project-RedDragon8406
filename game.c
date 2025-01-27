@@ -16,6 +16,7 @@
 #define FOOD_HEALTH 30
 
 void InitLevelRoom(Level * level);
+void InitFinalLevel(Level *level);
 void StartGame();
 void PrintLevel(Level* level);
 void win_window();
@@ -39,12 +40,15 @@ void StartGame(){
     SecondTime=time(NULL); // just some inits
 
     current_level=0;
-    Level **levels=(Level **)malloc(4*sizeof(Level *));
+    Level **levels=(Level **)malloc(5*sizeof(Level *));
     for(int i=0;i<4;i++){
         levels[i]=(Level *)malloc(sizeof(Level));
         levels[i]->len_rooms=6;
         levels[i]->rooms=(Room **)malloc(levels[i]->len_rooms*sizeof(Room *));
     }
+    levels[4]=(Level *)malloc(sizeof(Level));
+    levels[4]->len_rooms=1;
+    levels[4]->rooms=(Room **)malloc(levels[4]->len_rooms*sizeof(Room *));
     
     gamewin = newwin(win_height,win_width,0,0);
     noecho();
@@ -53,7 +57,7 @@ void StartGame(){
     
 
     InitLevelRoom(levels[0]);
-    int levels_initialization[4]={1,0,0,0};
+    int levels_initialization[5]={1,0,0,0,0};
     add_player_to_level(levels[0],player);
     refresh();
     int c;
@@ -85,6 +89,15 @@ void StartGame(){
                 if(!levels_initialization[++current_level]){
                     levels_initialization[current_level]=1;
                     InitLevelRoom(levels[current_level]);
+                }
+                add_player_to_level(levels[current_level],player);
+                levels[current_level]->rooms[0]->show=1;
+                PrintLevel(levels[current_level]);
+            }else if(current_level==3){
+                wclear(gamewin);
+                if(!levels_initialization[++current_level]){
+                    levels_initialization[current_level]=1;
+                    InitFinalLevel(levels[current_level]);
                 }
                 add_player_to_level(levels[current_level],player);
                 levels[current_level]->rooms[0]->show=1;
@@ -136,6 +149,15 @@ void StartGame(){
                 if(!levels_initialization[++current_level]){
                     levels_initialization[current_level]=1;
                     InitLevelRoom(levels[current_level]);
+                }
+                add_player_to_level(levels[current_level],player);
+                levels[current_level]->rooms[0]->show=1;
+                PrintLevel(levels[current_level]);
+            }else if(current_level==3){
+                wclear(gamewin);
+                if(!levels_initialization[++current_level]){
+                    levels_initialization[current_level]=1;
+                    InitFinalLevel(levels[current_level]);
                 }
                 add_player_to_level(levels[current_level],player);
                 levels[current_level]->rooms[0]->show=1;
@@ -209,7 +231,13 @@ void StartGame(){
         default:
             break;
         }
-
+        if(player->passive){
+            mvwprintw(gamewin, 10, 1, "pm");
+            wrefresh(gamewin);
+        }else{
+            mvwprintw(gamewin, 10, 1, "  ");
+            wrefresh(gamewin);
+        }
 
         if(player->fastmove){
             mvwprintw(gamewin, 12, 1, "fm mode");
@@ -250,7 +278,6 @@ void StartGame(){
 
 
 void InitLevelRoom(Level * level){
-    level->rooms=(Room **)malloc(6*sizeof(Room *));
     for(int iter=0;iter<2;iter++){
         for(int jter=0;jter<3;jter++){
             int which =(iter?5-jter:jter);
@@ -335,7 +362,67 @@ void InitLevelRoom(Level * level){
     add_akey(level);
 }
 
+void InitFinalLevel(Level *level){
+    int which = 0;
+    level->rooms[which]=(Room *)malloc(sizeof(Room));
+    level->rooms[which]->height=RHLG();
+    level->rooms[which]->width=RWLG();
+    level->rooms[which]->start.x=RXRG(0,level->rooms[which]->width)+basic_padding*5;
+    level->rooms[which]->start.y=RYRG(0,level->rooms[which]->height)+(basic_padding*+1);
+    // mvwprintw(gamewin,basic_padding,basic_padding,"-----------------------------------------------------------------------------------------------------------------\n");
+    // mvwprintw(gamewin,basic_padding+MaxHeightSubWindow,basic_padding,"-----------------------------------------------------------------------------------------------------------------\n");
+    // mvwprintw(gamewin,2*basic_padding+MaxHeightSubWindow,basic_padding,"-----------------------------------------------------------------------------------------------------------------\n");
+    // mvwprintw(gamewin,3*basic_padding+MaxHeightSubWindow,basic_padding,"-----------------------------------------------------------------------------------------------------------------\n");
+    // mvwprintw(gamewin,3*basic_padding+2*MaxHeightSubWindow,basic_padding+45 ,"------------------------------------------------------------------------------------------\n");
+    Room * room=level->rooms[which];
+    room->show=0;
+    room->index=which;
+    room->tries=0;
+    room->rt=TREASURE;
+    add_doors_to_room(room,which);
+    add_pillars_to_room(room);
+    add_windows_to_room(room);
+    add_golds_to_room(room);
+    for(int i=0;i<room->golds_number;i++){
+        if(!strcmp(settings->difficulty,"hard")){
+            if(room->golds[i]->gtype){
+                room->golds[i]->value=5;
+            }else{
+                room->golds[i]->value=1;
+            }
+        }
+        else if(!strcmp(settings->difficulty,"medium")){
+            if(room->golds[i]->gtype){
+                room->golds[i]->value=10;
+            }else{
+                room->golds[i]->value=2;
+            }
+        }
+        else if(!strcmp(settings->difficulty,"easy")){
+            if(room->golds[i]->gtype){
+                room->golds[i]->value=15;
+            }else{
+                room->golds[i]->value=3;
+            }
+        }
+    }
 
+    add_foods_to_room(room);
+    add_traps_to_room(room);
+    add_potions_to_room(room);
+    add_weapons_to_room(room);
+    // add_corridors_to_level(level,gamewin);
+    add_staircase_to_level(level);
+    add_lockshow_to_level(level);
+    add_gen(level);
+    level->show=0;
+    level->showtrap=0;
+    level->rooms[which]->shouldgen=0;
+    level->wroomkey=0;
+    level->rooms[which]->shouldkey=1;
+    add_akey(level);
+    level->akey->taken=1;
+}
 
 
 void PrintLevel(Level* level){

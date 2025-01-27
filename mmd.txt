@@ -1,37 +1,55 @@
-==46758== Memcheck, a memory error detector
-==46758== Copyright (C) 2002-2022, and GNU GPL'd, by Julian Seward et al.
-==46758== Using Valgrind-3.22.0 and LibVEX; rerun with -h for copyright info
-==46758== Command: ./rogue --track-origins=yes -s
-==46758== 
-==46758== Conditional jump or move depends on uninitialised value(s)
-==46758==    at 0x113A9A: add_lockshow_to_level (in /home/septyr/ncurses/github/fop2024-project-RedDragon8406/rogue)
-==46758==    by 0x11100D: InitLevelRoom (in /home/septyr/ncurses/github/fop2024-project-RedDragon8406/rogue)
-==46758==    by 0x11029E: StartGame (in /home/septyr/ncurses/github/fop2024-project-RedDragon8406/rogue)
-==46758==    by 0x10AB10: handle_logged_in_choice (in /home/septyr/ncurses/github/fop2024-project-RedDragon8406/rogue)
-==46758==    by 0x10A973: show_main_menu (in /home/septyr/ncurses/github/fop2024-project-RedDragon8406/rogue)
-==46758==    by 0x10A74E: main (in /home/septyr/ncurses/github/fop2024-project-RedDragon8406/rogue)
-==46758== 
-==46758== Conditional jump or move depends on uninitialised value(s)
-==46758==    at 0x113A9A: add_lockshow_to_level (in /home/septyr/ncurses/github/fop2024-project-RedDragon8406/rogue)
-==46758==    by 0x11100D: InitLevelRoom (in /home/septyr/ncurses/github/fop2024-project-RedDragon8406/rogue)
-==46758==    by 0x110975: StartGame (in /home/septyr/ncurses/github/fop2024-project-RedDragon8406/rogue)
-==46758==    by 0x10AB10: handle_logged_in_choice (in /home/septyr/ncurses/github/fop2024-project-RedDragon8406/rogue)
-==46758==    by 0x10A973: show_main_menu (in /home/septyr/ncurses/github/fop2024-project-RedDragon8406/rogue)
-==46758==    by 0x10A74E: main (in /home/septyr/ncurses/github/fop2024-project-RedDragon8406/rogue)
-==46758== 
-==46758== 
-==46758== HEAP SUMMARY:
-==46758==     in use at exit: 1,187,596 bytes in 1,884 blocks
-==46758==   total heap usage: 2,014 allocs, 130 frees, 1,324,268 bytes allocated
-==46758== 
-==46758== LEAK SUMMARY:
-==46758==    definitely lost: 2,604 bytes in 72 blocks
-==46758==    indirectly lost: 1,300 bytes in 33 blocks
-==46758==      possibly lost: 985 bytes in 15 blocks
-==46758==    still reachable: 1,182,707 bytes in 1,764 blocks
-==46758==         suppressed: 0 bytes in 0 blocks
-==46758== Rerun with --leak-check=full to see details of leaked memory
-==46758== 
-==46758== Use --track-origins=yes to see where uninitialised values come from
-==46758== For lists of detected and suppressed errors, rerun with: -s
-==46758== ERROR SUMMARY: 30 errors from 2 contexts (suppressed: 0 from 0)
+==125022== Memcheck, a memory error detector
+==125022== Copyright (C) 2002-2022, and GNU GPL'd, by Julian Seward et al.
+==125022== Using Valgrind-3.22.0 and LibVEX; rerun with -h for copyright info
+==125022== Command: ./rogue --track-origin=yes -s
+==125022== 
+==125022== Conditional jump or move depends on uninitialised value(s)
+==125022==    at 0x111483: StartGame (game.c:140)
+==125022==    by 0x10AB70: handle_logged_in_choice (menu.c:104)
+==125022==    by 0x10A9D3: show_main_menu (menu.c:76)
+==125022==    by 0x10A7AE: main (main.c:23)
+==125022== 
+==125022== Use of uninitialised value of size 8
+==125022==    at 0x11503E: add_player_to_level (utils.c:46)
+==125022==    by 0x1114E2: StartGame (game.c:144)
+==125022==    by 0x10AB70: handle_logged_in_choice (menu.c:104)
+==125022==    by 0x10A9D3: show_main_menu (menu.c:76)
+==125022==    by 0x10A7AE: main (main.c:23)
+==125022== 
+==125022== Invalid read of size 4
+==125022==    at 0x11503E: add_player_to_level (utils.c:46)
+==125022==    by 0x1114E2: StartGame (game.c:144)
+==125022==    by 0x10AB70: handle_logged_in_choice (menu.c:104)
+==125022==    by 0x10A9D3: show_main_menu (menu.c:76)
+==125022==    by 0x10A7AE: main (main.c:23)
+==125022==  Address 0x4 is not stack'd, malloc'd or (recently) free'd
+==125022== 
+==125022== 
+==125022== Process terminating with default action of signal 11 (SIGSEGV): dumping core
+==125022==  Access not within mapped region at address 0x4
+==125022==    at 0x11503E: add_player_to_level (utils.c:46)
+==125022==    by 0x1114E2: StartGame (game.c:144)
+==125022==    by 0x10AB70: handle_logged_in_choice (menu.c:104)
+==125022==    by 0x10A9D3: show_main_menu (menu.c:76)
+==125022==    by 0x10A7AE: main (main.c:23)
+==125022==  If you believe this happened as a result of a stack
+==125022==  overflow in your program's main thread (unlikely but
+==125022==  possible), you can try to increase the size of the
+==125022==  main thread stack using the --main-stacksize= flag.
+==125022==  The main thread stack size used in this run was 8388608.
+==125022== 
+==125022== HEAP SUMMARY:
+==125022==     in use at exit: 948,584 bytes in 1,416 blocks
+==125022==   total heap usage: 1,465 allocs, 49 frees, 975,224 bytes allocated
+==125022== 
+==125022== LEAK SUMMARY:
+==125022==    definitely lost: 992 bytes in 44 blocks
+==125022==    indirectly lost: 0 bytes in 0 blocks
+==125022==      possibly lost: 985 bytes in 15 blocks
+==125022==    still reachable: 946,607 bytes in 1,357 blocks
+==125022==         suppressed: 0 bytes in 0 blocks
+==125022== Rerun with --leak-check=full to see details of leaked memory
+==125022== 
+==125022== Use --track-origins=yes to see where uninitialised values come from
+==125022== For lists of detected and suppressed errors, rerun with: -s
+==125022== ERROR SUMMARY: 3 errors from 3 contexts (suppressed: 0 from 0)

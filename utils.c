@@ -19,6 +19,17 @@
 10 for both x,y of blank space between each subwindow
 
 */
+int RHLG(){
+    int y;
+    y = (rand() % (MaxHeightRoom - MinHeightRoom)) + MinHeightRoom + 5;
+    return y;
+}
+int RWLG(){
+    int x;
+    x = (rand() % (MaxWidthRoom - MinWidthRoom)) + MinWidthRoom ;
+    x = x * 3 / 2;
+    return x;
+}
 int RHRG(){
     int y;
     y = (rand() % (MaxHeightRoom - MinHeightRoom)) + MinHeightRoom;
@@ -482,6 +493,9 @@ void add_golds_to_room(Room *room){
     room->golds_number+=2;
     if(room->rt==ENCHANT){
         room->golds_number = rand() %((room->height*room->width)/50);
+    }else if(room->rt == TREASURE){
+        room->golds_number = rand() %((room->height*room->width)/20) + 5;
+        room->golds_number*=2;
     }
     room->golds=(Gold **)malloc(room->golds_number*sizeof(Gold *));
     for(int i=0;i<room->golds_number;i++){
@@ -509,10 +523,13 @@ void add_golds_to_room(Room *room){
         room->golds[i]->loc=first_guess;
         room->golds[i]->taken=0;
         int z = rand() % 10;
+        if(room->rt==TREASURE){
+            z = rand() % 5;
+        }
         if(z){
-            z=0;
+            z=GOLD;
         }else{
-            z=1;
+            z=BLACK;
         }
         room->golds[i]->gtype=z;
         if(room->golds[i]->gtype){
@@ -528,6 +545,9 @@ void add_foods_to_room(Room *room){
     room->foods_number+=1;
     if(room->rt==ENCHANT){
         room->foods_number=1;
+    }
+    else if(room->rt==TREASURE){
+        room->foods_number=0;
     }
     room->foods=(Food **)malloc(room->foods_number*sizeof(Food *));
     for(int i=0;i<room->foods_number;i++){
@@ -567,6 +587,10 @@ void add_foods_to_room(Room *room){
 void add_traps_to_room(Room *room){
     room->traps_number = rand() %((room->height*room->width)/30);
     room->traps_number+=1;
+    if(room->rt==TREASURE){
+        room->traps_number= rand() %((room->height*room->width)/20) + 3;
+        room->traps_number *= 2;
+    }
     room->traps=(Trap **)malloc(room->traps_number*sizeof(Trap *));
     for(int i=0;i<room->traps_number;i++){
         int check=0;
@@ -613,6 +637,8 @@ void add_potions_to_room(Room *room){
     if(room->rt==ENCHANT){
         room->potions_number += 3;
         room->potions_number *= 2;
+    }else if(room->rt==TREASURE){
+        room->potions_number=0;
     }
     room->potions=(Potion **)malloc(room->potions_number*sizeof(Potion *));
     for(int i=0;i<room->potions_number;i++){
@@ -686,6 +712,9 @@ void add_potions_to_room(Room *room){
 
 void add_weapons_to_room(Room *room){
     room->weapons_number = rand() %((room->height*room->width)/40);
+    if(room->rt==TREASURE){
+        room->weapons_number=0;
+    }
     room->weapons=(Weapon **)malloc(room->weapons_number*sizeof(Weapon *));
     for(int i=0;i<room->weapons_number;i++){
         int check=0;
@@ -772,7 +801,7 @@ void add_weapons_to_room(Room *room){
 }
 
 
-void add_staircase_to_level(Level *level){
+void  add_staircase_to_level(Level *level){
     Room *room=level->rooms[level->len_rooms-1];
     Point first_guess;
     for(int i=0;i<1;i++){
