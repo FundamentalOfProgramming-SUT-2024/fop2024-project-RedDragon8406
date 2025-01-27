@@ -47,6 +47,13 @@ typedef enum{
     BLACK
 } GoldType;
 
+typedef enum{
+    REGULAR,
+    ENCHANT,
+    NIGHTMARE,
+    TREASURE,
+} RT;
+
 typedef struct{
     int x;
     int y;
@@ -155,6 +162,7 @@ typedef struct{
     Gen *gen;
     int tries;
     int shouldkey;
+    RT rt;
 } Room;
 
 

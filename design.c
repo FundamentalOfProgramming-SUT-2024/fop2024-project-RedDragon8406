@@ -12,7 +12,7 @@
 #define PLAYER_BLUE 11
 #define PLAYER_GREEN 12
 #define COLOR_CUSTOM_GOLD 13 
-
+#define TREASURE_ROOM_COLOR 14
 
 int get_color_pair(const char *color_name) {
     if (!strcmp(color_name, "white")) {
@@ -32,6 +32,7 @@ void init_colors() {
     init_color(COLOR_CUSTOM_EXIT, 142 * 4, 179 * 4, 219 * 4); // color for exit message
     init_color(COLOR_CUSTOM_SILVER, 192 * 4, 192 * 4, 192 * 4); // silver color
     init_color(COLOR_CUSTOM_GOLD, 1000, 843, 0);
+    init_color(TREASURE_ROOM_COLOR,224 * 4, 217 * 4 , 128 *  4);
 
     init_pair(1, COLOR_WHITE, COLOR_BLUE);   // menu border color
     init_pair(2, COLOR_GREEN, COLOR_BLACK);  // yes button color
@@ -44,6 +45,7 @@ void init_colors() {
     init_pair(PLAYER_WHITE, COLOR_WHITE, COLOR_BLACK);
     init_pair(PLAYER_BLUE, COLOR_BLUE, COLOR_BLACK);
     init_pair(PLAYER_GREEN, COLOR_GREEN, COLOR_BLACK);
+    init_pair(TREASURE_ROOM_COLOR,TREASURE_ROOM_COLOR,COLOR_BLACK);
 }
 
 void apply_logout_design(WINDOW *logout_win) {
@@ -109,5 +111,62 @@ void PrintDoor(WINDOW *gamewin, Room * room){
                 mvwprintw(gamewin,room->doors[k]->loc.y,room->doors[k]->loc.x,"+"); // doors
                 break;
         }
+    }
+}
+
+
+
+void PrintRoom(WINDOW *gamewin, Room *room){
+    init_pair(124,124,COLOR_BLACK); // nightmare
+    init_pair(165,165,COLOR_BLACK); // enchant
+    switch(room->rt){
+        case 0:
+            break;
+        case 1:
+            wattron(gamewin,COLOR_PAIR(165));
+            break;
+        case 2:
+            wattron(gamewin,COLOR_PAIR(124));
+            break;
+        case 3:
+            wattron(gamewin,COLOR_PAIR(TREASURE_ROOM_COLOR));
+            break;
+    }
+    for(int i=0;i<room->height;i++){
+        for(int j=0;j<room->width;j++){
+            if(j==room->width-1 || j==0){
+                mvwprintw(gamewin,i+room->start.y,j+room->start.x,"|"); //walls
+            }
+            else if(i==room->height-1 || i==0){
+                mvwprintw(gamewin,i+room->start.y,j+room->start.x,"_"); //walls
+            }
+            else{
+                mvwprintw(gamewin,i+room->start.y,j+room->start.x,"."); //floors
+            }
+            if(i==0 && (j==0 || j==room->width-1)){
+                mvwprintw(gamewin,i+room->start.y,j+room->start.x," "); //room-edges
+            }
+
+        }
+    }
+    PrintDoor(gamewin,room);
+    for(int k=0;k<room->pillars_number;k++){
+        mvwprintw(gamewin,room->pillars[k]->loc.y,room->pillars[k]->loc.x,"O"); // pillars
+    }
+    for(int i=0;i<room->windows_number;i++){
+        mvwprintw(gamewin,room->windows[i]->loc.y,room->windows[i]->loc.x,"="); // windows
+    }
+    switch(room->rt){
+        case 0:
+            break;
+        case 1:
+            wattroff(gamewin,COLOR_PAIR(165));
+            break;
+        case 2:
+            wattroff(gamewin,COLOR_PAIR(124));
+            break;
+        case 3:
+            wattroff(gamewin,COLOR_PAIR(TREASURE_ROOM_COLOR));
+            break;
     }
 }

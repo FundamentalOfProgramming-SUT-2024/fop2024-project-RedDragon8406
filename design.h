@@ -12,4 +12,5 @@ void PrintPlayer(WINDOW *gamewin, Player *player, Settings* settings);
 void PrintGold(WINDOW *gamewin, Gold* gold , Settings* settings);
 void PrintFood(WINDOW *gamewin, Food* food , Settings* settings);
 void PrintDoor(WINDOW *gamewin, Room * room);
+void PrintRoom(WINDOW *gamewin, Room *room);
 #endif

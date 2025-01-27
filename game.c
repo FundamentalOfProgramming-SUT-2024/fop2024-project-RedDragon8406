@@ -220,8 +220,18 @@ void StartGame(){
                 while(handlePlayermove(levels[current_level],c,player,gamewin)){
                     handleVision(levels[current_level],player);
                     player->health+=1;
+                    if(which_room(levels[current_level],player->loc)!=NULL){
+                        if(which_room(levels[current_level],player->loc)->rt==ENCHANT){
+                            player->health+=4;
+                        }
+                    }
                 }
                 player->health-=1;
+                if(which_room(levels[current_level],player->loc)!=NULL){
+                    if(which_room(levels[current_level],player->loc)->rt==ENCHANT){
+                        player->health-=4;
+                    }
+                }
                 player->fastmove=0;
             }
         }
@@ -255,6 +265,12 @@ void InitLevelRoom(Level * level){
             room->show=0;
             room->index=which;
             room->tries=0;
+            int rt = rand() % 3;
+            if(!rt){
+                room->rt=NIGHTMARE;
+            }else{
+                room->rt=REGULAR;
+            }
 
             add_doors_to_room(room,which);
             add_pillars_to_room(room);
@@ -328,57 +344,32 @@ void PrintLevel(Level* level){
         if(!room->show && !level->show){
             continue;
         }
-        for(int i=0;i<room->height;i++){
-            for(int j=0;j<room->width;j++){
-                if(j==room->width-1 || j==0){
-                    mvwprintw(gamewin,i+room->start.y,j+room->start.x,"|"); //walls
-                }
-                else if(i==room->height-1 || i==0){
-                    mvwprintw(gamewin,i+room->start.y,j+room->start.x,"_"); //walls
-                }
-                else{
-                    mvwprintw(gamewin,i+room->start.y,j+room->start.x,"."); //floors
-                }
-                if(i==0 && (j==0 || j==room->width-1)){
-                    mvwprintw(gamewin,i+room->start.y,j+room->start.x," "); //room-edges
-                }
-                PrintDoor(gamewin,room);
-                for(int k=0;k<room->pillars_number;k++){
-                    mvwprintw(gamewin,room->pillars[k]->loc.y,room->pillars[k]->loc.x,"O"); // pillars
-                }
-                for(int i=0;i<room->windows_number;i++){
-                    mvwprintw(gamewin,room->windows[i]->loc.y,room->windows[i]->loc.x,"="); // windows
-                }
-                for(int i=0;i<room->golds_number;i++){
-                    if(!room->golds[i]->taken){
-                        PrintGold(gamewin,room->golds[i],settings); // golds
-                    }
-                }
-                for(int i=0;i<room->foods_number;i++){
-                    if(!room->foods[i]->taken){
-                        PrintFood(gamewin,room->foods[i],settings); // foods
-                    }
-                }
-                for(int i=0;i<room->weapons_number;i++){
-                    if(!room->weapons[i]->taken){
-                        mvwprintw(gamewin,room->weapons[i]->loc.y,room->weapons[i]->loc.x,"%s", room->weapons[i]->code); // weapons
-                    }
-                }
-                for(int i=0;i<room->potions_number;i++){
-                    if(!room->potions[i]->taken){
-                        mvwprintw(gamewin,room->potions[i]->loc.y,room->potions[i]->loc.x,"%s", room->potions[i]->code); // potions
-                    }
-                }
-                if(room->shouldgen){
-                    init_pair(51,51,COLOR_BLACK);
-                    wattron(gamewin,COLOR_PAIR(51));
-                    mvwprintw(gamewin,room->gen->loc.y,room->gen->loc.x,"&"); // password generator
-                    wattroff(gamewin,COLOR_PAIR(51));
-                }
-
-
-
+        PrintRoom(gamewin,room);
+        for(int i=0;i<room->golds_number;i++){
+            if(!room->golds[i]->taken){
+                PrintGold(gamewin,room->golds[i],settings); // golds
             }
+        }
+        for(int i=0;i<room->foods_number;i++){
+            if(!room->foods[i]->taken){
+                PrintFood(gamewin,room->foods[i],settings); // foods
+            }
+        }
+        for(int i=0;i<room->weapons_number;i++){
+            if(!room->weapons[i]->taken){
+                mvwprintw(gamewin,room->weapons[i]->loc.y,room->weapons[i]->loc.x,"%s", room->weapons[i]->code); // weapons
+            }
+        }
+        for(int i=0;i<room->potions_number;i++){
+            if(!room->potions[i]->taken){
+                mvwprintw(gamewin,room->potions[i]->loc.y,room->potions[i]->loc.x,"%s", room->potions[i]->code); // potions
+            }
+        }
+        if(room->shouldgen){
+            init_pair(51,51,COLOR_BLACK);
+            wattron(gamewin,COLOR_PAIR(51));
+            mvwprintw(gamewin,room->gen->loc.y,room->gen->loc.x,"&"); // password generator
+            wattroff(gamewin,COLOR_PAIR(51));
         }
         for(int i=0;i<room->traps_number;i++){
             if(room->traps[i]->taken){
@@ -388,11 +379,12 @@ void PrintLevel(Level* level){
                 mvwprintw(gamewin,room->traps[i]->loc.y,room->traps[i]->loc.x,"T"); // traps
             }
         }
+
         mvwprintw(gamewin,38+(which),3,"{h:%d w:%d y:%d x:%d}",room->height,room->width,room->start.y,room->start.x);
         for(int i=0;i<room->door_number;i++){
             mvwprintw(gamewin,38+(which),25+11*i,"(%d,%d|%d)",room->doors[i]->loc.y,room->doors[i]->loc.x,room->doors[i]->kind); //doors
         }
-        mvwprintw(gamewin,38+(which),47,"[%d]",room->foods_number);
+        mvwprintw(gamewin,38+(which),47,"[%d]",room->rt);
         mvwprintw(gamewin,38+(which),53,"sk:(%d)",room->shouldkey);
     }
 
@@ -432,8 +424,21 @@ void PrintLevel(Level* level){
     if(which_room(level,player->loc)==NULL){
         mvwprintw(gamewin,5,1,"           ");
     }
-
-
+    Room*room=which_room(level,player->loc);
+    if(room!=NULL && !level->show){
+        if(room->rt==NIGHTMARE){
+            for(int i=room->start.x;i<room->start.x+room->width;i++){
+                for(int j=room->start.y;j<room->start.y+room->height;j++){
+                    if(-2 <= (player->loc.x - i) && (player->loc.x - i)<=2){
+                        if(-2 <= (player->loc.y - j) && (player->loc.y - j)<=2){
+                            continue;
+                        }
+                    }
+                    mvwprintw(gamewin,j,i," ");
+                }
+            }
+        }
+    }
     PrintPlayer(gamewin,player,settings);
 }
 

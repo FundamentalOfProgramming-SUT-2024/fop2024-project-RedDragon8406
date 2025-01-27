@@ -225,12 +225,22 @@ int handlePlayermove(Level *level,int ch,Player *player,WINDOW *gamewin){
         player->loc.x=np.x;
         player->loc.y=np.y;
         player->health--;
+        if(room!=NULL){
+            if(room->rt==ENCHANT){
+                player->health-=4;
+            }
+        }
         return 1;
     }
     else if(check_wall_collide(level,room,np) || in_corridor(level,np)!=NULL){
         player->loc.x=np.x;
         player->loc.y=np.y;
         player->health--;
+        if(room!=NULL){
+            if(room->rt==ENCHANT){
+                player->health-=4;
+            }
+        }
         return 1;
     }
     return 0;
@@ -270,26 +280,6 @@ void handleVision(Level* level,Player* player){
             if(!room->show){
                 room->show=1;
             }
-            if(player->akey_count < MAX_AKEY_COUNT){
-                if(player->loc.x==level->akey->loc.x && player->loc.y==level->akey->loc.y){
-                    if(!level->akey->taken){
-                        level->akey->taken=1;
-                        player->akeys[player->akey_count++]=level->akey;
-                    }
-                }
-            }
-
-            for(int i=0;i<room->golds_number;i++){
-                if(player->loc.x==room->golds[i]->loc.x && player->loc.y==room->golds[i]->loc.y){
-                    if(room->golds[i]->taken){
-                        continue;
-                    }
-                    room->golds[i]->taken=1;
-                    player->golds+=room->golds[i]->value;
-                    break;
-                }
-            }
-
             for(int i=0;i<room->traps_number;i++){
                 if(player->loc.x==room->traps[i]->loc.x && player->loc.y==room->traps[i]->loc.y){
                     if(room->traps[i]->taken){
@@ -310,6 +300,32 @@ void handleVision(Level* level,Player* player){
                     }
 
 
+                    break;
+                }
+            }
+
+            if(player->akey_count < MAX_AKEY_COUNT){
+                if(player->loc.x==level->akey->loc.x && player->loc.y==level->akey->loc.y){
+                    if(!level->akey->taken){
+                        level->akey->taken=1;
+                        player->akeys[player->akey_count++]=level->akey;
+                    }
+                }
+            }
+
+
+            if(room->rt==NIGHTMARE){
+                return;
+            }
+
+
+            for(int i=0;i<room->golds_number;i++){
+                if(player->loc.x==room->golds[i]->loc.x && player->loc.y==room->golds[i]->loc.y){
+                    if(room->golds[i]->taken){
+                        continue;
+                    }
+                    room->golds[i]->taken=1;
+                    player->golds+=room->golds[i]->value;
                     break;
                 }
             }
@@ -464,6 +480,9 @@ void add_pillars_to_room(Room *room){
 void add_golds_to_room(Room *room){
     room->golds_number = rand() %((room->height*room->width)/30);
     room->golds_number+=2;
+    if(room->rt==ENCHANT){
+        room->golds_number = rand() %((room->height*room->width)/50);
+    }
     room->golds=(Gold **)malloc(room->golds_number*sizeof(Gold *));
     for(int i=0;i<room->golds_number;i++){
         int check=0;
@@ -507,6 +526,9 @@ void add_golds_to_room(Room *room){
 void add_foods_to_room(Room *room){
     room->foods_number = rand() %((room->height*room->width)/30);
     room->foods_number+=1;
+    if(room->rt==ENCHANT){
+        room->foods_number=1;
+    }
     room->foods=(Food **)malloc(room->foods_number*sizeof(Food *));
     for(int i=0;i<room->foods_number;i++){
         int check=0;
@@ -588,6 +610,10 @@ void add_traps_to_room(Room *room){
 
 void add_potions_to_room(Room *room){
     room->potions_number = rand() %((room->height*room->width)/40);
+    if(room->rt==ENCHANT){
+        room->potions_number += 3;
+        room->potions_number *= 2;
+    }
     room->potions=(Potion **)malloc(room->potions_number*sizeof(Potion *));
     for(int i=0;i<room->potions_number;i++){
         int check=0;
@@ -1127,8 +1153,10 @@ void add_corridors_to_level(Level *level,WINDOW *gamewin){
     corrs[which]->node1->kind=kind;
     corrs[which]->node2->kind=kind;
     if(kind==PASS){
-        level->rooms[which]->shouldgen=1;
-        
+        level->rooms[which]->shouldgen=1;        
+    }
+    else if(kind==HIDDEN){
+        level->rooms[which+1]->rt=ENCHANT;
     }
 
     which++; // -------------------------------------------- second --------------------------------------------
@@ -1165,6 +1193,9 @@ void add_corridors_to_level(Level *level,WINDOW *gamewin){
     corrs[which]->node2->kind=kind;
     if(kind==PASS){
         level->rooms[which]->shouldgen=1;
+    }
+    else if(kind==HIDDEN){
+        level->rooms[which+1]->rt=ENCHANT;
     }
 
     which++; // -------------------------------------------- third --------------------------------------------
@@ -1224,6 +1255,9 @@ void add_corridors_to_level(Level *level,WINDOW *gamewin){
         level->rooms[which]->shouldgen=1;
 
     }
+    else if(kind==HIDDEN){
+        level->rooms[which+1]->rt=ENCHANT;
+    }
 
     which++; // -------------------------------------------- fourth --------------------------------------------
     corrs[which]->node1=(Door *)malloc(sizeof(Door));
@@ -1261,6 +1295,9 @@ void add_corridors_to_level(Level *level,WINDOW *gamewin){
     corrs[which]->node2->kind=kind;
     if(kind==PASS){
         level->rooms[which]->shouldgen=1;
+    }
+    else if(kind==HIDDEN){
+        level->rooms[which+1]->rt=ENCHANT;
     }
 
     which++; // -------------------------------------------- fifth --------------------------------------------
@@ -1307,6 +1344,8 @@ void add_corridors_to_level(Level *level,WINDOW *gamewin){
     if(kind==PASS){
         level->rooms[which]->shouldgen=1;
     }
-
+    else if(kind==HIDDEN){
+        level->rooms[which+1]->rt=ENCHANT;
+    }
 
 }
