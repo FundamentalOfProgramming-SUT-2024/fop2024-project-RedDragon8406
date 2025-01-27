@@ -14,7 +14,7 @@ Room * which_room(Level *level,Point loc);
 Door * is_door(Level *level,Point loc);
 int check_wall_collide(Level* level,Room* room,Point next_move);
 void add_player_to_level(Level* level,Player* player);
-void handlePlayermove(Level *level,int ch,Player *player,WINDOW *gamewin);
+int handlePlayermove(Level *level,int ch,Player *player,WINDOW *gamewin);
 Corridor * in_corridor(Level *level,Point loc);
 int in_staircase(Level *level,Point loc);
 int in_bstaircase(Level *level,Point loc);
@@ -33,4 +33,5 @@ void unlockdoor(Level *level, Player *player, Door *first);
 int handlegeneration(Level *level, Player *player);
 int ReverseNumber(int num);
 void sort_keys(Player *player, int reversed);
+void defuse_traps(Level *level,Player *player);
 #endif

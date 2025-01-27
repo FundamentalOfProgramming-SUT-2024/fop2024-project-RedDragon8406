@@ -170,6 +170,7 @@ typedef struct{
 #define MAX_POTION_COUNT 15
 #define MAX_AKEY_COUNT 4
 typedef struct{
+    int fastmove;
     Point loc;
     int golds;
     int health;

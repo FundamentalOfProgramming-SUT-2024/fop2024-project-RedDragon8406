@@ -197,11 +197,39 @@ void StartGame(){
                 which_room(levels[current_level],player->loc)->tries=0;
             }
             break;
+        case 'e':
+            player->fastmove=1;
+            break;
+        case 'q':
+            defuse_traps(levels[current_level],player);
+            break;
         default:
             break;
         }
 
-        handlePlayermove(levels[current_level],c,player,gamewin);
+
+        if(player->fastmove){
+            mvwprintw(gamewin, 12, 1, "fm mode");
+            wrefresh(gamewin);
+
+            c=wgetch(gamewin);
+            if(c=='e'){
+                player->fastmove=0;
+            }
+            else{
+                while(handlePlayermove(levels[current_level],c,player,gamewin)){
+                    handleVision(levels[current_level],player);
+                    player->health+=1;
+                }
+                player->health-=1;
+                player->fastmove=0;
+            }
+        }
+        else{
+            handlePlayermove(levels[current_level],c,player,gamewin);
+        }
+        mvwprintw(gamewin, 12, 1, "       ");
+        wrefresh(gamewin);
 
         usleep(10000);
     }
@@ -834,6 +862,7 @@ int importpasswin(Level *level, Player *player, int howmany){
 void init_player(){
     player=(Player *)malloc(sizeof(Player));
     player->golds=0;
+    player->fastmove=0;
     player->foods=(Food **)malloc(MAX_FOOD_COUNT*sizeof(Food *));
     for(int i=0;i<MAX_FOOD_COUNT;i++){
         player->foods[i]=(Food *)malloc(sizeof(Food));

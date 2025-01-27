@@ -172,7 +172,7 @@ void sort_keys(Player *player, int reversed){
     }
 }
 
-void handlePlayermove(Level *level,int ch,Player *player,WINDOW *gamewin){
+int handlePlayermove(Level *level,int ch,Player *player,WINDOW *gamewin){
     Point np;
     int nx;
     int ny;
@@ -195,29 +195,29 @@ void handlePlayermove(Level *level,int ch,Player *player,WINDOW *gamewin){
         ny=player->loc.y;
         break;
     default:
-        return;
+        return 0;
     }
     np.x=nx;
     np.y=ny;
     Room *room=which_room(level,player->loc);
     if(is_door(level,np)!=NULL && !is_door(level,np)->show){
         is_door(level,np)->show=1;
-        return;
+        return 0;
     }
     if(is_door(level,np)!=NULL && is_door(level,np)->kind==PASS){
         for(;room->tries<3;room->tries++){
             if(in_corridor(level,player->loc)==NULL){
                 int takenpass=importpasswin(level,player, room->tries);
                 if(takenpass==-1){
-                    return;
+                    return 0;
                 }
                 if(room->gen->password==takenpass){
                     unlockdoor(level,player,(Door *)is_door(level,np));   
-                    return;
+                    return 0;
                 }
             }
         }
-        return; // locker room
+        return 0; // locker room
     }
 
 
@@ -225,12 +225,15 @@ void handlePlayermove(Level *level,int ch,Player *player,WINDOW *gamewin){
         player->loc.x=np.x;
         player->loc.y=np.y;
         player->health--;
+        return 1;
     }
     else if(check_wall_collide(level,room,np) || in_corridor(level,np)!=NULL){
         player->loc.x=np.x;
         player->loc.y=np.y;
         player->health--;
+        return 1;
     }
+    return 0;
 }
 
 
@@ -262,102 +265,111 @@ int corr_index(Point loc, Corridor * corr){
 
 void handleVision(Level* level,Player* player){
     Room* room=which_room(level,player->loc);
+    if(!player->fastmove){
+        if(room!=NULL){
+            if(!room->show){
+                room->show=1;
+            }
+            if(player->akey_count < MAX_AKEY_COUNT){
+                if(player->loc.x==level->akey->loc.x && player->loc.y==level->akey->loc.y){
+                    if(!level->akey->taken){
+                        level->akey->taken=1;
+                        player->akeys[player->akey_count++]=level->akey;
+                    }
+                }
+            }
+
+            for(int i=0;i<room->golds_number;i++){
+                if(player->loc.x==room->golds[i]->loc.x && player->loc.y==room->golds[i]->loc.y){
+                    if(room->golds[i]->taken){
+                        continue;
+                    }
+                    room->golds[i]->taken=1;
+                    player->golds+=room->golds[i]->value;
+                    break;
+                }
+            }
+
+            for(int i=0;i<room->traps_number;i++){
+                if(player->loc.x==room->traps[i]->loc.x && player->loc.y==room->traps[i]->loc.y){
+                    if(room->traps[i]->taken){
+                        continue;
+                    }
+                    room->traps[i]->taken=1;
+                    if(!strcmp(settings->difficulty,"hard")){
+                        player->health-=50;
+                    }
+                    else if(!strcmp(settings->difficulty,"medium")){
+                        player->health-=30;
+                    }
+                    else if(!strcmp(settings->difficulty,"easy")){
+                        player->health-=20;
+                    }
+                    else{
+                        player->health=0;
+                    }
+
+
+                    break;
+                }
+            }
+
+            if(player->foods_count<MAX_FOOD_COUNT){
+                for(int i=0;i<room->foods_number;i++){
+                    if(player->loc.x==room->foods[i]->loc.x && player->loc.y==room->foods[i]->loc.y){
+                        if(room->foods[i]->taken){
+                            continue;
+                        }
+                        room->foods[i]->taken=1;
+                        player->foods[player->foods_count++]=room->foods[i];
+                        break;
+                    }
+                }
+            }
+ 
+            if(player->weapons_count<MAX_WEAPON_COUNT){
+                for(int i=0;i<room->weapons_number;i++){
+                    if(player->loc.x==room->weapons[i]->loc.x && player->loc.y==room->weapons[i]->loc.y){
+                        if(room->weapons[i]->taken){
+                            continue;
+                        }
+                        room->weapons[i]->taken=1;
+                        player->weapons[player->weapons_count++]=room->weapons[i];
+                        break;
+                    }
+                }
+            }
+
+            if(player->potions_count<MAX_POTION_COUNT){
+                for(int i=0;i<room->potions_number;i++){
+                    if(player->loc.x==room->potions[i]->loc.x && player->loc.y==room->potions[i]->loc.y){
+                        if(room->potions[i]->taken){
+                            continue;
+                        }
+                        room->potions[i]->taken=1;
+                        player->potions[player->potions_count++]=room->potions[i];
+                        switch(room->potions[i]->potion){
+                            case SPEED:
+                                player->spc++;
+                                break;
+                            case HEALTH:
+                                player->hpc++;
+                                break;
+                            case DAMAGE:
+                                player->dpc++;
+                                break;
+                        }
+                        break;
+                    }
+                }
+            }
+
+        }
+    }
     if(room!=NULL){
         if(!room->show){
             room->show=1;
         }
-        if(player->akey_count < MAX_AKEY_COUNT){
-            if(player->loc.x==level->akey->loc.x && player->loc.y==level->akey->loc.y){
-                if(!level->akey->taken){
-                    level->akey->taken=1;
-                    player->akeys[player->akey_count++]=level->akey;
-                }
-            }
-        }
-
-
-        for(int i=0;i<room->golds_number;i++){
-            if(player->loc.x==room->golds[i]->loc.x && player->loc.y==room->golds[i]->loc.y){
-                if(room->golds[i]->taken){
-                    continue;
-                }
-                room->golds[i]->taken=1;
-                player->golds+=room->golds[i]->value;
-                break;
-            }
-        }
-        for(int i=0;i<room->traps_number;i++){
-            if(player->loc.x==room->traps[i]->loc.x && player->loc.y==room->traps[i]->loc.y){
-                if(room->traps[i]->taken){
-                    continue;
-                }
-                room->traps[i]->taken=1;
-                if(!strcmp(settings->difficulty,"hard")){
-                    player->health-=50;
-                }
-                else if(!strcmp(settings->difficulty,"medium")){
-                    player->health-=30;
-                }
-                else if(!strcmp(settings->difficulty,"easy")){
-                    player->health-=20;
-                }
-                else{
-                    player->health=0;
-                }
-
-
-                break;
-            }
-        }
-        if(player->foods_count<MAX_FOOD_COUNT){
-            for(int i=0;i<room->foods_number;i++){
-                if(player->loc.x==room->foods[i]->loc.x && player->loc.y==room->foods[i]->loc.y){
-                    if(room->foods[i]->taken){
-                        continue;
-                    }
-                    room->foods[i]->taken=1;
-                    player->foods[player->foods_count++]=room->foods[i];
-                    break;
-                }
-            }
-        }
-        if(player->weapons_count<MAX_WEAPON_COUNT){
-            for(int i=0;i<room->weapons_number;i++){
-                if(player->loc.x==room->weapons[i]->loc.x && player->loc.y==room->weapons[i]->loc.y){
-                    if(room->weapons[i]->taken){
-                        continue;
-                    }
-                    room->weapons[i]->taken=1;
-                    player->weapons[player->weapons_count++]=room->weapons[i];
-                    break;
-                }
-            }
-        }
-
-        if(player->potions_count<MAX_POTION_COUNT){
-            for(int i=0;i<room->potions_number;i++){
-                if(player->loc.x==room->potions[i]->loc.x && player->loc.y==room->potions[i]->loc.y){
-                    if(room->potions[i]->taken){
-                        continue;
-                    }
-                    room->potions[i]->taken=1;
-                    player->potions[player->potions_count++]=room->potions[i];
-                    switch(room->potions[i]->potion){
-                        case SPEED:
-                            player->spc++;
-                            break;
-                        case HEALTH:
-                            player->hpc++;
-                            break;
-                        case DAMAGE:
-                            player->dpc++;
-                            break;
-                    }
-                    break;
-                }
-            }
-        }
-
     }
     Corridor * corr=in_corridor(level,player->loc);
     if(corr!=NULL){
@@ -1022,6 +1034,24 @@ void add_windows_to_room(Room *room){
             room->windows[i]->loc.x=room->start.x + (i?room->width-1:0);
             room->windows[i]->loc.y=room->start.y+y;
             room->windows[i]->side=i;
+        }
+    }
+}
+
+
+
+void defuse_traps(Level *level,Player *player){
+    Room *room=which_room(level,player->loc);
+    if(room==NULL){
+        return;
+    }
+    for(int i=player->loc.x-1;i<=player->loc.x+1;i++){
+        for(int j=player->loc.y;j<=player->loc.y+1;j++){
+            for(int k=0;k<room->traps_number;k++){
+                if(room->traps[k]->loc.x==i && room->traps[k]->loc.y==j){
+                    room->traps[k]->taken=1;
+                }
+            }
         }
     }
 }
