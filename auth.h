@@ -36,4 +36,5 @@ int save_current_user(UserData* user_data);
 int load_current_user(UserData* user_data);
 int save_new_user_list(char * username);
 char * random_password();
+char * HintPass(char * username);
 #endif

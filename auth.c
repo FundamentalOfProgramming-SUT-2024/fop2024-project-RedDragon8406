@@ -13,6 +13,7 @@
 #include "settings.h"
 
 UserData* current_user = NULL;
+UserData* temp_user = NULL;
 char temppass[MAX_PASSWORD_LENGTH];
 void authentication_window() {
     WINDOW *auth_win;
@@ -141,7 +142,9 @@ void login_window() {
 
     char *back_button = "Back";
     char *login_button = "Login";
+    char *hint_button = "Hint Password";
 
+    mvwprintw(login_win, 8, (width - strlen(hint_button)) / 2, "%s", hint_button);
     mvwprintw(login_win, 10, (width - strlen(back_button)) / 2, "%s", back_button);
     mvwprintw(login_win, 12, (width - strlen(login_button)) / 2, "%s", login_button);
 
@@ -152,6 +155,7 @@ void login_window() {
     int c;
 
     while (1) {
+        
         if (highlight == 1) {
             wattron(login_win, A_REVERSE);
             mvwprintw(login_win, 3, height-2, "%-40s", username);
@@ -170,13 +174,20 @@ void login_window() {
 
         if (highlight == 3) {
             wattron(login_win, A_REVERSE);
+            mvwprintw(login_win, 8, (width - strlen(hint_button)) / 2, "%s", hint_button);
+            wattroff(login_win, A_REVERSE);
+        } else {
+            mvwprintw(login_win, 8, (width - strlen(hint_button)) / 2, "%s", hint_button);
+        }
+        if (highlight == 4) {
+            wattron(login_win, A_REVERSE);
             mvwprintw(login_win, 10, (width - strlen(back_button)) / 2, "%s", back_button);
             wattroff(login_win, A_REVERSE);
         } else {
             mvwprintw(login_win, 10, (width - strlen(back_button)) / 2, "%s", back_button);
         }
 
-        if (highlight == 4) {
+        if (highlight == 5) {
             wattron(login_win, A_REVERSE);
             mvwprintw(login_win, 12, (width - strlen(login_button)) / 2, "%s", login_button);
             wattroff(login_win, A_REVERSE);
@@ -190,26 +201,33 @@ void login_window() {
         switch (c) {
             case KEY_UP:
                 if (highlight == 1)
-                    highlight = 4;
+                    highlight = 5;
                 else
                     --highlight;
                 cursor_pos = (highlight == 1) ? strlen(username) : (highlight == 2) ? strlen(password) : 0;
                 break;
             case KEY_DOWN:
-                if (highlight == 4)
+                if (highlight == 5)
                     highlight = 1;
                 else
                     ++highlight;
                 cursor_pos = (highlight == 1) ? strlen(username) : (highlight == 2) ? strlen(password) : 0;
                 break;
             case 10: // Enter key
-                if (highlight == 3) { // Back button
+                if (highlight == 3) { // Hint button
+                    mvwprintw(login_win,6,2,"  \t\t\t\t\t\t\t");
+                    char mmd[MAX_PASSWORD_LENGTH];
+                    strcpy(mmd,HintPass(username));
+                    mvwprintw(login_win,6,(width-strlen(mmd))/2,"%s",mmd);
+                    wrefresh(login_win);
+                }
+                if (highlight == 4) { // Back button
                     delwin(login_win);
                     clear();
                     refresh();
                     authentication_window();
                     return;
-                }else if (highlight == 4) { // Login button
+                }else if (highlight == 5) { // Login button
                     // Perform login logic
                     if (login_user(username, password)) {
                         char *success_message = "Login successful! Press a key to continue...";
@@ -577,6 +595,27 @@ int save_new_user_list(char * username){
     fprintf(file, "%s\n", username);
     fclose(file);
     return 1;
+}
+
+
+char * HintPass(char * username){
+    temp_user = (UserData *)malloc(sizeof(UserData));
+    strncpy(temp_user->username, username, MAX_USERNAME_LENGTH);
+    if(read_user_data(temp_user)){
+        for(int i=0;i<strlen(temp_user->password);i++){
+            if(1<=i && i<=strlen(temp_user->password)-2){
+                temppass[i]='*';
+            }else{
+                temppass[i]=temp_user->password[i];
+            }
+        }
+        temppass[strlen(temp_user->password)]='\0';
+        free(temp_user);
+        return temppass;
+    }else{
+        free(temp_user);
+        return "Username not found!";
+    }
 }
 
 int login_user(char* username, char* password) {
