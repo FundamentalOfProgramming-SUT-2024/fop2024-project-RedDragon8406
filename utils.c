@@ -489,6 +489,18 @@ void add_golds_to_room(Room *room){
         room->golds[i]=(Gold *)malloc(sizeof(Gold));
         room->golds[i]->loc=first_guess;
         room->golds[i]->taken=0;
+        int z = rand() % 10;
+        if(z){
+            z=0;
+        }else{
+            z=1;
+        }
+        room->golds[i]->gtype=z;
+        if(room->golds[i]->gtype){
+            strcpy(room->golds[i]->code,"\u2727");
+        }else{
+            strcpy(room->golds[i]->code,"\u25C6");
+        }
     }
 }
 

@@ -262,13 +262,25 @@ void InitLevelRoom(Level * level){
             add_golds_to_room(room);
             for(int i=0;i<room->golds_number;i++){
                 if(!strcmp(settings->difficulty,"hard")){
-                    room->golds[i]->value=1;
+                    if(room->golds[i]->gtype){
+                        room->golds[i]->value=5;
+                    }else{
+                        room->golds[i]->value=1;
+                    }
                 }
                 else if(!strcmp(settings->difficulty,"medium")){
-                    room->golds[i]->value=2;
+                    if(room->golds[i]->gtype){
+                        room->golds[i]->value=10;
+                    }else{
+                        room->golds[i]->value=2;
+                    }
                 }
                 else if(!strcmp(settings->difficulty,"easy")){
-                    room->golds[i]->value=3;
+                    if(room->golds[i]->gtype){
+                        room->golds[i]->value=15;
+                    }else{
+                        room->golds[i]->value=3;
+                    }
                 }
             }
 

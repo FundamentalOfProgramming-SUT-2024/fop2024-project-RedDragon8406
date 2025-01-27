@@ -42,6 +42,11 @@ typedef enum{
     UNLOCKED
 } DODOULEG;
 
+typedef enum{
+    GOLD,
+    BLACK
+} GoldType;
+
 typedef struct{
     int x;
     int y;
@@ -86,6 +91,8 @@ typedef struct{
     Point loc;
     int value;
     int taken;
+    GoldType gtype;
+    char code[10];
 } Gold;
 
 typedef struct{

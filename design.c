@@ -69,9 +69,16 @@ void PrintPlayer(WINDOW *gamewin, Player *player, Settings* settings){
 }
 
 void PrintGold(WINDOW *gamewin, Gold* gold , Settings* settings){
-    wattron(gamewin, COLOR_PAIR(COLOR_CUSTOM_GOLD));
-    mvwprintw(gamewin,gold->loc.y,gold->loc.x,"G"); // golds
-    wattroff(gamewin, COLOR_PAIR(COLOR_CUSTOM_GOLD));
+    if(gold->gtype){
+        init_pair(246,246,COLOR_BLACK);
+        wattron(gamewin, COLOR_PAIR(246));
+        mvwprintw(gamewin,gold->loc.y,gold->loc.x,"%s",gold->code); // golds
+        wattroff(gamewin, COLOR_PAIR(246));
+    }else{
+        wattron(gamewin, COLOR_PAIR(COLOR_CUSTOM_GOLD));
+        mvwprintw(gamewin,gold->loc.y,gold->loc.x,"%s",gold->code); // golds
+        wattroff(gamewin, COLOR_PAIR(COLOR_CUSTOM_GOLD));
+    }
 }
 void PrintFood(WINDOW *gamewin, Food* food , Settings* settings){
     wattron(gamewin, COLOR_PAIR(COLOR_CYAN));
