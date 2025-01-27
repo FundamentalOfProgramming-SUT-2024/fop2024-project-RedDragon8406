@@ -6,6 +6,7 @@
 #include <ctype.h>
 #include <dirent.h>
 #include <stdlib.h>
+#include <time.h>
 #include "auth.h"
 #include "main.h"
 #include "menu.h"
@@ -451,8 +452,9 @@ int store_user_data(char* username, char* password, char* email) {
     fprintf(file, "EMAIL %s\n", email);
     fprintf(file, "STATUS 0\n");
     fprintf(file, "POINTS 0\n");
-    fprintf(file, "GOLDS 0\n"); 
-    fprintf(file, "XP 0\n"); 
+    fprintf(file, "GOLDS 0\n");
+    fprintf(file, "GAMES 0\n");
+    fprintf(file, "XP %lld\n",(long long int)time(NULL)); 
     fclose(file);
     return 1;
 }
@@ -514,7 +516,8 @@ int save_user_data(UserData* user_data) {
     fprintf(file, "STATUS %d\n", user_data->status);
     fprintf(file, "POINTS %d\n", user_data->points);
     fprintf(file, "GOLDS %d\n", user_data->golds);
-    fprintf(file, "XP %d\n", user_data->xp);
+    fprintf(file, "GAMES %d\n", user_data->games_finished);
+    fprintf(file, "XP %lld\n", user_data->xp);
     fclose(file);
     return 1;
 }
@@ -547,7 +550,8 @@ int read_user_data(UserData* user_data) {
             if (sscanf(line, "STATUS %d", &user_data->status) == 1) continue;
             if (sscanf(line, "POINTS %d", &user_data->points) == 1) continue;
             if (sscanf(line, "GOLDS %d", &user_data->golds) == 1) continue;
-            if (sscanf(line, "XP %d", &user_data->xp) == 1) continue;
+            if (sscanf(line, "GAMES %d", &user_data->games_finished) == 1) continue;
+            if (sscanf(line, "XP %lld", &user_data->xp) == 1) continue;
         }
         fclose(file);
         return 1;

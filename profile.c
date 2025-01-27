@@ -2,13 +2,14 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ncurses.h>
+#include <time.h>
 #include "menu.h"
 #include "auth.h"
 
 
 void show_profile() {
     WINDOW *profile_win;
-    int height = 16;
+    int height = 17;
     int width = 40;
     int starty = (LINES - height) / 2;
     int startx = (COLS - width) / 2;
@@ -28,7 +29,8 @@ void show_profile() {
     mvwprintw(profile_win, 6, 4, "Points:");
     mvwprintw(profile_win, 7, 4, "Golds:");
     mvwprintw(profile_win, 8, 4, "XP:");
-    mvwprintw(profile_win, 9, 4, "Password:");
+    mvwprintw(profile_win, 9, 4, "Games:");
+    mvwprintw(profile_win, 10, 4, "Password:");
 
     if(current_user) {
         mvwprintw(profile_win, 3, 14, "%s", current_user->username);
@@ -36,26 +38,33 @@ void show_profile() {
         mvwprintw(profile_win, 5, 14, "%d", current_user->status);
         mvwprintw(profile_win, 6, 14, "%d", current_user->points);
         mvwprintw(profile_win, 7, 14, "%d", current_user->golds);
-        mvwprintw(profile_win, 8, 14, "%d", current_user->xp);
+        mvwprintw(profile_win, 9, 14, "%d", current_user->games_finished);
+        time_t sec;
+        sec=time(NULL);
+        int raw_sec=(int)((long long int)sec-current_user->xp);
+        raw_sec /= 3600;
+        int raw_h= raw_sec % 24;
+        int raw_d= raw_sec / 24;
+        mvwprintw(profile_win, 8, 14, "%dD & %dH",raw_d,raw_h); // xp
         if (show_password) {
-            mvwprintw(profile_win, 9, 14, "%s", current_user->password);
+            mvwprintw(profile_win, 10, 14, "%s", current_user->password);
         } else {
             int len = strlen(current_user->password);
             char format[50]="************************************************";
             format[len]='\0';
-            mvwprintw(profile_win, 9, 14, "%s", format);
+            mvwprintw(profile_win, 10, 14, "%s", format);
         }
     }
 
     if (choice == 0) {
         wattron(profile_win, A_REVERSE);
-        mvwprintw(profile_win, 11, 4, "Hide Password");
+        mvwprintw(profile_win, 12, 4, "Hide Password");
         wattroff(profile_win, A_REVERSE);
-        mvwprintw(profile_win, 11, 22, "Show Password");
+        mvwprintw(profile_win, 12, 22, "Show Password");
     } else {
-        mvwprintw(profile_win, 11, 4, "Hide Password");
+        mvwprintw(profile_win, 12, 4, "Hide Password");
         wattron(profile_win, A_REVERSE);
-        mvwprintw(profile_win, 11, 22, "Show Password");
+        mvwprintw(profile_win, 12, 22, "Show Password");
         wattroff(profile_win, A_REVERSE);
     }
 
@@ -82,24 +91,24 @@ void show_profile() {
         // Update button highlight
         if (choice == 0) {
             wattron(profile_win, A_REVERSE);
-            mvwprintw(profile_win, 11, 4, "Hide Password");
+            mvwprintw(profile_win, 12, 4, "Hide Password");
             wattroff(profile_win, A_REVERSE);
-            mvwprintw(profile_win, 11, 22, "Show Password");
+            mvwprintw(profile_win, 12, 22, "Show Password");
         } else {
-            mvwprintw(profile_win, 11, 4, "Hide Password");
+            mvwprintw(profile_win, 12, 4, "Hide Password");
             wattron(profile_win, A_REVERSE);
-            mvwprintw(profile_win, 11, 22, "Show Password");
+            mvwprintw(profile_win, 12, 22, "Show Password");
             wattroff(profile_win, A_REVERSE);
         }
 
         if (current_user) {
             if (show_password) {
-                mvwprintw(profile_win, 9, 14, "%s", current_user->password);
+                mvwprintw(profile_win, 10, 14, "%s", current_user->password);
             } else {
                 int len = strlen(current_user->password);
                 char format[50]="************************************************";
                 format[len]='\0';
-                mvwprintw(profile_win, 9, 14, "%s", format);
+                mvwprintw(profile_win, 10, 14, "%s", format);
             }
         }
 

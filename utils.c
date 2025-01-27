@@ -205,6 +205,22 @@ int handlePlayermove(Level *level,int ch,Player *player,WINDOW *gamewin){
         nx=player->loc.x+1;
         ny=player->loc.y;
         break;
+    case KEY_LEFT:
+        nx=player->loc.x-1;
+        ny=player->loc.y-1;
+        break;
+    case KEY_UP:
+        nx=player->loc.x+1;
+        ny=player->loc.y-1;
+        break;
+    case KEY_RIGHT:
+        nx=player->loc.x+1;
+        ny=player->loc.y+1;
+        break;
+    case KEY_DOWN:
+        nx=player->loc.x-1;
+        ny=player->loc.y+1;
+        break;
     default:
         return 0;
     }

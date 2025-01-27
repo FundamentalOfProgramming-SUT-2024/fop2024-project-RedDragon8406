@@ -556,6 +556,7 @@ void win_window(){
         current_user->golds+=player->golds;
         current_user->points+=player->golds*5; // winning points
         current_user->points+=player->health*3; // winning points
+        current_user->games_finished+=1; // games finished
         save_user_data(current_user); // temp
     }
     show_main_menu();

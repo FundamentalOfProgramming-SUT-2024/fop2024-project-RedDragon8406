@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ncurses.h>
+#include <time.h>
 #include "scoreboard.h"
 #include "menu.h"
 #include "main.h"
@@ -9,7 +10,7 @@
 
 
 #define height 15
-#define width 52
+#define width 70
 #define title "SCOREBOARD"
 #define puc 6 // page user count
 
@@ -59,7 +60,8 @@ void print_score(WINDOW *scoreboard_win, int page_count){
     mvwprintw(scoreboard_win, 3, 8, "Username");
     mvwprintw(scoreboard_win, 3, 28, "Points");
     mvwprintw(scoreboard_win, 3, 38, "Golds");
-    mvwprintw(scoreboard_win, 3, 48, "XP");
+    mvwprintw(scoreboard_win, 3, 51, "XP");
+    mvwprintw(scoreboard_win, 3, 61, "Games");
     mvwprintw(scoreboard_win, height-3, (width - strlen(title)) / 2, "page: %d/%d",page_count+1,final_count+1);
 
     for (int i = page_count*puc; i < page_count*puc+puc; i++) {
@@ -80,7 +82,14 @@ void print_score(WINDOW *scoreboard_win, int page_count){
         }
         mvwprintw(scoreboard_win, i + puc-page_count*puc -1, 30, "%d", user_points[i]->points);
         mvwprintw(scoreboard_win, i + puc-page_count*puc -1, 40, "%d", user_points[i]->golds);
-        mvwprintw(scoreboard_win, i + puc-page_count*puc -1, 49, "%d", user_points[i]->xp);
+        time_t sec;
+        sec=time(NULL);
+        int raw_sec=(int)((long long int)sec-user_points[i]->xp);
+        raw_sec /= 3600;
+        int raw_h= raw_sec % 24;
+        int raw_d= raw_sec / 24;
+        mvwprintw(scoreboard_win, i + puc-page_count*puc -1, 49, "%dD & %dH",raw_d,raw_h); // xp
+        mvwprintw(scoreboard_win, i + puc-page_count*puc -1, 63, "%d", user_points[i]->games_finished);
     }
     wrefresh(scoreboard_win);
 }

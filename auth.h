@@ -13,7 +13,8 @@ typedef struct {
     int status;
     int points;
     int golds;
-    int xp;
+    int games_finished;
+    long long int xp;
 } UserData;
 
 extern UserData* current_user;
