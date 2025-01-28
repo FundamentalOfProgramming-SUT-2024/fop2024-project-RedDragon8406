@@ -478,6 +478,10 @@ void PrintLevel(Level* level){
         }
 
         mvwprintw(gamewin,38+(which),3,"{h:%d w:%d y:%d x:%d}",room->height,room->width,room->start.y,room->start.x);
+        for(int i=0;i<room->enemies_number;i++){
+            mvwprintw(gamewin,30+(which),3,"[y:%d x:%d,t:%s]"
+            ,room->enemies[i]->loc.y,room->enemies[i]->loc.x,room->enemies[i]->code);
+        }
         for(int i=0;i<room->door_number;i++){
             mvwprintw(gamewin,38+(which),25+11*i,"(%d,%d|%d)",room->doors[i]->loc.y,room->doors[i]->loc.x,room->doors[i]->kind); //doors
         }

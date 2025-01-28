@@ -276,9 +276,6 @@ int handlePlayermove(Level *level,int ch,Player *player,WINDOW *gamewin){
 
 
 int handleEnemymove(Level *level,Player *player,WINDOW *gamewin){
-    // Point np;
-    // int nx;
-    // int ny;
     Room * room=which_room(level,player->loc);
     if(room==NULL){
         return 0;
@@ -316,55 +313,60 @@ int handleEnemymove(Level *level,Player *player,WINDOW *gamewin){
                     break;
             }
         }
+        else if(e->trigerred){
+            Point np;
+            int nx=e->loc.x;
+            int ny=e->loc.y;
+            int which= rand() % 2;
+            if(is_door(level,e->loc)!=NULL){
+                which=1;
+            }
+            for(int k=0;k<1;k++){
+                if(which){
+                    nx=e->loc.x;
+                    if(player->loc.y>e->loc.y){
+                        ny=e->loc.y+1;
+                    }else if(player->loc.y<e->loc.y){
+                        ny=e->loc.y-1;
+                    }else{
+                        which=0;
+                        k-=1;
+                    }
+                }else{
+                    ny=e->loc.y;
+                    if(player->loc.x>e->loc.x){
+                        nx=e->loc.x+1;
+                    }else if(player->loc.x<e->loc.x){
+                        nx=e->loc.x-1;
+                    }else{
+                        which=1;
+                        k-=1;
+                    }
+                }
+            }
+            np.x=nx;
+            np.y=ny;
+            if(check_wall_collide(level,room,np) || in_corridor(level,np)!=NULL){
+                switch(e->en){
+                    case GIANT:
+                    case UNDEED:
+                        e->trigerred-=1;
+                        e->loc=np;
+                        break;
+                    case SNAKE:
+                        e->loc=np;
+                        break;
+                    default:
+                        break;
+                }
+                return 1;
+            }
+            return 0;
+        }
     }
     return 0;
-    // np.x=nx;
-    // np.y=ny;
-    // Room *room=which_room(level,player->loc);
-    // if(is_door(level,np)!=NULL && !is_door(level,np)->show){
-    //     is_door(level,np)->show=1;
-    //     return 0;
-    // }
-    // if(is_door(level,np)!=NULL && is_door(level,np)->kind==PASS){
-    //     for(;room->tries<3;room->tries++){
-    //         if(in_corridor(level,player->loc)==NULL){
-    //             int takenpass=importpasswin(level,player, room->tries);
-    //             if(takenpass==-1){
-    //                 return 0;
-    //             }
-    //             if(room->gen->password==takenpass){
-    //                 unlockdoor(level,player,(Door *)is_door(level,np));   
-    //                 return 0;
-    //             }
-    //         }
-    //     }
-    //     return 0; // locker room
-    // }
 
 
-    // if(is_door(level,player->loc)!=NULL && (ch=='w' || ch=='s')){
-    //     player->loc.x=np.x;
-    //     player->loc.y=np.y;
-    //     player->health--;
-    //     if(room!=NULL){
-    //         if(room->rt==ENCHANT){
-    //             player->health-=4;
-    //         }
-    //     }
-    //     return 1;
-    // }
-    // else if(check_wall_collide(level,room,np) || in_corridor(level,np)!=NULL){
-    //     player->loc.x=np.x;
-    //     player->loc.y=np.y;
-    //     player->health--;
-    //     if(room!=NULL){
-    //         if(room->rt==ENCHANT){
-    //             player->health-=4;
-    //         }
-    //     }
-    //     return 1;
-    // }
-    // return 0;
 
 }
 
