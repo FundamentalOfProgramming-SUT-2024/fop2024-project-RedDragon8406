@@ -6,13 +6,7 @@
 #include "game.h"
 #include "utils.h"
 #include "main.h"
-#define COLOR_CUSTOM_EXIT 8
-#define COLOR_CUSTOM_SILVER 9 
-#define PLAYER_WHITE 10
-#define PLAYER_BLUE 11
-#define PLAYER_GREEN 12
-#define COLOR_CUSTOM_GOLD 13 
-#define TREASURE_ROOM_COLOR 14
+
 
 int get_color_pair(const char *color_name) {
     if (!strcmp(color_name, "white")) {

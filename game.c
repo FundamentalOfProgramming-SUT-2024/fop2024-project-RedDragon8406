@@ -537,8 +537,8 @@ void PrintLevel(Level* level){
 
 void win_window(){
     // pre configuration
-    int height = 7;
-    int width = 50;
+    int height = 9;
+    int width = 55;
     int starty = (LINES - height) / 2;
     int startx = (COLS - width) / 2;
 
@@ -548,6 +548,9 @@ void win_window(){
     curs_set(0);
     const char *win_text = "You Won! Press any key to return to main menu...";
     mvwprintw(win_win, 1, (width - strlen(win_text)) / 2, "%s", win_text);
+    mvwprintw(win_win, 3, 3, "your score : %d", player->golds * 5 + player->health * 3);
+    mvwprintw(win_win, 5, 3, "your golds : %d", player->golds);
+    mvwprintw(win_win, 7, 3, "your health : %d", player->health);
     wrefresh(win_win);
     wgetch(win_win);
     wclear(win_win);
@@ -574,6 +577,7 @@ void lost_window(){
     curs_set(0);
     const char *lose_text = "You lost :( ! Press any key to return to main menu...";
     mvwprintw(lose_win, 1, (width - strlen(lose_text)) / 2, "%s", lose_text);
+    mvwprintw(lose_win, 3, 3, "your score : %d", player->golds);
     wrefresh(lose_win);
     wgetch(lose_win);
     wclear(lose_win);

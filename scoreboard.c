@@ -7,7 +7,7 @@
 #include "menu.h"
 #include "main.h"
 #include "auth.h"
-
+#include "design.h"
 
 #define height 15
 #define width 70
@@ -57,28 +57,62 @@ void print_score(WINDOW *scoreboard_win, int page_count){
     mvwprintw(scoreboard_win, 1, (width - strlen(title)) / 2, "%s", title);
 
     mvwprintw(scoreboard_win, 3, 2, "Rank");
-    mvwprintw(scoreboard_win, 3, 8, "Username");
+    mvwprintw(scoreboard_win, 3, 14, "Username");
     mvwprintw(scoreboard_win, 3, 28, "Points");
     mvwprintw(scoreboard_win, 3, 38, "Golds");
     mvwprintw(scoreboard_win, 3, 51, "XP");
     mvwprintw(scoreboard_win, 3, 61, "Games");
     mvwprintw(scoreboard_win, height-3, (width - strlen(title)) / 2, "page: %d/%d",page_count+1,final_count+1);
 
+    init_pair(247,247,COLOR_BLACK); // silver
+    init_pair(100,100,COLOR_BLACK); // bronze
     for (int i = page_count*puc; i < page_count*puc+puc; i++) {
         if (i >= user_count) {
             break;
         }
+        switch (i){
+            case 0:
+            case 1:
+            case 2:
+                wattron(scoreboard_win,WA_ITALIC);
+                wattron(scoreboard_win,WA_BOLD);
+                break;        
+            default:
+                break;
+        }
+        switch(i){
+            case 0:
+                wattron(scoreboard_win,COLOR_PAIR(COLOR_CUSTOM_GOLD));
+                mvwprintw(scoreboard_win,i + puc- page_count*puc -1, 4 , "goat");
+                mvwprintw(scoreboard_win,i + puc- page_count*puc -1 
+                , 26, "\U0001F947");
+                break;
+            case 1:
+                wattron(scoreboard_win,COLOR_PAIR(247));
+                mvwprintw(scoreboard_win,i + puc- page_count*puc -1, 4 , "legend");
+                mvwprintw(scoreboard_win,i + puc- page_count*puc -1 
+                , 26, "\U0001F948");
+                break;
+            case 2:
+                wattron(scoreboard_win,COLOR_PAIR(100));
+                mvwprintw(scoreboard_win,i + puc- page_count*puc -1, 4 , "champ");
+                mvwprintw(scoreboard_win,i + puc- page_count*puc -1 
+                , 26, "\U0001F949");
+                break;
+            default:
+                break;
+        }
         mvwprintw(scoreboard_win, i + puc-page_count*puc -1, 2, "%d", i + 1);
         if(current_user){
             if(!strcmp(user_points[i]->username,current_user->username)){
-                mvwprintw(scoreboard_win, i + puc- page_count*puc -1, 5, "--> %s", user_points[i]->username);
+                mvwprintw(scoreboard_win, i + puc- page_count*puc -1, 11, "--> %s", user_points[i]->username);
             }
             else{
-                mvwprintw(scoreboard_win, i + puc-page_count*puc -1, 9, "%s", user_points[i]->username);
+                mvwprintw(scoreboard_win, i + puc-page_count*puc -1, 15, "%s", user_points[i]->username);
             }
         }
         else{
-            mvwprintw(scoreboard_win, i + puc-page_count*puc -1, 9, "%s", user_points[i]->username);
+            mvwprintw(scoreboard_win, i + puc-page_count*puc -1, 15, "%s", user_points[i]->username);
         }
         mvwprintw(scoreboard_win, i + puc-page_count*puc -1, 30, "%d", user_points[i]->points);
         mvwprintw(scoreboard_win, i + puc-page_count*puc -1, 40, "%d", user_points[i]->golds);
@@ -90,6 +124,31 @@ void print_score(WINDOW *scoreboard_win, int page_count){
         int raw_d= raw_sec / 24;
         mvwprintw(scoreboard_win, i + puc-page_count*puc -1, 49, "%dD & %dH",raw_d,raw_h); // xp
         mvwprintw(scoreboard_win, i + puc-page_count*puc -1, 63, "%d", user_points[i]->games_finished);
+
+        switch (i){
+            case 0:
+            case 1:
+            case 2:
+                wattroff(scoreboard_win,WA_ITALIC);
+                wattroff(scoreboard_win,WA_BOLD);
+                break;        
+            default:
+                break;
+        }
+
+        switch(i){
+            case 0:
+                wattroff(scoreboard_win,COLOR_PAIR(COLOR_CUSTOM_GOLD));
+                break;
+            case 1:
+                wattroff(scoreboard_win,COLOR_PAIR(247));
+                break;
+            case 2:
+                wattroff(scoreboard_win,COLOR_PAIR(100));
+                break;
+            default:
+                break;
+        }
     }
     wrefresh(scoreboard_win);
 }
