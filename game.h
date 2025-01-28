@@ -54,6 +54,14 @@ typedef enum{
     TREASURE,
 } RT;
 
+typedef enum{
+    DEAMON,
+    FBM,
+    GIANT,
+    SNAKE,
+    UNDEED
+} EN;
+
 typedef struct{
     int x;
     int y;
@@ -136,6 +144,16 @@ typedef struct{
 } aKey;
 
 
+
+typedef struct{
+    Point loc;
+    EN en;
+    int health;
+    int alive;
+    char code[10];
+    int trigerred;
+} Enemy;
+
 typedef struct{
     int index;
     Point start;
@@ -163,6 +181,8 @@ typedef struct{
     int tries;
     int shouldkey;
     RT rt;
+    Enemy **enemies;
+    int enemies_number;
 } Room;
 
 

@@ -275,6 +275,100 @@ int handlePlayermove(Level *level,int ch,Player *player,WINDOW *gamewin){
 
 
 
+int handleEnemymove(Level *level,Player *player,WINDOW *gamewin){
+    // Point np;
+    // int nx;
+    // int ny;
+    Room * room=which_room(level,player->loc);
+    if(room==NULL){
+        return 0;
+    }
+    for(int i=0;i<room->enemies_number;i++){
+        Enemy *e=room->enemies[i];
+        if(!e->alive){
+            continue;
+        }
+        if(-1 <= player->loc.x - e->loc.x && player->loc.x - e->loc.x <= 1 &&
+        -1 <= player->loc.y - e->loc.y && player->loc.y - e->loc.y <= 1){
+            switch(e->en){
+                case GIANT:
+                case UNDEED:
+                    e->trigerred=5;
+                    break;
+                default:
+                    break;
+            }
+            switch(e->en){
+                case DEAMON:
+                    player->health-=5;
+                    break;
+                case FBM:
+                    player->health-=10;
+                    break;
+                case GIANT:
+                    player->health-=15;
+                    break;
+                case SNAKE:
+                    player->health-=20;
+                    break;
+                case UNDEED:
+                    player->health-=30;
+                    break;
+            }
+        }
+    }
+    return 0;
+    // np.x=nx;
+    // np.y=ny;
+    // Room *room=which_room(level,player->loc);
+    // if(is_door(level,np)!=NULL && !is_door(level,np)->show){
+    //     is_door(level,np)->show=1;
+    //     return 0;
+    // }
+    // if(is_door(level,np)!=NULL && is_door(level,np)->kind==PASS){
+    //     for(;room->tries<3;room->tries++){
+    //         if(in_corridor(level,player->loc)==NULL){
+    //             int takenpass=importpasswin(level,player, room->tries);
+    //             if(takenpass==-1){
+    //                 return 0;
+    //             }
+    //             if(room->gen->password==takenpass){
+    //                 unlockdoor(level,player,(Door *)is_door(level,np));   
+    //                 return 0;
+    //             }
+    //         }
+    //     }
+    //     return 0; // locker room
+    // }
+
+
+    // if(is_door(level,player->loc)!=NULL && (ch=='w' || ch=='s')){
+    //     player->loc.x=np.x;
+    //     player->loc.y=np.y;
+    //     player->health--;
+    //     if(room!=NULL){
+    //         if(room->rt==ENCHANT){
+    //             player->health-=4;
+    //         }
+    //     }
+    //     return 1;
+    // }
+    // else if(check_wall_collide(level,room,np) || in_corridor(level,np)!=NULL){
+    //     player->loc.x=np.x;
+    //     player->loc.y=np.y;
+    //     player->health--;
+    //     if(room!=NULL){
+    //         if(room->rt==ENCHANT){
+    //             player->health-=4;
+    //         }
+    //     }
+    //     return 1;
+    // }
+    // return 0;
+
+}
+
+
 int ReverseNumber(int num){
     int reversed = 0;
     
@@ -1086,6 +1180,133 @@ void add_akey(Level *level){
         level->akey->broken=0;
     }
 }    
+
+
+void add_enemies_to_room(Room *room,Level * level){
+    room->enemies_number = rand() %((room->height*room->width)/50);
+    if(room->rt==ENCHANT){
+        room->enemies_number=0;
+    }
+    room->enemies=(Enemy **)malloc(room->enemies_number*sizeof(Enemy *));
+    for(int i=0;i<room->enemies_number;i++){
+        Point first_guess;
+        int check=0;     
+        first_guess.x= (rand() % (room->width-4)) + 2 + room->start.x;
+        first_guess.y= (rand() % (room->height-4)) + 2 + room->start.y;
+        for(int j=0;j<i;j++){
+            if(first_guess.x==room->enemies[j]->loc.x && first_guess.y==room->enemies[j]->loc.y){
+                check=1;
+                break;
+            }
+        }
+        for(int j=0;j<room->pillars_number;j++){
+            if(first_guess.x==room->pillars[j]->loc.x && first_guess.y==room->pillars[j]->loc.y){
+                check=1;
+                break;
+            }
+        }
+        for(int j=0;j<room->golds_number;j++){
+            if(first_guess.x==room->golds[j]->loc.x && first_guess.y==room->golds[j]->loc.y){
+                check=1;
+                break;
+            }
+        }
+        for(int j=0;j<room->foods_number;j++){
+            if(first_guess.x==room->foods[j]->loc.x && first_guess.y==room->foods[j]->loc.y){
+                check=1;
+                break;
+            }
+        }
+        for(int j=0;j<room->traps_number;j++){
+            if(first_guess.x==room->traps[j]->loc.x && first_guess.y==room->traps[j]->loc.y){
+                check=1;
+                break;
+            }
+        }
+        for(int j=0;j<room->potions_number;j++){
+            if((first_guess.x==room->potions[j]->loc.x && first_guess.y==room->potions[j]->loc.y) ||
+                (first_guess.x+1==room->potions[j]->loc.x && first_guess.y==room->potions[j]->loc.y) ||
+                (first_guess.x-1==room->potions[j]->loc.x && first_guess.y==room->potions[j]->loc.y) ){
+                check=1;
+                break;
+            }
+        }
+        for(int j=0;j<room->weapons_number;j++){
+            if((first_guess.x==room->weapons[j]->loc.x && first_guess.y==room->weapons[j]->loc.y) ||
+                (first_guess.x+1==room->weapons[j]->loc.x && first_guess.y==room->weapons[j]->loc.y) ||
+                (first_guess.x-1==room->weapons[j]->loc.x && first_guess.y==room->weapons[j]->loc.y) ){
+                check=1;
+                break;
+            }
+        }
+        int iter;
+        for(iter=0;iter<level->len_rooms;iter++){
+            if(level->rooms[iter]==room){
+                break;
+            }
+        }
+        if(level->wroomkey == iter){
+            if(first_guess.x==level->akey->loc.x && first_guess.y==level->akey->loc.y){
+                check=1;
+            }
+        }
+        if(iter==0){
+            if(first_guess.x==level->bstaircase->loc.x && first_guess.y==level->bstaircase->loc.y){
+                check=1;
+            }
+        }
+        if(iter==level->len_rooms-1){
+            if(first_guess.x==level->staircase->loc.x && first_guess.y==level->staircase->loc.y){
+                check=1;
+            }
+        }
+        if(room->shouldgen){
+            if(first_guess.x==room->gen->loc.x && first_guess.y==room->gen->loc.y){
+                check=1;
+            }
+        }
+        if(check){
+            i--;
+            continue;   
+        }
+        room->enemies[i]=(Enemy *)malloc(sizeof(Enemy));
+        room->enemies[i]->loc=first_guess;
+        room->enemies[i]->alive=1;
+        room->enemies[i]->en = rand () % 5;
+        switch(room->enemies[i]->en){
+            case DEAMON:
+                strcpy(room->enemies[i]->code,"D");
+                room->enemies[i]->health=5;
+                room->enemies[i]->trigerred=0;
+                break;
+            case FBM:
+                strcpy(room->enemies[i]->code,"F");
+                room->enemies[i]->health=10;
+                room->enemies[i]->trigerred=0;
+                break;
+            case GIANT:
+                strcpy(room->enemies[i]->code,"G");
+                room->enemies[i]->health=15;
+                room->enemies[i]->trigerred=0;
+                break;
+            case SNAKE:
+                strcpy(room->enemies[i]->code,"S");
+                room->enemies[i]->health=20;
+                room->enemies[i]->trigerred=-1;
+                break;
+            case UNDEED:
+                strcpy(room->enemies[i]->code,"U");
+                room->enemies[i]->health=30;
+                room->enemies[i]->trigerred=0;
+                break;
+            default:
+                strcpy(room->enemies[i]->code,"E");
+                room->enemies[i]->health=0;
+                room->enemies[i]->trigerred=0;
+                break;
+        }
+    }
+}
 
 void add_windows_to_room(Room *room){
     int how_many;

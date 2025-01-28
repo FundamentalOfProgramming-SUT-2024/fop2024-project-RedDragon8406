@@ -150,6 +150,8 @@ void PrintRoom(WINDOW *gamewin, Room *room){
     for(int i=0;i<room->windows_number;i++){
         mvwprintw(gamewin,room->windows[i]->loc.y,room->windows[i]->loc.x,"="); // windows
     }
+
+
     switch(room->rt){
         case 0:
             break;

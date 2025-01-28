@@ -268,6 +268,7 @@ void StartGame(){
         }
         else{
             handlePlayermove(levels[current_level],c,player,gamewin);
+            handleEnemymove(levels[current_level],player,gamewin);
         }
         mvwprintw(gamewin, 12, 1, "       ");
         wrefresh(gamewin);
@@ -360,6 +361,9 @@ void InitLevelRoom(Level * level){
         }
     }
     add_akey(level);
+    for(int i=0;i<level->len_rooms;i++){
+        add_enemies_to_room(level->rooms[i],level);
+    }
 }
 
 void InitFinalLevel(Level *level){
@@ -422,6 +426,9 @@ void InitFinalLevel(Level *level){
     level->rooms[which]->shouldkey=1;
     add_akey(level);
     level->akey->taken=1;
+    for(int i=0;i<level->len_rooms;i++){
+        add_enemies_to_room(level->rooms[i],level);
+    }
 }
 
 
@@ -475,7 +482,7 @@ void PrintLevel(Level* level){
             mvwprintw(gamewin,38+(which),25+11*i,"(%d,%d|%d)",room->doors[i]->loc.y,room->doors[i]->loc.x,room->doors[i]->kind); //doors
         }
         mvwprintw(gamewin,38+(which),47,"[%d]",room->rt);
-        mvwprintw(gamewin,38+(which),53,"sk:(%d)",room->shouldkey);
+        mvwprintw(gamewin,38+(which),53,"en:(%d)",room->enemies_number);
     }
 
 
@@ -526,6 +533,17 @@ void PrintLevel(Level* level){
                     }
                     mvwprintw(gamewin,j,i," ");
                 }
+            }
+        }
+    }
+    for(int i=0;i<level->len_rooms;i++){
+        Room *room=level->rooms[i];
+        if(!room->show && !level->show){
+            continue;
+        }
+        for(int i=0;i<room->enemies_number;i++){
+            if(room->enemies[i]->alive){
+                mvwprintw(gamewin,room->enemies[i]->loc.y,room->enemies[i]->loc.x,"%s",room->enemies[i]->code); // enemies
             }
         }
     }
