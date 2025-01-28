@@ -38,4 +38,7 @@ int handlegeneration(Level *level, Player *player);
 int ReverseNumber(int num);
 void sort_keys(Player *player, int reversed);
 void defuse_traps(Level *level,Player *player);
+
+void handleRegen(Player *player);
+void handleRot(Player *player);
 #endif

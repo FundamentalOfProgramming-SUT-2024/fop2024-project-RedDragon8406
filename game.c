@@ -18,7 +18,7 @@
 void InitLevelRoom(Level * level);
 void InitFinalLevel(Level *level);
 void StartGame();
-void PrintLevel(Level* level);
+void PrintLevel(Level* level); // here
 void win_window();
 void lost_window();
 void food_window(Level *level,Player *player);
@@ -67,7 +67,16 @@ void StartGame(){
             wrefresh(gamewin);
             delwin(gamewin);
             lost_window();
+        }else if(player->health>MAXHEALTH){
+            player->health=MAXHEALTH;
         }
+
+        if(player->sat<=0){
+            player->sat=0;
+        }else if(player->sat>MAXSAT){
+            player->sat=MAXSAT;
+        }
+
         if(player->should_pass){
             SecondTime=time(NULL);
             double timedifference;
@@ -77,6 +86,13 @@ void StartGame(){
                 handlegeneration(levels[current_level],player);
             }
         }
+        if(!player->scount){player->scof=1;}
+        if(!player->dcount){player->hcof=1;}
+        if(!player->hcount){player->dcof=1;}
+
+        handleRegen(player);
+        // handleRot(player);
+
 
         handleVision(levels[current_level],player);
         PrintLevel(levels[current_level]);
@@ -124,11 +140,12 @@ void StartGame(){
 
         const char *title = "LEVEL: ";
         mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) / 2, "%s%d", title,current_level+1);
-        mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4, "Golds: %d", player->golds);
-        mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4 - 10, "Foods: %d", player->foods_count);
-        mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4 - 22, "Weapons: %d", player->weapons_count);
-        mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4 + 12, "Potions: %d ", player->potions_count);
-        mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4 + 24, "Health: %d ", player->health);
+        mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4 - 5, "Golds: %d", player->golds);
+        mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4 - 15, "Foods: %d", player->foods_count);
+        mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4 - 27, "Weapons: %d", player->weapons_count);
+        mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4 + 5, "Potions: %d ", player->potions_count);
+        mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4 + 16, "Sat: %d ", player->sat);
+        mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4 + 26, "Health: %d ", player->health);
         mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) / 2 - 10, "AKEYS:%d ", player->akey_count);
         c=wgetch(gamewin);
         switch (c){
@@ -250,17 +267,38 @@ void StartGame(){
             else{
                 while(handlePlayermove(levels[current_level],c,player,gamewin)){
                     handleVision(levels[current_level],player);
-                    player->health+=1;
+                    player->sat+=1;
+                    if(player->scount>0){
+                        player->scount++;
+                    }
+                    if(player->hcount>0){
+                        player->hcount++;
+                    }
+                    if(player->dcount>0){
+                        player->dcount++;
+                    }
                     if(which_room(levels[current_level],player->loc)!=NULL){
                         if(which_room(levels[current_level],player->loc)->rt==ENCHANT){
-                            player->health+=4;
+                            player->sat+=4;
                         }
                     }
                 }
-                player->health-=1;
+                player->sat-=1;
+                player->scount--;
+                if(player->scount<0){
+                    player->scount=0;
+                }
+                player->hcount--;
+                if(player->hcount<0){
+                    player->hcount=0;
+                }
+                player->dcount--;
+                if(player->dcount<0){
+                    player->dcount=0;
+                }
                 if(which_room(levels[current_level],player->loc)!=NULL){
                     if(which_room(levels[current_level],player->loc)->rt==ENCHANT){
-                        player->health-=4;
+                        player->sat-=4;
                     }
                 }
                 player->fastmove=0;
@@ -476,7 +514,9 @@ void PrintLevel(Level* level){
                 mvwprintw(gamewin,room->traps[i]->loc.y,room->traps[i]->loc.x,"T"); // traps
             }
         }
-
+        mvwprintw(gamewin,5,1,"scount : %d ",player->scount);
+        mvwprintw(gamewin,6,1,"hcount : %d ",player->hcount);
+        mvwprintw(gamewin,7,1,"dcount : %d ",player->dcount);
         mvwprintw(gamewin,38+(which),3,"{h:%d w:%d y:%d x:%d}",room->height,room->width,room->start.y,room->start.x);
         for(int i=0;i<room->enemies_number;i++){
             mvwprintw(gamewin,30+(which),3,"[y:%d x:%d,t:%s]"
@@ -525,6 +565,17 @@ void PrintLevel(Level* level){
     if(which_room(level,player->loc)==NULL){
         mvwprintw(gamewin,5,1,"           ");
     }
+    for(int i=0;i<level->len_rooms;i++){
+        Room *room=level->rooms[i];
+        if(!room->show && !level->show){
+            continue;
+        }
+        for(int i=0;i<room->enemies_number;i++){
+            if(room->enemies[i]->alive){
+                mvwprintw(gamewin,room->enemies[i]->loc.y,room->enemies[i]->loc.x,"%s",room->enemies[i]->code); // enemies
+            }
+        }
+    }
     Room*room=which_room(level,player->loc);
     if(room!=NULL && !level->show){
         if(room->rt==NIGHTMARE){
@@ -537,17 +588,6 @@ void PrintLevel(Level* level){
                     }
                     mvwprintw(gamewin,j,i," ");
                 }
-            }
-        }
-    }
-    for(int i=0;i<level->len_rooms;i++){
-        Room *room=level->rooms[i];
-        if(!room->show && !level->show){
-            continue;
-        }
-        for(int i=0;i<room->enemies_number;i++){
-            if(room->enemies[i]->alive){
-                mvwprintw(gamewin,room->enemies[i]->loc.y,room->enemies[i]->loc.x,"%s",room->enemies[i]->code); // enemies
             }
         }
     }
@@ -610,9 +650,12 @@ void lost_window(){
     }
     show_main_menu();
 }
+
+
+
 void food_window(Level *level,Player *player){
     // pre configuration
-    int height = 8;
+    int height = 20;
     int width = 40;
     int starty = (LINES - height) / 2;
     int startx = (COLS - width) / 2;
@@ -624,24 +667,93 @@ void food_window(Level *level,Player *player){
     const char *food_intro = "number of remaining foods: ";
     int c;
     wrefresh(food_window);
+    int highlight=0;
     while(1){
-        mvwprintw(food_window, 1, (width - strlen(food_intro)) / 2, "%s%d", food_intro,player->foods_count);
-        wattron(food_window, A_REVERSE);
-        mvwprintw(food_window, 3, (width - strlen("CONSUME FOOD")) / 2, "%s", "CONSUME FOOD");
-        wattroff(food_window, A_REVERSE);
-        if(!player->foods_count){
-            mvwprintw(food_window, 3, (width - strlen("CONSUME FOOD")) / 2, "%s", "CONSUME FOOD");
+        mvwprintw(food_window,1,1,"%d",highlight);
+        mvwprintw(food_window,3 , 3 ,"normal food %s: %d ","\U0001F353",player->diffc[0]);
+        mvwprintw(food_window,5 , 3 ,"super food %s: %d ","\U0001F355",player->diffc[1]);
+        mvwprintw(food_window,7 , 3 ,"magical food %s: %d ","\U0001F35F",player->diffc[2]);
+        mvwprintw(food_window,9 , 3 ,"rotten food %s: %d ","\U0001F353",player->diffc[3]);
+        mvwprintw(food_window,3,25,"CONSUME FOOD");
+        mvwprintw(food_window,5,25,"CONSUME FOOD");
+        mvwprintw(food_window,7,25,"CONSUME FOOD");
+        mvwprintw(food_window,9,25,"CONSUME FOOD");
+        init_pair(34,34,COLOR_BLACK);
+        init_pair(196,196,COLOR_BLACK);
+        for(int i=0;i<4;i++){
+            if(highlight!=i){
+                continue;
+            }
+            if(player->diffc[i]){
+                wattron(food_window,COLOR_PAIR(34));
+            }else{
+                wattron(food_window,COLOR_PAIR(196));
+            }
+            mvwprintw(food_window,3 + 2*i,25,"CONSUME FOOD");
+            if(player->diffc[i]){
+                wattroff(food_window,COLOR_PAIR(34));
+            }else{
+                wattroff(food_window,COLOR_PAIR(196));
+            }
         }
-
-        mvwprintw(food_window, 5, (width - 10) / 2, "Health: %d", player->health); // need some serious design
+        
+        mvwprintw(food_window, 1, (width - strlen(food_intro)) / 2, "%s%d", food_intro,player->foods_count);
+        mvwprintw(food_window, 12, (width - 10) / 2, "Health: %d", player->health); // need some serious design
+        mvwprintw(food_window, 14, (width - 14) / 2, "Saturation: %d", player->sat); // need some serious design
 
         wrefresh(food_window);
         c=wgetch(food_window);
+        int should_temp=0;
         switch(c){
             case 10: // enter key
-                if(player->foods_count){
-                    player->health+=FOOD_HEALTH;
-                    player->foods_count--;
+                switch(highlight){
+                    case 0:
+                    case 1:
+                    case 2:
+                    case 3:
+                        if(player->diffc[highlight]>0){
+                            player->sat+=FOOD_HEALTH;
+                            if(player->sat > MAXSAT){
+                                player->sat=MAXSAT;
+                            }
+                            player->diffc[highlight]-=1;
+                            player->foods_count-=1;
+                            should_temp=1;
+                        }
+                        break;
+                }
+                if(should_temp){
+                    switch(highlight){
+                        case 0:
+                            break;
+                        case 1:
+                            player->dcof=2;
+                            player->dcount+=5;
+                            break;
+                        case 2:
+                            player->scof=2;
+                            player->scount+=5;
+                            break;
+                        case 3:
+                            player->health-=20; // temp
+                            break;
+                    }
+                    
+                }
+                
+                break;
+            case KEY_DOWN:
+                if(highlight==3){
+                    highlight=0;
+                }else{
+                    highlight++;
+                }
+                break;
+            case KEY_UP:
+                if(highlight==0){
+                    highlight=3;
+                }else{
+                    highlight--;
                 }
                 break;
             case KEY_BACKSPACE:
@@ -1043,6 +1155,17 @@ void init_player(){
     player->should_pass=0;
     player->akey_count=0;
     player->passive=0;
+    player->sat=MAXSAT;
+    player->scof=1;
+    player->hcof=1;
+    player->dcof=1;
+    player->scount=0;
+    player->hcount=0;
+    player->dcount=0;
+    for(int i=0;i<4;i++){
+        player->diffc[i]=0;
+    }
+    player->onspeed=0;
     // player->akeys[player->akey_count]->taken=1;
     // player->akeys[player->akey_count++]->broken=1;
     // player->akeys[player->akey_count]->taken=1;

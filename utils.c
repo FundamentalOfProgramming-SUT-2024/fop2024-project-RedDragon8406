@@ -163,6 +163,37 @@ int handlegeneration(Level *level, Player *player){
 }
 
 
+void handleRegen(Player *player){
+    int x = player->sat / (MAXSAT / 4) - 1;
+    player->health+= x * player->hcof;
+    if(player->health>MAXHEALTH){
+        player->health=MAXHEALTH;
+    }
+}
+
+
+void handleRot(Player *player){ // needs fixation (im removing the unknown food not the actual food)
+    // basically i need the exact time of recieving to be static not dynamic
+    time_t second=time(NULL);
+    double difference;
+    for(int i=0;i<player->foods_count;i++){
+        difference=difftime(second,player->foods[i]->ttaken);
+        if(difference>7){
+            player->foods[i]->ttaken=second;
+            if(player->foods[i]->kind==MAM){
+                player->diffc[MAM]-=1;
+                player->diffc[FASED]+=1;
+                player->foods[i]->kind=FASED;
+            }else if(player->foods[i]->kind == AALA || player->foods[i]->kind == JADOO){
+                player->diffc[player->foods[i]->kind]-=1;
+                player->diffc[MAM]+=1;
+                player->foods[i]->kind=MAM;
+            }
+        }
+    }
+}
+
+
 void sort_keys(Player *player, int reversed){
     for(int i=0;i<player->akey_count;i++){
         for(int j=i;j<player->akey_count;j++){
@@ -251,10 +282,22 @@ int handlePlayermove(Level *level,int ch,Player *player,WINDOW *gamewin){
     if(is_door(level,player->loc)!=NULL && (ch=='w' || ch=='s')){
         player->loc.x=np.x;
         player->loc.y=np.y;
-        player->health--;
+        player->sat--;
+        player->scount--;
+        if(player->scount<0){
+            player->scount=0;
+        }
+        player->hcount--;
+        if(player->hcount<0){
+            player->hcount=0;
+        }
+        player->dcount--;
+        if(player->dcount<0){
+            player->dcount=0;
+        }
         if(room!=NULL){
             if(room->rt==ENCHANT){
-                player->health-=4;
+                player->sat-=4;
             }
         }
         return 1;
@@ -262,10 +305,22 @@ int handlePlayermove(Level *level,int ch,Player *player,WINDOW *gamewin){
     else if(check_wall_collide(level,room,np) || in_corridor(level,np)!=NULL){
         player->loc.x=np.x;
         player->loc.y=np.y;
-        player->health--;
+        player->sat--;
+        player->scount--;
+        if(player->scount<0){
+            player->scount=0;
+        }
+        player->hcount--;
+        if(player->hcount<0){
+            player->hcount=0;
+        }
+        player->dcount--;
+        if(player->dcount<0){
+            player->dcount=0;
+        }
         if(room!=NULL){
             if(room->rt==ENCHANT){
-                player->health-=4;
+                player->sat-=4;
             }
         }
         return 1;
@@ -432,6 +487,7 @@ void handleVision(Level* level,Player* player){
                     if(!level->akey->taken){
                         level->akey->taken=1;
                         player->akeys[player->akey_count++]=level->akey;
+                        
                     }
                 }
             }
@@ -455,12 +511,15 @@ void handleVision(Level* level,Player* player){
 
             if(player->foods_count<MAX_FOOD_COUNT){
                 for(int i=0;i<room->foods_number;i++){
-                    if(player->loc.x==room->foods[i]->loc.x && player->loc.y==room->foods[i]->loc.y){
+                    if((player->loc.x==room->foods[i]->loc.x && player->loc.y==room->foods[i]->loc.y) ||
+                    (player->loc.x-1==room->foods[i]->loc.x && player->loc.y==room->foods[i]->loc.y)){
                         if(room->foods[i]->taken){
                             continue;
                         }
                         room->foods[i]->taken=1;
+                        room->foods[i]->ttaken=time(NULL);
                         player->foods[player->foods_count++]=room->foods[i];
+                        player->diffc[room->foods[i]->kind]+=1;
                         break;
                     }
                 }
@@ -468,7 +527,8 @@ void handleVision(Level* level,Player* player){
  
             if(player->weapons_count<MAX_WEAPON_COUNT){
                 for(int i=0;i<room->weapons_number;i++){
-                    if(player->loc.x==room->weapons[i]->loc.x && player->loc.y==room->weapons[i]->loc.y){
+                    if((player->loc.x==room->weapons[i]->loc.x && player->loc.y==room->weapons[i]->loc.y) ||
+                    (player->loc.x-1==room->weapons[i]->loc.x && player->loc.y==room->weapons[i]->loc.y)){
                         if(room->weapons[i]->taken){
                             continue;
                         }
@@ -481,7 +541,8 @@ void handleVision(Level* level,Player* player){
 
             if(player->potions_count<MAX_POTION_COUNT){
                 for(int i=0;i<room->potions_number;i++){
-                    if(player->loc.x==room->potions[i]->loc.x && player->loc.y==room->potions[i]->loc.y){
+                    if((player->loc.x==room->potions[i]->loc.x && player->loc.y==room->potions[i]->loc.y) ||
+                    (player->loc.x-1==room->potions[i]->loc.x && player->loc.y==room->potions[i]->loc.y)){
                         if(room->potions[i]->taken){
                             continue;
                         }
@@ -668,19 +729,23 @@ void add_foods_to_room(Room *room){
         first_guess.x= (rand() % (room->width-4)) + 2 + room->start.x;
         first_guess.y= (rand() % (room->height-4)) + 2 + room->start.y;
         for(int j=0;j<i;j++){
-            if(first_guess.x==room->foods[j]->loc.x && first_guess.y==room->foods[j]->loc.y){
+            if((first_guess.x==room->foods[j]->loc.x && first_guess.y==room->foods[j]->loc.y) || 
+            (first_guess.x+1==room->foods[j]->loc.x && first_guess.y==room->foods[j]->loc.y) || 
+            (first_guess.x-1==room->foods[j]->loc.x && first_guess.y==room->foods[j]->loc.y)){ // temp
                 check=1;
                 break;
             }
         }
         for(int j=0;j<room->pillars_number;j++){
-            if(first_guess.x==room->pillars[j]->loc.x && first_guess.y==room->pillars[j]->loc.y){
+            if((first_guess.x==room->pillars[j]->loc.x && first_guess.y==room->pillars[j]->loc.y) || 
+            (first_guess.x+1==room->pillars[j]->loc.x && first_guess.y==room->pillars[j]->loc.y)){
                 check=1;
                 break;
             }
         }
         for(int j=0;j<room->golds_number;j++){
-            if(first_guess.x==room->golds[j]->loc.x && first_guess.y==room->golds[j]->loc.y){
+            if((first_guess.x==room->golds[j]->loc.x && first_guess.y==room->golds[j]->loc.y) || 
+            (first_guess.x+1==room->golds[j]->loc.x && first_guess.y==room->golds[j]->loc.y)){
                 check=1;
                 break;
             }
@@ -692,7 +757,22 @@ void add_foods_to_room(Room *room){
         room->foods[i]=(Food *)malloc(sizeof(Food));
         room->foods[i]->loc=first_guess;
         room->foods[i]->taken=0;
-        room->foods[i]->kind=0; // temp
+        int x = rand() % 4;
+        room->foods[i]->kind=x;
+        switch(room->foods[i]->kind){
+            case MAM:
+            case FASED:
+                strcpy(room->foods[i]->code,"\U0001F353");
+                break;
+            case AALA:
+                strcpy(room->foods[i]->code,"\U0001F355");
+                break;
+            case JADOO:
+                strcpy(room->foods[i]->code,"\U0001F35F");
+                break;
+            default:
+                break;
+        }
     }
 }
 
@@ -728,7 +808,8 @@ void add_traps_to_room(Room *room){
             }
         }
         for(int j=0;j<room->foods_number;j++){
-            if(first_guess.x==room->foods[j]->loc.x && first_guess.y==room->foods[j]->loc.y){
+            if((first_guess.x==room->foods[j]->loc.x && first_guess.y==room->foods[j]->loc.y) || 
+            (first_guess.x-1==room->foods[j]->loc.x && first_guess.y==room->foods[j]->loc.y)){ // temp
                 check=1;
                 break;
             }
@@ -784,7 +865,8 @@ void add_potions_to_room(Room *room){
         }
         for(int j=0;j<room->foods_number;j++){
             if((first_guess.x==room->foods[j]->loc.x && first_guess.y==room->foods[j]->loc.y) || 
-            (first_guess.x+1==room->foods[j]->loc.x && first_guess.y==room->foods[j]->loc.y)){ // temp
+            (first_guess.x+1==room->foods[j]->loc.x && first_guess.y==room->foods[j]->loc.y) || 
+            (first_guess.x-1==room->foods[j]->loc.x && first_guess.y==room->foods[j]->loc.y)){ // temp
                 check=1;
                 break;
             }
@@ -859,7 +941,8 @@ void add_weapons_to_room(Room *room){
         }
         for(int j=0;j<room->foods_number;j++){
             if((first_guess.x==room->foods[j]->loc.x && first_guess.y==room->foods[j]->loc.y) || 
-            (first_guess.x+1==room->foods[j]->loc.x && first_guess.y==room->foods[j]->loc.y)){ // temp
+            (first_guess.x+1==room->foods[j]->loc.x && first_guess.y==room->foods[j]->loc.y) || 
+            (first_guess.x-1==room->foods[j]->loc.x && first_guess.y==room->foods[j]->loc.y)){ // temp
                 check=1;
                 break;
             }
@@ -933,7 +1016,8 @@ void  add_staircase_to_level(Level *level){
             }
         }
         for(int j=0;j<room->foods_number;j++){
-            if(first_guess.x==room->foods[j]->loc.x && first_guess.y==room->foods[j]->loc.y){
+            if((first_guess.x==room->foods[j]->loc.x && first_guess.y==room->foods[j]->loc.y) || 
+            (first_guess.x-1==room->foods[j]->loc.x && first_guess.y==room->foods[j]->loc.y)){ // temp
                 check=1;
                 break;
             }
@@ -990,7 +1074,8 @@ void  add_staircase_to_level(Level *level){
             }
         }
         for(int j=0;j<room->foods_number;j++){
-            if(second_guess.x==room->foods[j]->loc.x && second_guess.y==room->foods[j]->loc.y){
+            if((first_guess.x==room->foods[j]->loc.x && first_guess.y==room->foods[j]->loc.y) || 
+            (first_guess.x-1==room->foods[j]->loc.x && first_guess.y==room->foods[j]->loc.y)){ // temp
                 check=1;
                 break;
             }
@@ -1057,7 +1142,8 @@ void add_gen(Level *level){
                 }
             }
             for(int j=0;j<room->foods_number;j++){
-                if(first_guess.x==room->foods[j]->loc.x && first_guess.y==room->foods[j]->loc.y){
+                if((first_guess.x==room->foods[j]->loc.x && first_guess.y==room->foods[j]->loc.y) || 
+                (first_guess.x-1==room->foods[j]->loc.x && first_guess.y==room->foods[j]->loc.y)){ // temp
                     check=1;
                     break;
                 }
@@ -1123,7 +1209,8 @@ void add_akey(Level *level){
             }
         }
         for(int j=0;j<room->foods_number;j++){
-            if(first_guess.x==room->foods[j]->loc.x && first_guess.y==room->foods[j]->loc.y){
+            if((first_guess.x==room->foods[j]->loc.x && first_guess.y==room->foods[j]->loc.y) || 
+            (first_guess.x-1==room->foods[j]->loc.x && first_guess.y==room->foods[j]->loc.y)){ // temp
                 check=1;
                 break;
             }
@@ -1214,7 +1301,8 @@ void add_enemies_to_room(Room *room,Level * level){
             }
         }
         for(int j=0;j<room->foods_number;j++){
-            if(first_guess.x==room->foods[j]->loc.x && first_guess.y==room->foods[j]->loc.y){
+            if((first_guess.x==room->foods[j]->loc.x && first_guess.y==room->foods[j]->loc.y) || 
+            (first_guess.x-1==room->foods[j]->loc.x && first_guess.y==room->foods[j]->loc.y)){ // temp
                 check=1;
                 break;
             }

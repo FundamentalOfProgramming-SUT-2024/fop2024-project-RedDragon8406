@@ -17,6 +17,9 @@
 #define MaxHeightSubWindow 12
 #define MaxWidthSubwindow 40
 
+#define MAXSAT 200
+#define MAXHEALTH 400
+
 extern int current_level;
 extern time_t FirstTime,SecondTime;
 
@@ -61,6 +64,12 @@ typedef enum{
     SNAKE,
     UNDEED
 } EN;
+typedef enum{
+    MAM,
+    AALA,
+    JADOO,
+    FASED
+} FOOD;
 
 typedef struct{
     int x;
@@ -128,7 +137,9 @@ typedef struct{
 typedef struct{
     Point loc;
     int taken; 
-    int kind;
+    FOOD kind;
+    char code[10];
+    time_t ttaken;
 } Food;
 
 typedef struct{
@@ -224,6 +235,15 @@ typedef struct{
     aKey **akeys;
     int akey_count;
     int passive;
+    int sat; // saturation
+    int scof;
+    int hcof;
+    int dcof;
+    int scount;
+    int hcount;
+    int dcount;
+    int diffc[4];
+    int onspeed;
 } Player;
 void StartGame();
 void PrintLevel(Level *level);
