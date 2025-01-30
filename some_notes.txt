@@ -1,11 +1,1 @@
-remember to change the designs
-
-remember to change the dialogue of printing signup successful like bringing
-it to the middle and giving it some designs
-
-
-remember to put a cursor for when hovered over fields in singup
-
-there might be some issue whith refreshing the main menu
-
-xp is going to be based on how many games user has played
+change the order of printing items so we won't have problem with the prints

@@ -337,6 +337,7 @@ void handleEnemyDeath(Level *level, Player *player){
     }
     for(int i=0;i<room->enemies_number;i++){
         if(room->enemies[i]->health<=0){
+            room->enemies[i]->health=0;
             room->enemies[i]->alive=0;
         }
     }
@@ -400,6 +401,7 @@ int handleTrajectorymove(Level *level,Weapon * weapon,Point wloc,WINDOW *gamewin
                         break;
                     case WAND:
                         damage=15;
+                        room->enemies[i]->crippled=1;
                         break;
                     case DAGGER:
                         damage=12;
@@ -418,6 +420,56 @@ int handleTrajectorymove(Level *level,Weapon * weapon,Point wloc,WINDOW *gamewin
     }
     return 0;
 
+}
+
+
+void spawnNewWeapon(Room *room,Player *player,int i, int wway,Weapon *wep){
+    Point np;
+    int nx,ny;
+    switch (wway)
+    {
+    case 'w':
+        nx=player->loc.x;
+        ny=player->loc.y-i;
+        break;
+    case 'a':
+        nx=player->loc.x-i;
+        ny=player->loc.y;
+        break;
+    case 's':
+        nx=player->loc.x;
+        ny=player->loc.y+i;
+        break;
+    case 'd':
+        nx=player->loc.x+i;
+        ny=player->loc.y;
+        break;
+    default:
+        break;
+    }
+    np.x=nx;
+    np.y=ny;
+    Weapon *newwep=(Weapon *)malloc(sizeof(Weapon));
+    newwep->loc=np;
+    newwep->weapon=wep->weapon;
+    newwep->taken=0;
+    switch(wep->weapon){
+        case DAGGER:
+            newwep->ifdn=1;
+            strcpy(newwep->code,"\u2020");
+            break;
+        case WAND:
+            newwep->ifwn=1;
+            strcpy(newwep->code,"\u2628");
+            break;
+        case ARROW:
+            newwep->ifan=1;
+            strcpy(newwep->code,"\u2671");
+            break;
+        default:
+            break;
+    }
+    room->weapons[room->weapons_number++]=newwep;
 }
 
 int handleDamage(Player *player,Level * level,WINDOW *gamewin){
@@ -509,50 +561,8 @@ int handleDamage(Player *player,Level * level,WINDOW *gamewin){
                 int res=handleTrajectorymove(level,wep,player->loc,gamewin,wway,i,player);
                 mvwprintw(gamewin,26,1,"%d",res);
                 if(res==0){
-                    Point np;
-                    int nx,ny;
-                    switch (wway)
-                    {
-                    case 'w':
-                        nx=player->loc.x;
-                        ny=player->loc.y-i;
-                        break;
-                    case 'a':
-                        nx=player->loc.x-i;
-                        ny=player->loc.y;
-                        break;
-                    case 's':
-                        nx=player->loc.x;
-                        ny=player->loc.y+i;
-                        break;
-                    case 'd':
-                        nx=player->loc.x+i;
-                        ny=player->loc.y;
-                        break;
-                    default:
-                        break;
-                    }
-                    np.x=nx;
-                    np.y=ny;
-                    wep->taken=0;
-                    wep->loc=np;
-                    switch(wep->weapon){
-                        case DAGGER:
-                            wep->ifdn=1;
-                            strcpy(wep->code,"\u2020");
-                            break;
-                        case WAND:
-                            wep->ifwn=1;
-                            strcpy(wep->code,"\u2628");
-                            break;
-                        case ARROW:
-                            wep->ifan=1;
-                            strcpy(wep->code,"\u2671");
-                            break;
-                        default:
-                            break;
-                    }
-                    break;
+                    spawnNewWeapon(room,player,i,wway,wep);
+                    return 0;
                 }else if(res==1){
                     continue;
                 }else if(res==2){
@@ -561,7 +571,8 @@ int handleDamage(Player *player,Level * level,WINDOW *gamewin){
                 wrefresh(gamewin);
             }
             
-            return 1;
+            spawnNewWeapon(room,player,traj,wway,wep);
+            return 0;
         }
     }
     return 0;
@@ -675,11 +686,6 @@ int ReverseNumber(int num){
     return reversed;
 }
 
-
-
-
-
-
 int corr_index(Point loc, Corridor * corr){
     for(int i=0;i<corr->locs_count;i++){
         if(loc.x==corr->locs[i].x && loc.y==corr->locs[i].y){
@@ -768,6 +774,27 @@ void handleVision(Level* level,Player* player){
                 for(int i=0;i<room->weapons_number;i++){
                     if((player->loc.x==room->weapons[i]->loc.x && player->loc.y==room->weapons[i]->loc.y) ||
                     (player->loc.x-1==room->weapons[i]->loc.x && player->loc.y==room->weapons[i]->loc.y)){
+                        if(player->loc.x-1==room->weapons[i]->loc.x && player->loc.y==room->weapons[i]->loc.y){
+                            switch(room->weapons[i]->weapon){
+                                case DAGGER:
+                                    if(room->weapons[i]->ifdn==1){
+                                        continue;
+                                    }
+                                    break;
+                                case WAND:
+                                    if(room->weapons[i]->ifwn==1){
+                                        continue;
+                                    }
+                                    break;
+                                case ARROW:
+                                    if(room->weapons[i]->ifan==1){
+                                        continue;
+                                    }
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
                         if(room->weapons[i]->taken){
                             continue;
                         }
@@ -1164,7 +1191,7 @@ void add_weapons_to_room(Room *room){
     if(room->rt==TREASURE){
         room->weapons_number=0;
     }
-    room->weapons=(Weapon **)malloc(room->weapons_number*sizeof(Weapon *));
+    room->weapons=(Weapon **)malloc(MAX_WEAPON_IN_ROOM*sizeof(Weapon *));
     for(int i=0;i<room->weapons_number;i++){
         int check=0;
         Point first_guess;        

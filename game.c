@@ -150,6 +150,7 @@ void StartGame(){
         mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4 + 26, "Health: %d ", player->health);
         mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) / 2 - 10, "AKEYS:%d ", player->akey_count);
         c=wgetch(gamewin);
+        int cwway=0;
         switch (c){
         case KEY_BACKSPACE:
             clear();
@@ -206,7 +207,7 @@ void StartGame(){
             }
             break;
         
-        case 'f':
+        case 'r':
             wclear(gamewin);
             wrefresh(gamewin);
             food_window(levels[current_level],player);
@@ -244,11 +245,13 @@ void StartGame(){
         case 'q':
             defuse_traps(levels[current_level],player);
             break;
-        case 'r':
+        case 'z':
             player->passive = (player->passive + 1) % 2;
             break;
         case ' ':
-            handleDamage(player,levels[current_level],gamewin,0);
+            handleDamage(player,levels[current_level],gamewin);
+            player->hitagain=1;
+            break;
             break;
         default:
             break;
@@ -1194,10 +1197,5 @@ void init_player(){
     player->wktaken[2]=0;
     player->wktaken[3]=0;
     player->wktaken[4]=0;
-    // player->akeys[player->akey_count]->taken=1;
-    // player->akeys[player->akey_count++]->broken=1;
-    // player->akeys[player->akey_count]->taken=1;
-    // player->akeys[player->akey_count++]->broken=1;
-    // player->akeys[player->akey_count]->taken=1;
-    // player->akeys[player->akey_count++]->broken=1;
+    player->hitagain=0;
 }

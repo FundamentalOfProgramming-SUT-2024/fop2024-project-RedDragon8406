@@ -20,6 +20,8 @@
 #define MAXSAT 200
 #define MAXHEALTH 400
 
+#define MAX_WEAPON_IN_ROOM 150
+
 extern int current_level;
 extern time_t FirstTime,SecondTime;
 
@@ -253,6 +255,7 @@ typedef struct{
     int arrowcount;
     int wandcount;
     int wktaken[5]; //kind of weapon taken
+    int hitagain;
 } Player;
 void StartGame();
 void PrintLevel(Level *level);

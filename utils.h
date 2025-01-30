@@ -17,8 +17,6 @@ Door * is_door(Level *level,Point loc);
 int check_wall_collide(Level* level,Room* room,Point next_move);
 void add_player_to_level(Level* level,Player* player);
 int handlePlayermove(Level *level,int ch,Player *player,WINDOW *gamewin);
-int handleEnemymove(Level *level,Player *player,WINDOW *gamewin);
-int handleTrajectorymove(Level *level,Weapon * weapon,Point wloc,WINDOW *gamewin, int wway,int x);
 Corridor * in_corridor(Level *level,Point loc);
 int in_staircase(Level *level,Point loc);
 int in_bstaircase(Level *level,Point loc);
@@ -42,6 +40,10 @@ void defuse_traps(Level *level,Player *player);
 
 void handleRegen(Player *player);
 void handleRot(Player *player);
-int handleDamage(Player *player,Level * level, WINDOW *gamewin,int x);
+
+int handleEnemymove(Level *level,Player *player,WINDOW *gamewin);
+int handleTrajectorymove(Level *level,Weapon * weapon,Point wloc,WINDOW *gamewin, int wway,int x,Player *player);
+int handleDamage(Player *player,Level * level,WINDOW *gamewin);
 void handleEnemyDeath(Level *level, Player *player);
+void spawnNewWeapon(Room *room,Player *player,int i, int wway,Weapon *wep);
 #endif
