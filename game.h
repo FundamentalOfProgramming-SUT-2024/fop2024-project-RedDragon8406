@@ -126,6 +126,8 @@ typedef struct{
     char code[20];
     int taken;
     int ifdn; // if dagger, it's number
+    int ifan; // if arrow, it's number
+    int ifwn; // if wand, it's number
 } Weapon;
 
 typedef struct{
@@ -247,6 +249,10 @@ typedef struct{
     int diffc[4];
     int onspeed;
     int damage;
+    int dagcount;
+    int arrowcount;
+    int wandcount;
+    int wktaken[5]; //kind of weapon taken
 } Player;
 void StartGame();
 void PrintLevel(Level *level);

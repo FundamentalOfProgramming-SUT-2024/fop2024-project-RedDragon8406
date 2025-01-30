@@ -3,6 +3,7 @@
 #include <ncurses.h>
 #include <time.h>
 #include <locale.h>
+#include <unistd.h>
 #include "game.h"
 #include "settings.h"
 #include "auth.h"
@@ -341,9 +342,85 @@ void handleEnemyDeath(Level *level, Player *player){
     }
 }
 
+
+int handleTrajectorymove(Level *level,Weapon * weapon,Point wloc,WINDOW *gamewin, int wway,int x,Player *player){
+    Point np;
+    int nx,ny;
+    char xx;
+    char yy;
+    switch (wway)
+    {
+    case 'w':
+        nx=wloc.x;
+        ny=wloc.y-1-x;
+        xx = '^';
+        yy = '|';
+        break;
+    case 'a':
+        nx=wloc.x-1-x;
+        ny=wloc.y;
+        xx = '<';
+        yy = '-';
+        break;
+    case 's':
+        nx=wloc.x;
+        ny=wloc.y+1+x;
+        xx = 'v';
+        yy = '|';
+        break;
+    case 'd':
+        nx=wloc.x+1+x;
+        ny=wloc.y;
+        xx = '>';
+        yy = '-';
+        break;
+    default:
+        break;
+    }
+    np.x=nx;
+    np.y=ny;
+    
+    Room *room=which_room(level,np);
+    if(room == NULL){
+        return 0;
+    }
+    if(check_wall_collide(level,room,np) || in_corridor(level,np)!=NULL){
+        mvwprintw(gamewin,27,1,"%d,%d",wloc.y,wloc.x);
+        mvwprintw(gamewin,28,1,"%d,%d",np.y,np.x);
+        wrefresh(gamewin);
+        for(int i=0;i<room->enemies_number;i++){
+            if(np.x==room->enemies[i]->loc.x && np.y==room->enemies[i]->loc.y && room->enemies[i]->alive){
+                mvwprintw(gamewin,np.y,np.x,"%c",xx);
+                wrefresh(gamewin);
+                usleep(50000);
+                int damage=0;
+                switch(weapon->weapon){
+                    case ARROW:
+                        damage=5;
+                        break;
+                    case WAND:
+                        damage=15;
+                        break;
+                    case DAGGER:
+                        damage=12;
+                        break;
+                    default:
+                        break;
+                }
+                room->enemies[i]->health-= damage * player->dcof;
+                return 2;
+            }
+        }
+        mvwprintw(gamewin,np.y,np.x,"%c",yy);
+        wrefresh(gamewin);
+        usleep(30000);
+        return 1;
+    }
+    return 0;
+
+}
+
 int handleDamage(Player *player,Level * level,WINDOW *gamewin){
-    mvwprintw(gamewin,1,win_width/2-1,"hi");
-    wrefresh(gamewin);
     Room * room=which_room(level,player->loc);
     if(room == NULL){
         return 0;
@@ -386,10 +463,106 @@ int handleDamage(Player *player,Level * level,WINDOW *gamewin){
             }
             return hit? 1 : 0;
         }
+
+
         case WAND:
         case ARROW:
-        case DAGGER:
-            break;
+        case DAGGER:{
+            int enough=1;
+            int traj=0;
+            int wway;
+            wway=wgetch(gamewin);
+            switch(wep->weapon){
+                case WAND:
+                    traj=10;
+                    if(player->wandcount<=0){
+                        enough=0;
+                        break;
+                    }
+                    player->wandcount-=1;
+                    break;
+                case DAGGER:
+                    traj=5;
+                    if(player->dagcount<=0){
+                        enough=0;
+                        break;
+                    }
+                    player->dagcount-=1;
+                    break;
+                case ARROW:
+                    traj=5;
+                    if(player->arrowcount<=0){
+                        enough=0;
+                        break;
+                    }
+                    player->arrowcount-=1;
+                    break;
+                default:
+                    break;
+            }
+            
+            if(!enough){
+                return 0;
+            }
+            for(int i=0;i<traj;i++){
+                mvwprintw(gamewin,25,1,"%d",i);
+                int res=handleTrajectorymove(level,wep,player->loc,gamewin,wway,i,player);
+                mvwprintw(gamewin,26,1,"%d",res);
+                if(res==0){
+                    Point np;
+                    int nx,ny;
+                    switch (wway)
+                    {
+                    case 'w':
+                        nx=player->loc.x;
+                        ny=player->loc.y-i;
+                        break;
+                    case 'a':
+                        nx=player->loc.x-i;
+                        ny=player->loc.y;
+                        break;
+                    case 's':
+                        nx=player->loc.x;
+                        ny=player->loc.y+i;
+                        break;
+                    case 'd':
+                        nx=player->loc.x+i;
+                        ny=player->loc.y;
+                        break;
+                    default:
+                        break;
+                    }
+                    np.x=nx;
+                    np.y=ny;
+                    wep->taken=0;
+                    wep->loc=np;
+                    switch(wep->weapon){
+                        case DAGGER:
+                            wep->ifdn=1;
+                            strcpy(wep->code,"\u2020");
+                            break;
+                        case WAND:
+                            wep->ifwn=1;
+                            strcpy(wep->code,"\u2628");
+                            break;
+                        case ARROW:
+                            wep->ifan=1;
+                            strcpy(wep->code,"\u2671");
+                            break;
+                        default:
+                            break;
+                    }
+                    break;
+                }else if(res==1){
+                    continue;
+                }else if(res==2){
+                    return 1;
+                }
+                wrefresh(gamewin);
+            }
+            
+            return 1;
+        }
     }
     return 0;
 }
@@ -599,7 +772,23 @@ void handleVision(Level* level,Player* player){
                             continue;
                         }
                         room->weapons[i]->taken=1;
-                        player->weapons[player->weapons_count++]=room->weapons[i];
+                        if(!player->wktaken[room->weapons[i]->weapon]){
+                            player->weapons[player->weapons_count++]=room->weapons[i];
+                            player->wktaken[room->weapons[i]->weapon]=1;
+                        }
+                        switch(room->weapons[i]->weapon){
+                            case DAGGER:
+                                player->dagcount+=room->weapons[i]->ifdn;
+                                break;
+                            case WAND:
+                                player->wandcount+=room->weapons[i]->ifwn;
+                                break;
+                            case ARROW:
+                                player->arrowcount+=room->weapons[i]->ifan;
+                                break;
+                            default:
+                                break;
+                        }
                         break;
                     }
                 }
@@ -971,7 +1160,7 @@ void add_potions_to_room(Room *room){
 
 
 void add_weapons_to_room(Room *room){
-    room->weapons_number = rand() %((room->height*room->width)/40);
+    room->weapons_number = rand() %((room->height*room->width)/50);
     if(room->rt==TREASURE){
         room->weapons_number=0;
     }
@@ -1048,9 +1237,11 @@ void add_weapons_to_room(Room *room){
                 break;
             case WAND:
                 strcpy(room->weapons[i]->code,"\U0001FA84");
+                room->weapons[i]->ifwn=8;
                 break;
             case ARROW:
                 strcpy(room->weapons[i]->code,"\u27B3");
+                room->weapons[i]->ifan=5;
                 break;
             case SWORD:
                 strcpy(room->weapons[i]->code,"\u2694");

@@ -248,21 +248,21 @@ void StartGame(){
             player->passive = (player->passive + 1) % 2;
             break;
         case ' ':
-            handleDamage(player,levels[current_level],gamewin);
+            handleDamage(player,levels[current_level],gamewin,0);
             break;
         default:
             break;
         }
         if(player->passive){
-            mvwprintw(gamewin, 10, 1, "pm");
+            mvwprintw(gamewin, 15, 1, "pm");
             wrefresh(gamewin);
         }else{
-            mvwprintw(gamewin, 10, 1, "  ");
+            mvwprintw(gamewin, 15, 1, "  ");
             wrefresh(gamewin);
         }
 
         if(player->fastmove){
-            mvwprintw(gamewin, 12, 1, "fm mode");
+            mvwprintw(gamewin, 16, 1, "fm mode");
             wrefresh(gamewin);
 
             c=wgetch(gamewin);
@@ -313,7 +313,7 @@ void StartGame(){
             handlePlayermove(levels[current_level],c,player,gamewin);
             handleEnemymove(levels[current_level],player,gamewin);
         }
-        mvwprintw(gamewin, 12, 1, "       ");
+        mvwprintw(gamewin, 16, 1, "       ");
         wrefresh(gamewin);
 
         usleep(10000);
@@ -523,6 +523,11 @@ void PrintLevel(Level* level){
         mvwprintw(gamewin,6,1,"hcount : %d:%d ",player->hcof,player->hcount);
         mvwprintw(gamewin,7,1,"dcount : %d:%d ",player->dcof,player->dcount);
         mvwprintw(gamewin,38+(which),3,"{h:%d w:%d y:%d x:%d}",room->height,room->width,room->start.y,room->start.x);
+        mvwprintw(gamewin,34,1,"wcount:%d ",player->wandcount);
+        mvwprintw(gamewin,35,1,"acount:%d ",player->arrowcount);
+        mvwprintw(gamewin,36,1,"dcount:%d ",player->dagcount);
+        mvwprintw(gamewin,37,1,"wktaken:d:%d %d %d %d %d "
+        ,player->wktaken[0],player->wktaken[1],player->wktaken[2],player->wktaken[3],player->wktaken[4]);
         for(int i=0;i<room->enemies_number;i++){
             mvwprintw(gamewin,30+(which),3,"[y:%d x:%d,t:%s]"
             ,room->enemies[i]->loc.y,room->enemies[i]->loc.x,room->enemies[i]->code);
@@ -869,6 +874,7 @@ void potion_window(Level *level,Player *player){
         mvwprintw(potion_window,4,5,"speed potion %s : %d","\U0001F37E",player->spc);
         mvwprintw(potion_window,6,5,"health potion %s : %d","\U0001F377",player->hpc);
         mvwprintw(potion_window,8,5,"damage potion %s : %d","\U0001F37C",player->dpc);
+
         
 
         wrefresh(potion_window);
@@ -1180,6 +1186,14 @@ void init_player(){
     }
     player->onspeed=0;
     player->damage=0;
+    player->dagcount=0;
+    player->arrowcount=0;
+    player->wandcount=0;
+    player->wktaken[0]=1;
+    player->wktaken[1]=0;
+    player->wktaken[2]=0;
+    player->wktaken[3]=0;
+    player->wktaken[4]=0;
     // player->akeys[player->akey_count]->taken=1;
     // player->akeys[player->akey_count++]->broken=1;
     // player->akeys[player->akey_count]->taken=1;
