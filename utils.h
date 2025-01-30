@@ -41,4 +41,6 @@ void defuse_traps(Level *level,Player *player);
 
 void handleRegen(Player *player);
 void handleRot(Player *player);
+int handleDamage(Player *player,Level * level, WINDOW *gamewin);
+void handleEnemyDeath(Level *level, Player *player);
 #endif

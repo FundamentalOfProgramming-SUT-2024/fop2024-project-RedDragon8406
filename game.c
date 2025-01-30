@@ -77,6 +77,8 @@ void StartGame(){
             player->sat=MAXSAT;
         }
 
+        handleEnemyDeath(levels[current_level],player);
+
         if(player->should_pass){
             SecondTime=time(NULL);
             double timedifference;
@@ -87,8 +89,8 @@ void StartGame(){
             }
         }
         if(!player->scount){player->scof=1;}
-        if(!player->dcount){player->hcof=1;}
-        if(!player->hcount){player->dcof=1;}
+        if(!player->hcount){player->hcof=1;}
+        if(!player->dcount){player->dcof=1;}
 
         handleRegen(player);
         // handleRot(player);
@@ -244,6 +246,9 @@ void StartGame(){
             break;
         case 'r':
             player->passive = (player->passive + 1) % 2;
+            break;
+        case ' ':
+            handleDamage(player,levels[current_level],gamewin);
             break;
         default:
             break;
@@ -514,9 +519,9 @@ void PrintLevel(Level* level){
                 mvwprintw(gamewin,room->traps[i]->loc.y,room->traps[i]->loc.x,"T"); // traps
             }
         }
-        mvwprintw(gamewin,5,1,"scount : %d ",player->scount);
-        mvwprintw(gamewin,6,1,"hcount : %d ",player->hcount);
-        mvwprintw(gamewin,7,1,"dcount : %d ",player->dcount);
+        mvwprintw(gamewin,5,1,"scount : %d:%d ",player->scof,player->scount);
+        mvwprintw(gamewin,6,1,"hcount : %d:%d ",player->hcof,player->hcount);
+        mvwprintw(gamewin,7,1,"dcount : %d:%d ",player->dcof,player->dcount);
         mvwprintw(gamewin,38+(which),3,"{h:%d w:%d y:%d x:%d}",room->height,room->width,room->start.y,room->start.x);
         for(int i=0;i<room->enemies_number;i++){
             mvwprintw(gamewin,30+(which),3,"[y:%d x:%d,t:%s]"
@@ -527,6 +532,14 @@ void PrintLevel(Level* level){
         }
         mvwprintw(gamewin,38+(which),47,"[%d]",room->rt);
         mvwprintw(gamewin,38+(which),53,"en:(%d)",room->enemies_number);
+        for(int i=0;i<5;i++){
+            mvwprintw(gamewin,20+i,1,"             ");
+        }
+        for(int i=0;i<room->enemies_number;i++){
+            mvwprintw(gamewin,20+i,1,"%s:%d:%d",room->enemies[i]->code
+            ,room->enemies[i]->health,room->enemies[i]->alive);
+        }
+        wrefresh(gamewin);
     }
 
 
@@ -1166,6 +1179,7 @@ void init_player(){
         player->diffc[i]=0;
     }
     player->onspeed=0;
+    player->damage=0;
     // player->akeys[player->akey_count]->taken=1;
     // player->akeys[player->akey_count++]->broken=1;
     // player->akeys[player->akey_count]->taken=1;

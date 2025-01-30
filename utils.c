@@ -329,6 +329,72 @@ int handlePlayermove(Level *level,int ch,Player *player,WINDOW *gamewin){
 }
 
 
+void handleEnemyDeath(Level *level, Player *player){
+    Room *room=which_room(level,player->loc);
+    if(room == NULL){
+        return;
+    }
+    for(int i=0;i<room->enemies_number;i++){
+        if(room->enemies[i]->health<=0){
+            room->enemies[i]->alive=0;
+        }
+    }
+}
+
+int handleDamage(Player *player,Level * level,WINDOW *gamewin){
+    mvwprintw(gamewin,1,win_width/2-1,"hi");
+    wrefresh(gamewin);
+    Room * room=which_room(level,player->loc);
+    if(room == NULL){
+        return 0;
+    }
+    Weapon *wep=player->current_weapon;
+    switch(wep->weapon){
+        case MACE:
+        case SWORD:{
+            int hit=0;
+            for(int i=player->loc.x-1 ; i <= player->loc.x+1 ; i++){
+                for(int j=player->loc.y-1 ; j <= player->loc.y+1 ; j++){
+                    for(int which=0;which<room->enemies_number;which++){
+                        Enemy * e = room->enemies[which];
+                        if(!e->alive){
+                            continue;
+                        }
+                        if(e->loc.x == i && e->loc.y == j){
+                            hit =1 ;
+                            switch(wep->weapon){
+                                case MACE:
+                                    e->health -= 5 * player->dcof;
+                                    break;
+                                case SWORD:{
+                                    int howmany=0;
+                                    for(int k=0;k<player->weapons_count;k++){
+                                        if(player->weapons[k]->weapon==SWORD){
+                                            howmany++;
+                                        }
+                                    }
+                                    player->damage=10 + (howmany-1) * 5;
+                                    e->health -= player->damage * player->dcof;
+                                    break;
+                                }
+                                default:
+                                    break;
+                            }
+                        }
+                    }
+                }
+            }
+            return hit? 1 : 0;
+        }
+        case WAND:
+        case ARROW:
+        case DAGGER:
+            break;
+    }
+    return 0;
+}
+
+
 
 int handleEnemymove(Level *level,Player *player,WINDOW *gamewin){
     Room * room=which_room(level,player->loc);
@@ -337,7 +403,7 @@ int handleEnemymove(Level *level,Player *player,WINDOW *gamewin){
     }
     for(int i=0;i<room->enemies_number;i++){
         Enemy *e=room->enemies[i];
-        if(!e->alive){
+        if(!e->alive || e->crippled){
             continue;
         }
         if(-1 <= player->loc.x - e->loc.x && player->loc.x - e->loc.x <= 1 &&
@@ -971,13 +1037,14 @@ void add_weapons_to_room(Room *room){
         // first_guess.x++;
         // room->weapons[i]->nloc=first_guess;
         room->weapons[i]->taken=0;
-        room->weapons[i]->weapon= rand () % 5;
+        room->weapons[i]->weapon= rand () % 4 + 1;
         switch(room->weapons[i]->weapon){
             case MACE:
                 strcpy(room->weapons[i]->code,"\u2692");
                 break;
             case DAGGER:
                 strcpy(room->weapons[i]->code,"\U0001F5E1");
+                room->weapons[i]->ifdn=10;
                 break;
             case WAND:
                 strcpy(room->weapons[i]->code,"\U0001FA84");
@@ -992,6 +1059,7 @@ void add_weapons_to_room(Room *room){
                 strcpy(room->weapons[i]->code,"W");
                 break;
         }
+
     }
 }
 
@@ -1362,6 +1430,7 @@ void add_enemies_to_room(Room *room,Level * level){
         room->enemies[i]=(Enemy *)malloc(sizeof(Enemy));
         room->enemies[i]->loc=first_guess;
         room->enemies[i]->alive=1;
+        room->enemies[i]->crippled=0;
         room->enemies[i]->en = rand () % 5;
         switch(room->enemies[i]->en){
             case DEAMON:

@@ -125,6 +125,7 @@ typedef struct{
     Wep weapon;
     char code[20];
     int taken;
+    int ifdn; // if dagger, it's number
 } Weapon;
 
 typedef struct{
@@ -163,6 +164,7 @@ typedef struct{
     int alive;
     char code[10];
     int trigerred;
+    int crippled;
 } Enemy;
 
 typedef struct{
@@ -244,6 +246,7 @@ typedef struct{
     int dcount;
     int diffc[4];
     int onspeed;
+    int damage;
 } Player;
 void StartGame();
 void PrintLevel(Level *level);
