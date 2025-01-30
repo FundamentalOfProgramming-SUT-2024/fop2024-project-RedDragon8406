@@ -234,20 +234,11 @@ typedef struct{
     int cw_index;
     Potion ** potions;
     int potions_count;
-    int spc;
-    int hpc;
-    int dpc;
     int should_pass;
     aKey **akeys;
     int akey_count;
     int passive;
     int sat; // saturation
-    int scof;
-    int hcof;
-    int dcof;
-    int scount;
-    int hcount;
-    int dcount;
     int diffc[4];
     int onspeed;
     int damage;
@@ -256,6 +247,10 @@ typedef struct{
     int wandcount;
     int wktaken[5]; //kind of weapon taken
     int hitagain;
+
+    int diffp[3];
+    int pcof[3];
+    int pcount[3];
 } Player;
 void StartGame();
 void PrintLevel(Level *level);

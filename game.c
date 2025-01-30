@@ -88,9 +88,9 @@ void StartGame(){
                 handlegeneration(levels[current_level],player);
             }
         }
-        if(!player->scount){player->scof=1;}
-        if(!player->hcount){player->hcof=1;}
-        if(!player->dcount){player->dcof=1;}
+        if(!player->pcount[SPEED]){player->pcof[SPEED]=1;}
+        if(!player->pcount[HEALTH]){player->pcof[HEALTH]=1;}
+        if(!player->pcount[DAMAGE]){player->pcof[DAMAGE]=1;}
 
         handleRegen(player);
         // handleRot(player);
@@ -150,7 +150,6 @@ void StartGame(){
         mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4 + 26, "Health: %d ", player->health);
         mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) / 2 - 10, "AKEYS:%d ", player->akey_count);
         c=wgetch(gamewin);
-        int cwway=0;
         switch (c){
         case KEY_BACKSPACE:
             clear();
@@ -276,14 +275,14 @@ void StartGame(){
                 while(handlePlayermove(levels[current_level],c,player,gamewin)){
                     handleVision(levels[current_level],player);
                     player->sat+=1;
-                    if(player->scount>0){
-                        player->scount++;
+                    if(player->pcount[SPEED]>0){
+                        player->pcount[SPEED]++;
                     }
-                    if(player->hcount>0){
-                        player->hcount++;
+                    if(player->pcount[HEALTH]>0){
+                        player->pcount[HEALTH]++;
                     }
-                    if(player->dcount>0){
-                        player->dcount++;
+                    if(player->pcount[DAMAGE]>0){
+                        player->pcount[DAMAGE]++;
                     }
                     if(which_room(levels[current_level],player->loc)!=NULL){
                         if(which_room(levels[current_level],player->loc)->rt==ENCHANT){
@@ -292,17 +291,17 @@ void StartGame(){
                     }
                 }
                 player->sat-=1;
-                player->scount--;
-                if(player->scount<0){
-                    player->scount=0;
+                player->pcount[SPEED]--;
+                if(player->pcount[SPEED]<0){
+                    player->pcount[SPEED]=0;
                 }
-                player->hcount--;
-                if(player->hcount<0){
-                    player->hcount=0;
+                player->pcount[HEALTH]--;
+                if(player->pcount[HEALTH]<0){
+                    player->pcount[HEALTH]=0;
                 }
-                player->dcount--;
-                if(player->dcount<0){
-                    player->dcount=0;
+                player->pcount[DAMAGE]--;
+                if(player->pcount[DAMAGE]<0){
+                    player->pcount[DAMAGE]=0;
                 }
                 if(which_room(levels[current_level],player->loc)!=NULL){
                     if(which_room(levels[current_level],player->loc)->rt==ENCHANT){
@@ -522,9 +521,9 @@ void PrintLevel(Level* level){
                 mvwprintw(gamewin,room->traps[i]->loc.y,room->traps[i]->loc.x,"T"); // traps
             }
         }
-        mvwprintw(gamewin,5,1,"scount : %d:%d ",player->scof,player->scount);
-        mvwprintw(gamewin,6,1,"hcount : %d:%d ",player->hcof,player->hcount);
-        mvwprintw(gamewin,7,1,"dcount : %d:%d ",player->dcof,player->dcount);
+        mvwprintw(gamewin,5,1,"scount : %d:%d ",player->pcof[SPEED],player->pcount[SPEED]);
+        mvwprintw(gamewin,6,1,"hcount : %d:%d ",player->pcof[HEALTH],player->pcount[HEALTH]);
+        mvwprintw(gamewin,7,1,"dcount : %d:%d ",player->pcof[DAMAGE],player->pcount[DAMAGE]);
         mvwprintw(gamewin,38+(which),3,"{h:%d w:%d y:%d x:%d}",room->height,room->width,room->start.y,room->start.x);
         mvwprintw(gamewin,34,1,"wcount:%d ",player->wandcount);
         mvwprintw(gamewin,35,1,"acount:%d ",player->arrowcount);
@@ -553,7 +552,7 @@ void PrintLevel(Level* level){
 
     if(which_room(level,player->loc)!=NULL){
         if(which_room(level,player->loc)->shouldgen){
-            mvwprintw(gamewin,5,1,"pass:[%.4d]",which_room(level,player->loc)->gen->generated?
+            mvwprintw(gamewin,4,1,"pass:[%.4d]",which_room(level,player->loc)->gen->generated?
              which_room(level,player->loc)->gen->password : 0);
         }
     }else{
@@ -748,12 +747,12 @@ void food_window(Level *level,Player *player){
                         case 0:
                             break;
                         case 1:
-                            player->dcof=2;
-                            player->dcount+=5;
+                            player->pcof[DAMAGE]=2;
+                            player->pcount[DAMAGE]+=5;
                             break;
                         case 2:
-                            player->scof=2;
-                            player->scount+=5;
+                            player->pcof[SPEED]=2;
+                            player->pcount[SPEED]+=5;
                             break;
                         case 3:
                             player->health-=20; // temp
@@ -861,7 +860,7 @@ void weapon_window(Level *level,Player *player){
 void potion_window(Level *level,Player *player){
     // pre configuration
     int height = 20;
-    int width = 50;
+    int width = 55;
     int starty = (LINES - height) / 2;
     int startx = (COLS - width) / 2;
 
@@ -872,13 +871,31 @@ void potion_window(Level *level,Player *player){
     const char *potion_intro = "number of potions collected: ";
     int c;
     wrefresh(potion_window);
-    mvwprintw(potion_window, 1, (width - strlen(potion_intro)) / 2, "%s%d/%d", potion_intro,player->potions_count,MAX_POTION_COUNT);
+    mvwprintw(potion_window, 1, (width - strlen(potion_intro)) / 2,
+     "%s%d/%d", potion_intro,player->potions_count,MAX_POTION_COUNT);
+    
+    int highlight=0;
+    init_pair(34,34,COLOR_BLACK);
+    init_pair(196,196,COLOR_BLACK);
     while(1){
-        mvwprintw(potion_window,4,5,"speed potion %s : %d","\U0001F37E",player->spc);
-        mvwprintw(potion_window,6,5,"health potion %s : %d","\U0001F377",player->hpc);
-        mvwprintw(potion_window,8,5,"damage potion %s : %d","\U0001F37C",player->dpc);
+        mvwprintw(potion_window,4,5,"speed potion %s : %d","\U0001F37E",player->diffp[SPEED]);
+        mvwprintw(potion_window,6,5,"damage potion %s : %d","\U0001F37C",player->diffp[DAMAGE]);
+        mvwprintw(potion_window,8,5,"health potion %s : %d","\U0001F377",player->diffp[HEALTH]);
+        mvwprintw(potion_window,4,35,"CONSUME POTION");
+        mvwprintw(potion_window,6,35,"CONSUME POTION");
+        mvwprintw(potion_window,8,35,"CONSUME POTION");
 
-        
+        if(player->diffp[highlight]>0){
+            wattron(potion_window,COLOR_PAIR(34));
+        }else{
+            wattron(potion_window,COLOR_PAIR(196));
+        }
+        mvwprintw(potion_window,4+2*highlight,35,"CONSUME POTION");
+        if(player->diffp[highlight]>0){
+            wattroff(potion_window,COLOR_PAIR(34));
+        }else{
+            wattroff(potion_window,COLOR_PAIR(196));
+        }
 
         wrefresh(potion_window);
         c=wgetch(potion_window);
@@ -888,6 +905,27 @@ void potion_window(Level *level,Player *player){
                 delwin(potion_window);
                 PrintLevel(level);
                 return;
+            case KEY_DOWN:
+                if(highlight<2){
+                    highlight++;
+                }else{
+                    highlight=0;
+                }
+                break;
+            case KEY_UP:
+                if(highlight>0){
+                    highlight--;
+                }else{
+                    highlight=2;
+                }
+                break;
+            case 10:
+                if(player->diffp[highlight]){
+                    player->diffp[highlight]-=1;
+                    player->pcount[highlight]+=10;
+                    player->pcof[highlight]=2;
+                }
+                break;
             default:
                 break;
         }
@@ -1162,9 +1200,6 @@ void init_player(){
 
 
     player->potions_count=0;
-    player->spc=0;
-    player->hpc=0;
-    player->dpc=0;
     player->potions=(Potion **)malloc(MAX_POTION_COUNT*sizeof(Potion *));
     for(int i=0;i<MAX_POTION_COUNT;i++){
         player->potions[i]=(Potion *)malloc(sizeof(Potion));
@@ -1178,14 +1213,13 @@ void init_player(){
     player->akey_count=0;
     player->passive=0;
     player->sat=MAXSAT;
-    player->scof=1;
-    player->hcof=1;
-    player->dcof=1;
-    player->scount=0;
-    player->hcount=0;
-    player->dcount=0;
     for(int i=0;i<4;i++){
         player->diffc[i]=0;
+    }
+    for(int i=0;i<3;i++){
+        player->diffp[i]=0;
+        player->pcof[i]=1;
+        player->pcount[i]=0;
     }
     player->onspeed=0;
     player->damage=0;

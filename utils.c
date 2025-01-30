@@ -166,7 +166,7 @@ int handlegeneration(Level *level, Player *player){
 
 void handleRegen(Player *player){
     int x = player->sat / (MAXSAT / 4) - 1;
-    player->health+= x * player->hcof;
+    player->health+= x * player->pcof[DAMAGE];
     if(player->health>MAXHEALTH){
         player->health=MAXHEALTH;
     }
@@ -284,17 +284,17 @@ int handlePlayermove(Level *level,int ch,Player *player,WINDOW *gamewin){
         player->loc.x=np.x;
         player->loc.y=np.y;
         player->sat--;
-        player->scount--;
-        if(player->scount<0){
-            player->scount=0;
+        player->pcount[SPEED]--;
+        if(player->pcount[SPEED]<0){
+            player->pcount[SPEED]=0;
         }
-        player->hcount--;
-        if(player->hcount<0){
-            player->hcount=0;
+        player->pcount[HEALTH]--;
+        if(player->pcount[HEALTH]<0){
+            player->pcount[HEALTH]=0;
         }
-        player->dcount--;
-        if(player->dcount<0){
-            player->dcount=0;
+        player->pcount[DAMAGE]--;
+        if(player->pcount[DAMAGE]<0){
+            player->pcount[DAMAGE]=0;
         }
         if(room!=NULL){
             if(room->rt==ENCHANT){
@@ -307,17 +307,17 @@ int handlePlayermove(Level *level,int ch,Player *player,WINDOW *gamewin){
         player->loc.x=np.x;
         player->loc.y=np.y;
         player->sat--;
-        player->scount--;
-        if(player->scount<0){
-            player->scount=0;
+        player->pcount[SPEED]--;
+        if(player->pcount[SPEED]<0){
+            player->pcount[SPEED]=0;
         }
-        player->hcount--;
-        if(player->hcount<0){
-            player->hcount=0;
+        player->pcount[HEALTH]--;
+        if(player->pcount[HEALTH]<0){
+            player->pcount[HEALTH]=0;
         }
-        player->dcount--;
-        if(player->dcount<0){
-            player->dcount=0;
+        player->pcount[DAMAGE]--;
+        if(player->pcount[DAMAGE]<0){
+            player->pcount[DAMAGE]=0;
         }
         if(room!=NULL){
             if(room->rt==ENCHANT){
@@ -409,7 +409,7 @@ int handleTrajectorymove(Level *level,Weapon * weapon,Point wloc,WINDOW *gamewin
                     default:
                         break;
                 }
-                room->enemies[i]->health-= damage * player->dcof;
+                room->enemies[i]->health-= damage * player->pcof[DAMAGE];
                 return 2;
             }
         }
@@ -493,7 +493,7 @@ int handleDamage(Player *player,Level * level,WINDOW *gamewin){
                             hit =1 ;
                             switch(wep->weapon){
                                 case MACE:
-                                    e->health -= 5 * player->dcof;
+                                    e->health -= 5 * player->pcof[DAMAGE];
                                     break;
                                 case SWORD:{
                                     int howmany=0;
@@ -503,7 +503,7 @@ int handleDamage(Player *player,Level * level,WINDOW *gamewin){
                                         }
                                     }
                                     player->damage=10 + (howmany-1) * 5;
-                                    e->health -= player->damage * player->dcof;
+                                    e->health -= player->damage * player->pcof[DAMAGE];
                                     break;
                                 }
                                 default:
@@ -830,17 +830,7 @@ void handleVision(Level* level,Player* player){
                         }
                         room->potions[i]->taken=1;
                         player->potions[player->potions_count++]=room->potions[i];
-                        switch(room->potions[i]->potion){
-                            case SPEED:
-                                player->spc++;
-                                break;
-                            case HEALTH:
-                                player->hpc++;
-                                break;
-                            case DAMAGE:
-                                player->dpc++;
-                                break;
-                        }
+                        player->diffp[room->potions[i]->potion]+=1;
                         break;
                     }
                 }
