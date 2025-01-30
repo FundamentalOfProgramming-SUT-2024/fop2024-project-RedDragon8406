@@ -166,29 +166,35 @@ int handlegeneration(Level *level, Player *player){
 
 void handleRegen(Player *player){
     int x = player->sat / (MAXSAT / 4) - 1;
-    player->health+= x * player->pcof[DAMAGE];
+    player->health+= x * player->pcof[HEALTH];
     if(player->health>MAXHEALTH){
         player->health=MAXHEALTH;
     }
 }
 
 
-void handleRot(Player *player){ // needs fixation (im removing the unknown food not the actual food)
-    // basically i need the exact time of recieving to be static not dynamic
+void handleRot(Player *player){ 
     time_t second=time(NULL);
     double difference;
-    for(int i=0;i<player->foods_count;i++){
-        difference=difftime(second,player->foods[i]->ttaken);
-        if(difference>7){
-            player->foods[i]->ttaken=second;
-            if(player->foods[i]->kind==MAM){
-                player->diffc[MAM]-=1;
-                player->diffc[FASED]+=1;
-                player->foods[i]->kind=FASED;
-            }else if(player->foods[i]->kind == AALA || player->foods[i]->kind == JADOO){
-                player->diffc[player->foods[i]->kind]-=1;
-                player->diffc[MAM]+=1;
-                player->foods[i]->kind=MAM;
+    for(int w=0;w<4;w++){
+        for(int i=0;i<player->diffc[w];i++){
+            TakenFood *f=player->takenfoods[w][i];
+            difference=difftime(second,f->ttaken);
+            if(difference>30){
+                f->ttaken=second;
+                switch(w){
+                    case MAM:
+                        player->takenfoods[FASED][player->diffc[FASED]++]=f;
+                        player->diffc[w]-=1;
+                        break;
+                    case AALA:
+                    case JADOO:
+                        player->takenfoods[MAM][player->diffc[MAM]++]=f;
+                        player->diffc[w]-=1;
+                        break;
+                    default:
+                        break;
+                }
             }
         }
     }
@@ -695,6 +701,13 @@ int corr_index(Point loc, Corridor * corr){
     return -1;
 }
 
+int LenFood(Player *player){
+    int result=0;
+    for(int i=0;i<4;i++){
+        result+=player->diffc[i];
+    }
+    return result;
+}
 
 void handleVision(Level* level,Player* player){
     Room* room=which_room(level,player->loc);
@@ -754,16 +767,16 @@ void handleVision(Level* level,Player* player){
                 }
             }
 
-            if(player->foods_count<MAX_FOOD_COUNT){
+            if(LenFood(player)<MAX_FOOD_COUNT){
                 for(int i=0;i<room->foods_number;i++){
                     if((player->loc.x==room->foods[i]->loc.x && player->loc.y==room->foods[i]->loc.y) ||
                     (player->loc.x-1==room->foods[i]->loc.x && player->loc.y==room->foods[i]->loc.y)){
                         if(room->foods[i]->taken){
                             continue;
                         }
+
                         room->foods[i]->taken=1;
-                        room->foods[i]->ttaken=time(NULL);
-                        player->foods[player->foods_count++]=room->foods[i];
+                        player->takenfoods[room->foods[i]->kind][player->diffc[room->foods[i]->kind]]->ttaken=time(NULL);
                         player->diffc[room->foods[i]->kind]+=1;
                         break;
                     }

@@ -46,4 +46,6 @@ int handleTrajectorymove(Level *level,Weapon * weapon,Point wloc,WINDOW *gamewin
 int handleDamage(Player *player,Level * level,WINDOW *gamewin);
 void handleEnemyDeath(Level *level, Player *player);
 void spawnNewWeapon(Room *room,Player *player,int i, int wway,Weapon *wep);
+
+int LenFood(Player *player);
 #endif

@@ -1,1 +1,2 @@
 change the order of printing items so we won't have problem with the prints
+remove the potion_count later

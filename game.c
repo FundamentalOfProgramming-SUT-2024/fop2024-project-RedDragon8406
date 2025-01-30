@@ -93,7 +93,7 @@ void StartGame(){
         if(!player->pcount[DAMAGE]){player->pcof[DAMAGE]=1;}
 
         handleRegen(player);
-        // handleRot(player);
+        handleRot(player);
 
 
         handleVision(levels[current_level],player);
@@ -143,7 +143,7 @@ void StartGame(){
         const char *title = "LEVEL: ";
         mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) / 2, "%s%d", title,current_level+1);
         mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4 - 5, "Golds: %d", player->golds);
-        mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4 - 15, "Foods: %d", player->foods_count);
+        mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4 - 15, "Foods: %d", LenFood(player));
         mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4 - 27, "Weapons: %d", player->weapons_count);
         mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4 + 5, "Potions: %d ", player->potions_count);
         mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4 + 16, "Sat: %d ", player->sat);
@@ -531,6 +531,9 @@ void PrintLevel(Level* level){
         mvwprintw(gamewin,5,1,"scount : %d:%d ",player->pcof[SPEED],player->pcount[SPEED]);
         mvwprintw(gamewin,6,1,"hcount : %d:%d ",player->pcof[HEALTH],player->pcount[HEALTH]);
         mvwprintw(gamewin,7,1,"dcount : %d:%d ",player->pcof[DAMAGE],player->pcount[DAMAGE]);
+        mvwprintw(gamewin,8,1,"mam:%d aala:%d",player->diffc[0],player->diffc[1]);
+        mvwprintw(gamewin,9,1,"jadoo:%d fased:%d",player->diffc[2],player->diffc[3]);
+
         mvwprintw(gamewin,38+(which),3,"{h:%d w:%d y:%d x:%d}",room->height,room->width,room->start.y,room->start.x);
         mvwprintw(gamewin,34,1,"wcount:%d ",player->wandcount);
         mvwprintw(gamewin,35,1,"acount:%d ",player->arrowcount);
@@ -696,6 +699,7 @@ void food_window(Level *level,Player *player){
     wrefresh(food_window);
     int highlight=0;
     while(1){
+        mvwprintw(food_window,1,(width-strlen(food_intro)-2) / 2,"%s%d",food_intro,LenFood(player));
         mvwprintw(food_window,1,1,"%d",highlight);
         mvwprintw(food_window,3 , 3 ,"normal food %s: %d ","\U0001F353",player->diffc[0]);
         mvwprintw(food_window,5 , 3 ,"super food %s: %d ","\U0001F355",player->diffc[1]);
@@ -724,7 +728,6 @@ void food_window(Level *level,Player *player){
             }
         }
         
-        mvwprintw(food_window, 1, (width - strlen(food_intro)) / 2, "%s%d", food_intro,player->foods_count);
         mvwprintw(food_window, 12, (width - 10) / 2, "Health: %d", player->health); // need some serious design
         mvwprintw(food_window, 14, (width - 14) / 2, "Saturation: %d", player->sat); // need some serious design
 
@@ -744,7 +747,6 @@ void food_window(Level *level,Player *player){
                                 player->sat=MAXSAT;
                             }
                             player->diffc[highlight]-=1;
-                            player->foods_count-=1;
                             should_temp=1;
                         }
                         break;
@@ -1176,11 +1178,17 @@ void init_player(){
     player=(Player *)malloc(sizeof(Player));
     player->golds=0;
     player->fastmove=0;
-    player->foods=(Food **)malloc(MAX_FOOD_COUNT*sizeof(Food *));
-    for(int i=0;i<MAX_FOOD_COUNT;i++){
-        player->foods[i]=(Food *)malloc(sizeof(Food));
+    for(int i=0;i<4;i++){
+        player->takenfoods[i]=(TakenFood **)malloc(MAX_TAKEN_FOOD_COUNT*sizeof(TakenFood *));
+        for(int j=0;j<MAX_FOOD_COUNT;j++){
+            player->takenfoods[i][j]=(TakenFood *)malloc(sizeof(TakenFood));
+        }
     }
-    player->foods_count=0;
+    for(int i=0;i<4;i++){
+        player->diffc[i]=0;
+    }
+
+
     if(!strcmp(settings->difficulty,"hard")){
         player->health=200;
     }
@@ -1220,9 +1228,6 @@ void init_player(){
     player->akey_count=0;
     player->passive=0;
     player->sat=MAXSAT;
-    for(int i=0;i<4;i++){
-        player->diffc[i]=0;
-    }
     for(int i=0;i<3;i++){
         player->diffp[i]=0;
         player->pcof[i]=1;

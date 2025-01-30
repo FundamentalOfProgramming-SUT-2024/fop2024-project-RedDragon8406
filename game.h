@@ -21,7 +21,7 @@
 #define MAXHEALTH 400
 
 #define MAX_WEAPON_IN_ROOM 150
-
+#define MAX_TAKEN_FOOD_COUNT 150
 extern int current_level;
 extern time_t FirstTime,SecondTime;
 
@@ -140,11 +140,14 @@ typedef struct{
 } Potion;
 
 typedef struct{
+    time_t ttaken;
+} TakenFood;
+
+typedef struct{
     Point loc;
     int taken; 
     FOOD kind;
     char code[10];
-    time_t ttaken;
 } Food;
 
 typedef struct{
@@ -239,7 +242,6 @@ typedef struct{
     int akey_count;
     int passive;
     int sat; // saturation
-    int diffc[4];
     int onspeed;
     int damage;
     int dagcount;
@@ -251,6 +253,9 @@ typedef struct{
     int diffp[3];
     int pcof[3];
     int pcount[3];
+
+    TakenFood **takenfoods[4];
+    int diffc[4];
 } Player;
 void StartGame();
 void PrintLevel(Level *level);
