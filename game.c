@@ -88,7 +88,7 @@ void StartGame(){
                 handlegeneration(levels[current_level],player);
             }
         }
-        if(!player->pcount[SPEED]){player->pcof[SPEED]=1;}
+        if(!player->pcount[SPEED]){player->pcof[SPEED]=1;player->onspeed=0;}
         if(!player->pcount[HEALTH]){player->pcof[HEALTH]=1;}
         if(!player->pcount[DAMAGE]){player->pcof[DAMAGE]=1;}
 
@@ -313,7 +313,14 @@ void StartGame(){
         }
         else{
             handlePlayermove(levels[current_level],c,player,gamewin);
-            handleEnemymove(levels[current_level],player,gamewin);
+            if(player->pcof[SPEED]==2){
+                player->onspeed = (player->onspeed + 1) % 2;
+                if(!player->onspeed){
+                    handleEnemymove(levels[current_level],player,gamewin);
+                }
+            }else{
+                handleEnemymove(levels[current_level],player,gamewin);
+            }
         }
         mvwprintw(gamewin, 16, 1, "       ");
         wrefresh(gamewin);
