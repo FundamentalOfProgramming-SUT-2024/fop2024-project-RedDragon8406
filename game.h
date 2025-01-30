@@ -234,7 +234,6 @@ typedef struct{
     Weapon ** weapons;
     int weapons_count;
     Weapon *current_weapon;
-    int cw_index;
     Potion ** potions;
     int potions_count;
     int should_pass;

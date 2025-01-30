@@ -23,6 +23,7 @@ void win_window();
 void lost_window();
 void food_window(Level *level,Player *player);
 void weapon_window(Level *level,Player *player);
+void projwin(Level *level,Player *player);
 void potion_window(Level *level,Player *player);
 void password_window(Level *level, Player *player);
 int importpasswin(Level *level, Player *player, int howmany);
@@ -798,33 +799,334 @@ void food_window(Level *level,Player *player){
 
 }
 
-void weapon_window(Level *level,Player *player){
+void meleewin(Level *level,Player *player){
     // pre configuration
     int height = 30;
-    int width = 50;
+    int width = 70;
+    int starty = (LINES - height) / 2;
+    int startx = (COLS - width) / 2;
+
+    WINDOW *melee_window = newwin(height, width, starty, startx);
+    keypad(melee_window, TRUE); // enable keypad
+    box(melee_window, 0, 0);
+    curs_set(0);    
+}
+void projwin(Level *level,Player *player){
+    // pre configuration
+    int height = 20;
+    int width = 100;
+    int starty = (LINES - height) / 2;
+    int startx = (COLS - width) / 2;
+
+    WINDOW *proj_win = newwin(height, width, starty, startx);
+    keypad(proj_win, TRUE); // enable keypad
+    curs_set(0);    
+    init_pair(34,34,COLOR_BLACK);
+    Weapon *dag=NULL;
+    Weapon *wand=NULL;
+    Weapon *arrow=NULL;
+    Weapon *highlight;
+    Weapon *which[3];
+    for(int i=0;i<player->weapons_count;i++){
+        if(player->weapons[i]->weapon==DAGGER){
+            dag=player->weapons[i];
+        }
+        if(player->weapons[i]->weapon==WAND){
+            wand=player->weapons[i];
+        }
+        if(player->weapons[i]->weapon==ARROW){
+            arrow=player->weapons[i];
+        }
+    }
+    which[0]=dag;
+    which[1]=wand;
+    which[2]=arrow;
+    int ww;
+    highlight=dag;
+    ww=0;
+    if(highlight==NULL){
+        highlight=wand;
+        ww=1;
+    }
+    if(highlight==NULL){
+        highlight=arrow;
+        ww=2;
+    }
+    char *select[] = {
+        "          _           _   ",
+        " ___  ___| | ___  ___| |_ ",
+        "/ __|/ _ \\ |/ _ \\/ __| __|",
+        "\\__ \\  __/ |  __/ (__| |_ ",
+        "|___/\\___|_|\\___|\\___|\\__|",
+        NULL
+    };
+
+    while(1){
+        box(proj_win, 0, 0);
+        highlight=which[ww];
+        mvwprintw(proj_win,1,1,"%d",ww);
+        if(dag!=NULL){
+            if(dag==player->current_weapon){
+                wattron(proj_win,WA_BLINK);
+            }
+            
+            mvwprintw(proj_win,3,12,"dagger %s",dag->code);
+            mvwprintw(proj_win,5,3,"damage: %d",12);
+            mvwprintw(proj_win,5,17,"quantity : %d",player->dagcount);
+            if(dag==player->current_weapon){
+                wattroff(proj_win,WA_BLINK);
+            }
+            if(dag==highlight){
+                wattron(proj_win,COLOR_PAIR(34));
+            }
+            for(int i=0;select[i]!=NULL;i++){
+                mvwprintw(proj_win,10+i,3,"%s",select[i]);
+            }
+            if(dag==highlight){
+                wattroff(proj_win,COLOR_PAIR(34));
+            }
+        }
+        if(wand!=NULL){
+            if(wand==player->current_weapon){
+                wattron(proj_win,WA_BLINK);
+            }
+            mvwprintw(proj_win,3,(width-4)/2,"wand %s",wand->code);
+            mvwprintw(proj_win,5,(width-22)/2,"damage: %d",15);
+            mvwprintw(proj_win,5,(width+8)/2,"quantity : %d",player->wandcount);
+            if(wand==player->current_weapon){
+                wattroff(proj_win,WA_BLINK);
+            }
+            if(wand==highlight){
+                wattron(proj_win,COLOR_PAIR(34));
+            }
+            for(int i=0;select[i]!=NULL;i++){
+                mvwprintw(proj_win,10+i,38,"%s",select[i]);
+            }
+            if(wand==highlight){
+                wattroff(proj_win,COLOR_PAIR(34));
+            }
+        }
+        if(arrow!=NULL){
+            if(arrow==player->current_weapon){
+                wattron(proj_win,WA_BLINK);
+            }
+            mvwprintw(proj_win,3,width-20,"arrow %s",arrow->code);
+            mvwprintw(proj_win,5,width-27,"damage: %d",5);
+            mvwprintw(proj_win,5,width-15,"quantity : %d",player->arrowcount);
+            if(arrow==player->current_weapon){
+                wattroff(proj_win,WA_BLINK);
+            }
+            if(arrow==highlight){
+                wattron(proj_win,COLOR_PAIR(34));
+            }
+            for(int i=0;select[i]!=NULL;i++){
+                mvwprintw(proj_win,10+i,71,"%s",select[i]);
+            }
+            if(arrow==highlight){
+                wattroff(proj_win,COLOR_PAIR(34));
+            }
+        }
+        
+        wrefresh(proj_win);
+        int c=wgetch(proj_win);
+        switch(c){
+            case KEY_BACKSPACE:
+                wclear(proj_win);
+                wrefresh(proj_win);
+                delwin(proj_win);
+                return;
+            case KEY_LEFT:
+                if(ww==0){
+                    if(which[2]!=NULL){
+                        ww=2;
+                        break;
+                    }if(which[1]!=NULL){
+                        ww=1;
+                        break;
+                    }
+                    break;
+                }else if(ww==1){
+                    if(which[0]!=NULL){
+                        ww=0;
+                        break;
+                    }
+                    if(which[2]!=NULL){
+                        ww=2;
+                        break;
+                    }
+                    break;
+                }else if(ww==2){
+                    if(which[1]!=NULL){
+                        ww=1;
+                        break;
+                    }if(which[0]!=NULL){
+                        ww=0;
+                        break;
+                    }
+                    break;
+                }
+                break;
+            case KEY_RIGHT:
+                if(ww==0){
+                    if(which[1]!=NULL){
+                        ww=1;
+                        break;
+                    }if(which[2]!=NULL){
+                        ww=2;
+                        break;
+                    }
+                    break;
+                }else if(ww==1){
+                    if(which[2]!=NULL){
+                        ww=2;
+                        break;
+                    }
+                    if(which[0]!=NULL){
+                        ww=0;
+                        break;
+                    }
+                    break;
+                }else if(ww==2){
+                    if(which[0]!=NULL){
+                        ww=0;
+                        break;
+                    }if(which[1]!=NULL){
+                        ww=1;
+                        break;
+                    }
+                    break;
+                }
+                break;
+
+            case 10:
+                player->current_weapon=which[ww];
+                break;
+            default:
+                break;
+        }
+    }
+
+
+}
+
+void intToRoman(int num, char *roman) {
+    struct Numeral {
+        int value;
+        const char *symbol;
+    } numerals[] = {
+        {1000, "M"}, {900, "CM"}, {500, "D"}, {400, "CD"},
+        {100,  "C"}, {90,  "XC"}, {50,  "L"}, {40,  "XL"},
+        {10,   "X"}, {9,   "IX"}, {5,   "V"}, {4,   "IV"},
+        {1,    "I"}
+    };
+    int i = 0;
+    roman[0] = '\0'; 
+    while (num > 0) {
+        while (num >= numerals[i].value) {
+            strcat(roman, numerals[i].symbol);
+            num -= numerals[i].value;
+        }
+        i++;
+    }
+}
+
+// int main() {
+//     int number = 3; // Example input
+//     char romanNumeral[20]; // Buffer to store the Roman numeral string
+//     intToRoman(number, romanNumeral);
+//     printf("%d in Roman numerals is %s\n", number, romanNumeral);
+//     return 0;
+// }
+
+
+
+
+void weapon_window(Level *level,Player *player){
+    // pre configuration
+    int height = 27;
+    int width = 70;
     int starty = (LINES - height) / 2;
     int startx = (COLS - width) / 2;
 
     WINDOW *weapon_window = newwin(height, width, starty, startx);
     keypad(weapon_window, TRUE); // enable keypad
-    box(weapon_window, 0, 0);
     curs_set(0);
     const char *weapon_intro = "number of weapons collected: ";
     int c;
     wrefresh(weapon_window);
     mvwprintw(weapon_window, 1, (width - strlen(weapon_intro)) / 2, "%s%d/%d", weapon_intro,player->weapons_count,MAX_WEAPON_COUNT);
-    int highlight=player->cw_index;
+    int highlight=0;
+
+    char *axe[] = {
+        "  ,  /\\  .",
+        " //`-||-'\\\\",
+        "(| -=||=- |)",
+        " \\\\,-||-.//",
+        "  `  ||  '",
+        "     ||",
+        "     ||",
+        "     ||",
+        "     ||",
+        "     ||",
+        "     ||",
+        "     ()",
+        NULL
+    };
+
+    char *arrow[] = {
+    "  4$$-.",
+    "  4   \".",
+    "  4    ^.",
+    "  4      $",
+    "  4      \"b.",
+    "  4        $",
+    "  4        $r",
+    "-$b========444=====->",
+    "  4        $r",
+    "  4        $",
+    "  4      \"b.",
+    "  4      $",
+    "  4    ,,",
+    "  J.  ,\"",
+    " '$$-'",
+    NULL
+};
+
+    init_pair(34,34,COLOR_BLACK);
+    init_pair(196,196,COLOR_BLACK);
+
     while(1){
-        for(int i=0;i<player->weapons_count;i++){
-            mvwprintw(weapon_window,4+2*i,5,"weapon %d: %s                        ",i+1,player->weapons[i]->code);
-            if(i==player->cw_index){
-                mvwprintw(weapon_window,4+2*i,5,"weapon %d: %s <--- selecetd weapon",i+1,player->weapons[i]->code);
+        box(weapon_window, 0, 0);
+        if(highlight==0){
+            wattron(weapon_window,WA_BLINK);
+        }
+        for (int i = 0; axe[i] != NULL; i++) {
+            mvwprintw(weapon_window,6+i,10, "%s", axe[i]);
+        }
+        for (int i = 0; arrow[i] != NULL; i++) {
+            mvwprintw(weapon_window, 4+i, 42, "%s", arrow[i]);
+        }
+        if(highlight==0){
+            wattroff(weapon_window,WA_BLINK);
+        }
+        int x=(player->wktaken[WAND] || player->wktaken[ARROW] || player->wktaken[DAGGER]);
+
+        mvwprintw(weapon_window,22,10,"MELEE WEAPONS");
+        mvwprintw(weapon_window,22,38,"PROJECTILE WEAPONS");
+        if(highlight){
+            if(x){
+                wattron(weapon_window,COLOR_PAIR(34));
+                mvwprintw(weapon_window,22,38,"PROJECTILE WEAPONS");
+                wattroff(weapon_window,COLOR_PAIR(34));
+            }else{
+                wattron(weapon_window,COLOR_PAIR(196));
+                mvwprintw(weapon_window,22,38,"PROJECTILE WEAPONS");
+                wattroff(weapon_window,COLOR_PAIR(196));
             }
-            if(i==highlight){
-                wattron(weapon_window,A_REVERSE);
-                mvwprintw(weapon_window,4+2*i,5,"weapon %d:",i+1);
-                wattroff(weapon_window,A_REVERSE);
-            }
+        }else{
+            wattron(weapon_window,COLOR_PAIR(34));
+            mvwprintw(weapon_window,22,10,"MELEE WEAPONS");
+            wattroff(weapon_window,COLOR_PAIR(34));
         }
         wrefresh(weapon_window);
         c=wgetch(weapon_window);
@@ -835,27 +1137,20 @@ void weapon_window(Level *level,Player *player){
                 PrintLevel(level);
                 return;
 
-            case KEY_DOWN:
-                highlight++;
-                if(highlight<player->weapons_count){
-                    continue;
-                }
-                else{
-                    highlight=0;
-                }
-                break;
-            case KEY_UP:
-                highlight--;
-                if(highlight>=0){
-                    continue;
-                }
-                else{
-                    highlight=player->weapons_count-1;
-                }
+            case KEY_RIGHT:
+            case KEY_LEFT:
+                highlight=(highlight+1) % 2;
                 break;
             case 10: // enter
-                player->cw_index=highlight;
-                player->current_weapon=player->weapons[player->cw_index];
+                if(highlight){
+                    if(x){
+                        wclear(weapon_window);
+                        wrefresh(weapon_window);
+                        projwin(level,player);
+                    }
+                }else{
+                    continue;
+                }
                 break;
             default:
                 break;
@@ -1211,7 +1506,6 @@ void init_player(){
     strcpy(player->weapons[0]->code,"\u2692");
     player->weapons[0]->taken=1;
     player->current_weapon=player->weapons[0];
-    player->cw_index=0;
 
 
     player->potions_count=0;

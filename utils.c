@@ -1190,7 +1190,7 @@ void add_potions_to_room(Room *room){
 
 
 void add_weapons_to_room(Room *room){
-    room->weapons_number = rand() %((room->height*room->width)/50);
+    room->weapons_number = rand() %((room->height*room->width)/10);
     if(room->rt==TREASURE){
         room->weapons_number=0;
     }
