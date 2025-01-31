@@ -101,13 +101,10 @@ void print_menu(WINDOW *menu_win, int highlight, int n_choices) {
 void handle_logged_in_choice(WINDOW *menu_win, int choice, int highlight) {
     switch (choice) {
         case 1: // Start Game
-            StartGame();
+            StartGame(0);
             break;
         case 2: // Load Game
-            mvprintw(23, 0, "Load Game clicked\n");
-            clrtoeol();
-            refresh();
-            getch();
+            StartGame(1);
             break;
         case 3: // Profile
             show_profile();
@@ -133,7 +130,7 @@ void handle_logged_in_choice(WINDOW *menu_win, int choice, int highlight) {
 void handle_logged_out_choice(WINDOW *menu_win, int choice, int highlight) {
     switch (choice) {
         case 1: // Start Game
-            StartGame();
+            StartGame(0);
             break;
         case 2: // Login/Signup
             authentication_window();

@@ -6,5 +6,5 @@
 #include "utils.h"
 
 void SaveGame(Level **levels,Player *player, int li[5]);
-void LoadGame();
+void LoadGame(Level **levels,Player *player, int li[5]);
 #endif 

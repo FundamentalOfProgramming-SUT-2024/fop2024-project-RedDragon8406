@@ -256,7 +256,7 @@ typedef struct{
     int lasthit;
     int changelevel;
 } Player;
-void StartGame();
+void StartGame(int situation);
 void PrintLevel(Level *level);
 int importpasswin(Level *level, Player *player, int howmany);
 

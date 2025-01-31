@@ -18,7 +18,7 @@
 
 void InitLevelRoom(Level * level);
 void InitFinalLevel(Level *level);
-void StartGame();
+void StartGame(int situation);
 void PrintLevel(Level* level); // here
 void win_window();
 void lost_window();
@@ -36,32 +36,43 @@ time_t FirstTime,SecondTime;
 int current_level;
 WINDOW * gamewin;
 Player *player;
-void StartGame(){
+void StartGame(int situation){
     init_player();
     
     FirstTime=time(NULL);
     SecondTime=time(NULL); // just some inits
 
     current_level=0;
-    Level **levels=(Level **)malloc(5*sizeof(Level *));
-    for(int i=0;i<4;i++){
-        levels[i]=(Level *)malloc(sizeof(Level));
-        levels[i]->len_rooms=6;
-        levels[i]->rooms=(Room **)malloc(levels[i]->len_rooms*sizeof(Room *));
-    }
-    levels[4]=(Level *)malloc(sizeof(Level));
-    levels[4]->len_rooms=1;
-    levels[4]->rooms=(Room **)malloc(levels[4]->len_rooms*sizeof(Room *));
-    
+    Level **levels;
+    levels=(Level **)malloc(5*sizeof(Level *));
     gamewin = newwin(win_height,win_width,0,0);
     noecho();
     keypad(gamewin,true);
     clear();
-    
-
-    InitLevelRoom(levels[0]);
     int levels_initialization[5]={1,0,0,0,0};
-    add_player_to_level(levels[0],player);
+    
+    if(!situation){
+        for(int i=0;i<4;i++){
+            levels[i]=(Level *)malloc(sizeof(Level));
+            levels[i]->len_rooms=6;
+            levels[i]->rooms=(Room **)malloc(levels[i]->len_rooms*sizeof(Room *));
+        }
+        levels[4]=(Level *)malloc(sizeof(Level));
+        levels[4]->len_rooms=1;
+        levels[4]->rooms=(Room **)malloc(levels[4]->len_rooms*sizeof(Room *));
+        InitLevelRoom(levels[0]);
+        add_player_to_level(levels[0],player);
+    }else{
+        char ipath[100];
+        snprintf(ipath,sizeof(ipath),"saves/%s.db",current_user->username);
+        FILE *fi=fopen(ipath,"r");
+        fscanf(fi,"%d %d %d %d %d",&levels_initialization[0],&levels_initialization[1],
+        &levels_initialization[2],&levels_initialization[3],&levels_initialization[4]);
+        fclose(fi);
+        LoadGame(levels,player,levels_initialization);
+        add_player_to_level(levels[current_level],player);
+    }
+
     refresh();
     int c;
     while(1){
