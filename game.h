@@ -257,6 +257,7 @@ typedef struct{
     int diffc[4];
 
     int lasthit;
+    int changelevel;
 } Player;
 void StartGame();
 void PrintLevel(Level *level);

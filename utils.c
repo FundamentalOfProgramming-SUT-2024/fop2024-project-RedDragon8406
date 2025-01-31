@@ -55,8 +55,8 @@ int RXRG(int x_subwindow,int widthroom){
 
 
 void add_player_to_level(Level* level,Player* player){
-    player->loc.x=level->rooms[0]->start.x+1;
-    player->loc.y=level->rooms[0]->start.y+1;
+    player->loc.x=level->bstaircase->loc.x;
+    player->loc.y=level->bstaircase->loc.y;
 }
 
 Room * which_room(Level *level,Point loc){
@@ -81,6 +81,20 @@ Door * is_door(Level*level, Point loc){
     }
     return NULL;
 }
+
+Window * is_window(Level *level, Point loc){
+    Room *room;
+    for(int j=0;j<level->len_rooms;j++){
+        room=level->rooms[j];
+        for(int i=0;i<room->windows_number;i++){
+            if(room->windows[i]->loc.x == loc.x && room->windows[i]->loc.y == loc.y){
+                return room->windows[i];
+            }
+        }
+    }
+    return NULL;
+}
+
 int check_wall_collide(Level* level,Room* room,Point next_move){
     if (which_room(level,next_move)==NULL){
         if(is_door(level,next_move)!=NULL){
@@ -267,6 +281,29 @@ int handlePlayermove(Level *level,int ch,Player *player,WINDOW *gamewin){
     Room *room=which_room(level,player->loc);
     if(is_door(level,np)!=NULL && !is_door(level,np)->show){
         is_door(level,np)->show=1;
+        return 0;
+    }
+    if(is_window(level,np)!=NULL){
+        Window *win=is_window(level,np);
+        Point loc;
+        loc=np;
+        if(win->side){
+            while(loc.x<win_width){
+                loc.x+=1;
+                if(which_room(level,loc)!=NULL){
+                    which_room(level,loc)->show=1;
+                    return 0;
+                }
+            }
+        }else{
+            while(loc.x>0){
+                loc.x-=1;
+                if(which_room(level,loc) !=NULL){
+                    which_room(level,loc)->show=1;
+                    return 0;
+                }
+            }
+        }
         return 0;
     }
     if(is_door(level,np)!=NULL && is_door(level,np)->kind==PASS){
@@ -1191,7 +1228,7 @@ void add_potions_to_room(Room *room){
 
 
 void add_weapons_to_room(Room *room){
-    room->weapons_number = rand() %((room->height*room->width)/20);
+    room->weapons_number = rand() %((room->height*room->width)/50);
     if(room->rt==TREASURE){
         room->weapons_number=0;
     }

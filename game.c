@@ -102,7 +102,8 @@ void StartGame(){
 
 
         
-        if(in_staircase(levels[current_level],player->loc)){
+        if(in_staircase(levels[current_level],player->loc) && player->changelevel){
+            player->changelevel=0;
             if(current_level<3){
                 wclear(gamewin);
                 if(!levels_initialization[++current_level]){
@@ -128,7 +129,8 @@ void StartGame(){
                 win_window();
             }
         }
-        else if(in_bstaircase(levels[current_level],player->loc)){
+        else if(in_bstaircase(levels[current_level],player->loc) && player->changelevel){
+            player->changelevel=0;
             if(current_level>0){
                 wclear(gamewin);
                 if(!levels_initialization[--current_level]){
@@ -140,6 +142,7 @@ void StartGame(){
                 PrintLevel(levels[current_level]);
             }
         }
+        player->changelevel=0;
 
         const char *title = "LEVEL: ";
         mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) / 2, "%s%d", title,current_level+1);
@@ -253,6 +256,9 @@ void StartGame(){
             break;
         case 'r':
             handleDamage(player,levels[current_level],gamewin,player->lasthit);
+            break;
+        case 10:
+            player->changelevel=1;
             break;
         default:
             break;
@@ -1062,7 +1068,7 @@ void projwin(Level *level,Player *player){
         NULL
     };
 
-    init_pair(240,240,COLOR_BLACK);
+    init_pair(242,242,COLOR_BLACK);
     init_pair(196,196,COLOR_BLACK);
     init_pair(226,226,COLOR_BLACK);
     init_pair(40,40,COLOR_BLACK);
@@ -1082,7 +1088,7 @@ void projwin(Level *level,Player *player){
 
 
             if(player->dagcount==0){
-                wattron(proj_win,COLOR_PAIR(240));
+                wattron(proj_win,COLOR_PAIR(242));
             }else if(player->dagcount<5){
                 wattron(proj_win,COLOR_PAIR(196));
             }else if(player->dagcount<10){
@@ -1092,7 +1098,7 @@ void projwin(Level *level,Player *player){
             }
             mvwprintw(proj_win,7,10,"quantity : %d",player->dagcount);
             if(player->dagcount==0){
-                wattroff(proj_win,COLOR_PAIR(240));
+                wattroff(proj_win,COLOR_PAIR(242));
             }else if(player->dagcount<5){
                 wattroff(proj_win,COLOR_PAIR(196));
             }else if(player->dagcount<10){
@@ -1124,7 +1130,7 @@ void projwin(Level *level,Player *player){
             mvwprintw(proj_win,5,(width-22)/2,"damage: %d",15);
             mvwprintw(proj_win,5,(width+8)/2-2,"range: %d",10);
             if(player->wandcount==0){
-                wattron(proj_win,COLOR_PAIR(240));
+                wattron(proj_win,COLOR_PAIR(242));
             }else if(player->wandcount<5){
                 wattron(proj_win,COLOR_PAIR(196));
             }else if(player->wandcount<10){
@@ -1134,7 +1140,7 @@ void projwin(Level *level,Player *player){
             }
             mvwprintw(proj_win,7,(width-4)/2-3,"quantity : %d",player->wandcount);
             if(player->wandcount==0){
-                wattroff(proj_win,COLOR_PAIR(240));
+                wattroff(proj_win,COLOR_PAIR(242));
             }else if(player->wandcount<5){
                 wattroff(proj_win,COLOR_PAIR(196));
             }else if(player->wandcount<10){
@@ -1163,7 +1169,7 @@ void projwin(Level *level,Player *player){
             mvwprintw(proj_win,5,width-27,"damage: %d",5);
             mvwprintw(proj_win,5,width-15,"range: %d",5);
             if(player->arrowcount==0){
-                wattron(proj_win,COLOR_PAIR(240));
+                wattron(proj_win,COLOR_PAIR(242));
             }else if(player->arrowcount<5){
                 wattron(proj_win,COLOR_PAIR(196));
             }else if(player->arrowcount<10){
@@ -1173,7 +1179,7 @@ void projwin(Level *level,Player *player){
             }
             mvwprintw(proj_win,7,width-22,"quantity : %d",player->arrowcount);
             if(player->arrowcount==0){
-                wattroff(proj_win,COLOR_PAIR(240));
+                wattroff(proj_win,COLOR_PAIR(242));
             }else if(player->arrowcount<5){
                 wattroff(proj_win,COLOR_PAIR(196));
             }else if(player->arrowcount<10){
@@ -1781,4 +1787,5 @@ void init_player(){
     player->wktaken[3]=0;
     player->wktaken[4]=0;
     player->lasthit=0;
+    player->changelevel=0;
 }

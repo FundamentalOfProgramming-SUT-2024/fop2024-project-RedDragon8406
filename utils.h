@@ -14,6 +14,7 @@ void add_windows_to_room(Room *room);
 void add_staircase_to_level(Level *level);
 Room * which_room(Level *level,Point loc);
 Door * is_door(Level *level,Point loc);
+Window * is_window(Level *level, Point loc);
 int check_wall_collide(Level* level,Room* room,Point next_move);
 void add_player_to_level(Level* level,Player* player);
 int handlePlayermove(Level *level,int ch,Player *player,WINDOW *gamewin);
