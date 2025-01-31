@@ -1291,8 +1291,6 @@ void add_weapons_to_room(Room *room){
         }
         room->weapons[i]=(Weapon *)malloc(sizeof(Weapon));
         room->weapons[i]->loc=first_guess;
-        // first_guess.x++;
-        // room->weapons[i]->nloc=first_guess;
         room->weapons[i]->taken=0;
         room->weapons[i]->weapon= rand () % 4 + 1;
         switch(room->weapons[i]->weapon){

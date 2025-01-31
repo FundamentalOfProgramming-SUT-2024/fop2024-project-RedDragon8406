@@ -123,7 +123,6 @@ typedef struct{
 
 typedef struct{
     Point loc;
-    Point nloc;
     Wep weapon;
     char code[20];
     int taken;

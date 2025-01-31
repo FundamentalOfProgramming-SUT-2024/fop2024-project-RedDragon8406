@@ -27,6 +27,7 @@ void projwin(Level *level,Player *player);
 void potion_window(Level *level,Player *player);
 void password_window(Level *level, Player *player);
 int importpasswin(Level *level, Player *player, int howmany);
+void pause_window(Level *level,Player *player);
 void init_player();
 
 
@@ -156,15 +157,16 @@ void StartGame(){
         c=wgetch(gamewin);
         switch (c){
         case KEY_BACKSPACE:
-            clear();
-            endwin();
-            refresh();
-            if(current_user!=NULL){
-                current_user->golds+=player->golds;
-                current_user->points+=player->golds*5;
-                save_user_data(current_user); // temp
-            }
-            show_main_menu();
+            // clear();
+            // endwin();
+            // refresh();
+            // if(current_user!=NULL){
+            //     current_user->golds+=player->golds;
+            //     current_user->points+=player->golds*5;
+            //     save_user_data(current_user); // temp
+            // }
+            // show_main_menu();
+            pause_window(levels[current_level],player);
             break;
         case 'p':
             if(current_level<3){
@@ -1289,8 +1291,6 @@ void projwin(Level *level,Player *player){
 
 
 
-
-
 void weapon_window(Level *level,Player *player){
     // pre configuration
     int height = 27;
@@ -1411,7 +1411,7 @@ void weapon_window(Level *level,Player *player){
 
 void potion_window(Level *level,Player *player){
     // pre configuration
-    int height = 20;
+    int height = 25;
     int width = 55;
     int starty = (LINES - height) / 2;
     int startx = (COLS - width) / 2;
@@ -1426,9 +1426,33 @@ void potion_window(Level *level,Player *player){
     mvwprintw(potion_window, 1, (width - strlen(potion_intro)) / 2,
      "%s%d/%d", potion_intro,player->potions_count,MAX_POTION_COUNT);
     
+
+    char *skel[] = {
+        "    .-.",
+        "   (o.o)",
+        "    |=|",
+        "   __|__",
+        " //.=|=.\\\\",
+        "// .=|=. \\\\",
+        "\\\\ .=|=. //",
+        " \\\\(_=_)//",
+        "  (:| |:)",
+        "   || ||",
+        "   () ()",
+        "   || ||",
+        "   || ||",
+        "  ==' '==",
+        NULL
+    };
+
+
     int highlight=0;
     init_pair(34,34,COLOR_BLACK);
     init_pair(196,196,COLOR_BLACK);
+
+    init_pair(168,168,COLOR_BLACK); // r
+    init_pair(83,83,COLOR_BLACK); //g
+    init_pair(146,146,COLOR_BLACK); // fake b lol
     while(1){
         mvwprintw(potion_window,4,5,"speed potion %s : %d","\U0001F37E",player->diffp[SPEED]);
         mvwprintw(potion_window,6,5,"damage potion %s : %d","\U0001F37C",player->diffp[DAMAGE]);
@@ -1436,6 +1460,40 @@ void potion_window(Level *level,Player *player){
         mvwprintw(potion_window,4,35,"CONSUME POTION");
         mvwprintw(potion_window,6,35,"CONSUME POTION");
         mvwprintw(potion_window,8,35,"CONSUME POTION");
+
+
+        wattron(potion_window,WA_BLINK);
+        if(player->pcof[SPEED]!=1){
+            wattron(potion_window,COLOR_PAIR(83));
+        }
+        if(player->pcof[DAMAGE]!=1){
+            wattron(potion_window,COLOR_PAIR(146));
+        }
+        if(player->pcof[HEALTH]!=1){
+            wattron(potion_window,COLOR_PAIR(168));
+        }
+
+
+        for(int i=0;skel[i]!=NULL;i++){
+            mvwprintw(potion_window,10+i,22,"%s",skel[i]);
+        }
+
+
+        if(player->pcof[SPEED]!=1){
+            wattroff(potion_window,COLOR_PAIR(83));
+        }
+        if(player->pcof[DAMAGE]!=1){
+            wattroff(potion_window,COLOR_PAIR(146));
+        }
+        if(player->pcof[HEALTH]!=1){
+            wattroff(potion_window,COLOR_PAIR(168));
+        }
+        wattroff(potion_window,WA_BLINK);
+
+
+
+
+
 
         if(player->diffp[highlight]>0){
             wattron(potion_window,COLOR_PAIR(34));
@@ -1714,6 +1772,79 @@ int importpasswin(Level *level, Player *player, int howmany){
 }
 
 
+void pause_window(Level *level,Player *player){
+    // pre configuration
+    int height = 25;
+    int width = 30;
+    int starty = (LINES - height) / 2;
+    int startx = (COLS - width) / 2;
+
+    WINDOW *pausewin = newwin(height, width, starty, startx);
+    keypad(pausewin, TRUE);
+    box(pausewin, 0, 0);
+    char texts[3][100];
+    strcpy(texts[0],"resume");
+    strcpy(texts[1],"quit");
+    strcpy(texts[2],"save and quit");
+    const char *pause_intro = "here is the password: ";
+    int highlight=0;
+    while(1){
+        mvwprintw(pausewin,1,(width-strlen(pause_intro))/2,"%s",pause_intro);
+        for(int i=0;i<3;i++){
+            if(highlight==i){
+                wattron(pausewin,A_REVERSE);
+            }
+            mvwprintw(pausewin,3+2*i,(width-strlen(texts[i]))/2,"%s",texts[i]);
+            if(highlight==i){
+                wattroff(pausewin,A_REVERSE);
+            }
+        }
+
+        int c=wgetch(pausewin);
+        switch(c){
+            case KEY_BACKSPACE:
+                wclear(pausewin);
+                wrefresh(pausewin);
+                delwin(pausewin);
+                return;
+            case KEY_DOWN:
+                highlight=(highlight+1) % 3;
+                break;
+            case KEY_UP:
+                highlight=highlight?highlight-1:2;
+                break;
+            case 10:
+                switch(highlight){
+                    case 0:
+                        wclear(pausewin);
+                        wrefresh(pausewin);
+                        delwin(pausewin);
+                        return;
+                    case 1:
+                        wclear(pausewin);
+                        wrefresh(pausewin);
+                        delwin(pausewin);
+                        show_main_menu();
+                        break;
+                    case 2:
+                        wclear(pausewin);
+                        wrefresh(pausewin);
+                        delwin(pausewin);
+                        if(current_user!=NULL){
+                            current_user->golds+=player->golds;
+                            current_user->points+=player->golds*5;
+                            save_user_data(current_user); // temp
+                        }
+                        show_main_menu();
+                            break;
+                }
+                break;
+            default:
+                break;
+        }
+    }
+    curs_set(0);
+}
 
 
 
