@@ -478,7 +478,7 @@ void spawnNewWeapon(Room *room,Player *player,int i, int wway,Weapon *wep){
     room->weapons[room->weapons_number++]=newwep;
 }
 
-int handleDamage(Player *player,Level * level,WINDOW *gamewin){
+int handleDamage(Player *player,Level * level,WINDOW *gamewin, int lh){
     Room * room=which_room(level,player->loc);
     if(room == NULL){
         return 0;
@@ -523,7 +523,12 @@ int handleDamage(Player *player,Level * level,WINDOW *gamewin){
             int enough=1;
             int traj=0;
             int wway;
-            wway=wgetch(gamewin);
+            if(lh){
+                wway=lh;
+            }else{
+                wway=wgetch(gamewin);
+            }
+            player->lasthit=wway;
             switch(wep->weapon){
                 case WAND:
                     traj=10;
@@ -1186,7 +1191,7 @@ void add_potions_to_room(Room *room){
 
 
 void add_weapons_to_room(Room *room){
-    room->weapons_number = rand() %((room->height*room->width)/50);
+    room->weapons_number = rand() %((room->height*room->width)/20);
     if(room->rt==TREASURE){
         room->weapons_number=0;
     }

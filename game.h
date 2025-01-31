@@ -248,7 +248,6 @@ typedef struct{
     int wandcount;
     int swordcount;
     int wktaken[5]; //kind of weapon taken
-    int hitagain;
 
     int diffp[3];
     int pcof[3];
@@ -256,6 +255,8 @@ typedef struct{
 
     TakenFood **takenfoods[4];
     int diffc[4];
+
+    int lasthit;
 } Player;
 void StartGame();
 void PrintLevel(Level *level);

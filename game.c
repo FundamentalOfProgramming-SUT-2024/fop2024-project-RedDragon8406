@@ -207,7 +207,7 @@ void StartGame(){
             }
             break;
         
-        case 'r':
+        case 'f':
             wclear(gamewin);
             wrefresh(gamewin);
             food_window(levels[current_level],player);
@@ -249,9 +249,10 @@ void StartGame(){
             player->passive = (player->passive + 1) % 2;
             break;
         case ' ':
-            handleDamage(player,levels[current_level],gamewin);
-            player->hitagain=1;
+            handleDamage(player,levels[current_level],gamewin,0);
             break;
+        case 'r':
+            handleDamage(player,levels[current_level],gamewin,player->lasthit);
             break;
         default:
             break;
@@ -1061,6 +1062,11 @@ void projwin(Level *level,Player *player){
         NULL
     };
 
+    init_pair(240,240,COLOR_BLACK);
+    init_pair(196,196,COLOR_BLACK);
+    init_pair(226,226,COLOR_BLACK);
+    init_pair(40,40,COLOR_BLACK);
+
     while(1){
         box(proj_win, 0, 0);
         highlight=which[ww];
@@ -1072,7 +1078,31 @@ void projwin(Level *level,Player *player){
             
             mvwprintw(proj_win,3,12,"dagger %s",dag->code);
             mvwprintw(proj_win,5,3,"damage: %d",12);
-            mvwprintw(proj_win,5,17,"quantity : %d",player->dagcount);
+            mvwprintw(proj_win,5,18,"range: %d",5);
+
+
+            if(player->dagcount==0){
+                wattron(proj_win,COLOR_PAIR(240));
+            }else if(player->dagcount<5){
+                wattron(proj_win,COLOR_PAIR(196));
+            }else if(player->dagcount<10){
+                wattron(proj_win,COLOR_PAIR(226));
+            }else{
+                wattron(proj_win,COLOR_PAIR(40));
+            }
+            mvwprintw(proj_win,7,10,"quantity : %d",player->dagcount);
+            if(player->dagcount==0){
+                wattroff(proj_win,COLOR_PAIR(240));
+            }else if(player->dagcount<5){
+                wattroff(proj_win,COLOR_PAIR(196));
+            }else if(player->dagcount<10){
+                wattroff(proj_win,COLOR_PAIR(226));
+            }else{
+                wattroff(proj_win,COLOR_PAIR(40));
+            }
+            
+            
+            
             if(dag==player->current_weapon){
                 wattroff(proj_win,WA_BLINK);
             }
@@ -1092,7 +1122,26 @@ void projwin(Level *level,Player *player){
             }
             mvwprintw(proj_win,3,(width-4)/2,"wand %s",wand->code);
             mvwprintw(proj_win,5,(width-22)/2,"damage: %d",15);
-            mvwprintw(proj_win,5,(width+8)/2,"quantity : %d",player->wandcount);
+            mvwprintw(proj_win,5,(width+8)/2-2,"range: %d",10);
+            if(player->wandcount==0){
+                wattron(proj_win,COLOR_PAIR(240));
+            }else if(player->wandcount<5){
+                wattron(proj_win,COLOR_PAIR(196));
+            }else if(player->wandcount<10){
+                wattron(proj_win,COLOR_PAIR(226));
+            }else{
+                wattron(proj_win,COLOR_PAIR(40));
+            }
+            mvwprintw(proj_win,7,(width-4)/2-3,"quantity : %d",player->wandcount);
+            if(player->wandcount==0){
+                wattroff(proj_win,COLOR_PAIR(240));
+            }else if(player->wandcount<5){
+                wattroff(proj_win,COLOR_PAIR(196));
+            }else if(player->wandcount<10){
+                wattroff(proj_win,COLOR_PAIR(226));
+            }else{
+                wattroff(proj_win,COLOR_PAIR(40));
+            }
             if(wand==player->current_weapon){
                 wattroff(proj_win,WA_BLINK);
             }
@@ -1112,7 +1161,27 @@ void projwin(Level *level,Player *player){
             }
             mvwprintw(proj_win,3,width-20,"arrow %s",arrow->code);
             mvwprintw(proj_win,5,width-27,"damage: %d",5);
-            mvwprintw(proj_win,5,width-15,"quantity : %d",player->arrowcount);
+            mvwprintw(proj_win,5,width-15,"range: %d",5);
+            if(player->arrowcount==0){
+                wattron(proj_win,COLOR_PAIR(240));
+            }else if(player->arrowcount<5){
+                wattron(proj_win,COLOR_PAIR(196));
+            }else if(player->arrowcount<10){
+                wattron(proj_win,COLOR_PAIR(226));
+            }else{
+                wattron(proj_win,COLOR_PAIR(40));
+            }
+            mvwprintw(proj_win,7,width-22,"quantity : %d",player->arrowcount);
+            if(player->arrowcount==0){
+                wattroff(proj_win,COLOR_PAIR(240));
+            }else if(player->arrowcount<5){
+                wattroff(proj_win,COLOR_PAIR(196));
+            }else if(player->arrowcount<10){
+                wattroff(proj_win,COLOR_PAIR(226));
+            }else{
+                wattroff(proj_win,COLOR_PAIR(40));
+            }
+
             if(arrow==player->current_weapon){
                 wattroff(proj_win,WA_BLINK);
             }
@@ -1711,5 +1780,5 @@ void init_player(){
     player->wktaken[2]=0;
     player->wktaken[3]=0;
     player->wktaken[4]=0;
-    player->hitagain=0;
+    player->lasthit=0;
 }
