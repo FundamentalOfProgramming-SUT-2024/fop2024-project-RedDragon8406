@@ -502,13 +502,7 @@ int handleDamage(Player *player,Level * level,WINDOW *gamewin){
                                     e->health -= 5 * player->pcof[DAMAGE];
                                     break;
                                 case SWORD:{
-                                    int howmany=0;
-                                    for(int k=0;k<player->weapons_count;k++){
-                                        if(player->weapons[k]->weapon==SWORD){
-                                            howmany++;
-                                        }
-                                    }
-                                    player->damage=10 + (howmany-1) * 5;
+                                    player->damage=10 + (player->swordcount-1) * 5;
                                     e->health -= player->damage * player->pcof[DAMAGE];
                                     break;
                                 }
@@ -783,56 +777,58 @@ void handleVision(Level* level,Player* player){
                 }
             }
  
-            if(player->weapons_count<MAX_WEAPON_COUNT){
-                for(int i=0;i<room->weapons_number;i++){
-                    if((player->loc.x==room->weapons[i]->loc.x && player->loc.y==room->weapons[i]->loc.y) ||
-                    (player->loc.x-1==room->weapons[i]->loc.x && player->loc.y==room->weapons[i]->loc.y)){
-                        if(player->loc.x-1==room->weapons[i]->loc.x && player->loc.y==room->weapons[i]->loc.y){
-                            switch(room->weapons[i]->weapon){
-                                case DAGGER:
-                                    if(room->weapons[i]->ifdn==1){
-                                        continue;
-                                    }
-                                    break;
-                                case WAND:
-                                    if(room->weapons[i]->ifwn==1){
-                                        continue;
-                                    }
-                                    break;
-                                case ARROW:
-                                    if(room->weapons[i]->ifan==1){
-                                        continue;
-                                    }
-                                    break;
-                                default:
-                                    break;
-                            }
-                        }
-                        if(room->weapons[i]->taken){
-                            continue;
-                        }
-                        room->weapons[i]->taken=1;
-                        if(!player->wktaken[room->weapons[i]->weapon]){
-                            player->weapons[player->weapons_count++]=room->weapons[i];
-                            player->wktaken[room->weapons[i]->weapon]=1;
-                        }
+
+            for(int i=0;i<room->weapons_number;i++){
+                if((player->loc.x==room->weapons[i]->loc.x && player->loc.y==room->weapons[i]->loc.y) ||
+                (player->loc.x-1==room->weapons[i]->loc.x && player->loc.y==room->weapons[i]->loc.y)){
+                    if(player->loc.x-1==room->weapons[i]->loc.x && player->loc.y==room->weapons[i]->loc.y){
                         switch(room->weapons[i]->weapon){
                             case DAGGER:
-                                player->dagcount+=room->weapons[i]->ifdn;
+                                if(room->weapons[i]->ifdn==1){
+                                    continue;
+                                }
                                 break;
                             case WAND:
-                                player->wandcount+=room->weapons[i]->ifwn;
+                                if(room->weapons[i]->ifwn==1){
+                                    continue;
+                                }
                                 break;
                             case ARROW:
-                                player->arrowcount+=room->weapons[i]->ifan;
+                                if(room->weapons[i]->ifan==1){
+                                    continue;
+                                }
                                 break;
                             default:
                                 break;
                         }
-                        break;
                     }
+                    if(room->weapons[i]->taken){
+                        continue;
+                    }
+                    room->weapons[i]->taken=1;
+                    if(!player->wktaken[room->weapons[i]->weapon]){
+                        player->weapons[player->weapons_count++]=room->weapons[i];
+                        player->wktaken[room->weapons[i]->weapon]=1;
+                    }
+                    switch(room->weapons[i]->weapon){
+                        case DAGGER:
+                            player->dagcount+=room->weapons[i]->ifdn;
+                            break;
+                        case WAND:
+                            player->wandcount+=room->weapons[i]->ifwn;
+                            break;
+                        case ARROW:
+                            player->arrowcount+=room->weapons[i]->ifan;
+                            break;
+                        case SWORD:
+                            player->swordcount+=1;
+                        default:
+                            break;
+                    }
+                    break;
                 }
             }
+            
 
             if(player->potions_count<MAX_POTION_COUNT){
                 for(int i=0;i<room->potions_number;i++){
@@ -1190,7 +1186,7 @@ void add_potions_to_room(Room *room){
 
 
 void add_weapons_to_room(Room *room){
-    room->weapons_number = rand() %((room->height*room->width)/10);
+    room->weapons_number = rand() %((room->height*room->width)/50);
     if(room->rt==TREASURE){
         room->weapons_number=0;
     }

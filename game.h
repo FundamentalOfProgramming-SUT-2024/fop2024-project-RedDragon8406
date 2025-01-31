@@ -221,7 +221,7 @@ typedef struct{
 
 
 #define MAX_FOOD_COUNT 5
-#define MAX_WEAPON_COUNT 10
+#define MAX_WEAPON_COUNT 5
 #define MAX_POTION_COUNT 15
 #define MAX_AKEY_COUNT 4
 typedef struct{
@@ -246,6 +246,7 @@ typedef struct{
     int dagcount;
     int arrowcount;
     int wandcount;
+    int swordcount;
     int wktaken[5]; //kind of weapon taken
     int hitagain;
 

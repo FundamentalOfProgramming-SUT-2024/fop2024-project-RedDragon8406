@@ -799,17 +799,217 @@ void food_window(Level *level,Player *player){
 
 }
 
+
+
+void intToRoman(int num, char *roman) {
+    struct Numeral {
+        int value;
+        const char *symbol;
+    } numerals[] = {
+        {1000, "M"}, {900, "CM"}, {500, "D"}, {400, "CD"},
+        {100,  "C"}, {90,  "XC"}, {50,  "L"}, {40,  "XL"},
+        {10,   "X"}, {9,   "IX"}, {5,   "V"}, {4,   "IV"},
+        {1,    "I"}
+    };
+    int i = 0;
+    roman[0] = '\0'; 
+    while (num > 0) {
+        while (num >= numerals[i].value) {
+            strcat(roman, numerals[i].symbol);
+            num -= numerals[i].value;
+        }
+        i++;
+    }
+}
+
+
+// int main() {
+//     int number = 3; // Example input
+//     char romanNumeral[20]; // Buffer to store the Roman numeral string
+//     intToRoman(number, romanNumeral);
+//     printf("%d in Roman numerals is %s\n", number, romanNumeral);
+//     return 0;
+// }
+
 void meleewin(Level *level,Player *player){
     // pre configuration
-    int height = 30;
-    int width = 70;
+    int height = 25;
+    int width = 100;
     int starty = (LINES - height) / 2;
     int startx = (COLS - width) / 2;
 
     WINDOW *melee_window = newwin(height, width, starty, startx);
     keypad(melee_window, TRUE); // enable keypad
-    box(melee_window, 0, 0);
     curs_set(0);    
+    Weapon *wh[2];
+    wh[0]=player->weapons[0];
+    wh[1]=NULL;
+    int ww=0;
+    for(int i=0;i<player->weapons_count;i++){
+        if(player->weapons[i]->weapon==SWORD){
+            wh[1]=player->weapons[i];
+        }
+    }
+    init_pair(34,34,COLOR_BLACK);
+    init_pair(130,130,COLOR_BLACK);
+    init_pair(214,214,COLOR_BLACK);
+    init_pair(51,51,COLOR_BLACK);
+    init_pair(129,129,COLOR_BLACK);
+
+    char *knife[] = {
+        "      /| ________________",
+        "O|===|* >________________>",
+        "      \\|",
+        NULL
+    };
+    char *sword[] = {
+        "         />_________________________________",
+        "[########[]_________________________________>",
+        "         \\>",
+        NULL
+    };
+    char *select[] = {
+        "          _           _   ",
+        " ___  ___| | ___  ___| |_ ",
+        "/ __|/ _ \\ |/ _ \\/ __| __|",
+        "\\__ \\  __/ |  __/ (__| |_ ",
+        "|___/\\___|_|\\___|\\___|\\__|",
+        NULL
+    };
+
+
+    while(1){
+        box(melee_window, 0, 0);
+        if(wh[0]!=NULL){
+            if(wh[0]==player->current_weapon){
+                wattron(melee_window,WA_BLINK);
+            }
+            for(int i=0;knife[i]!=NULL;i++){
+                mvwprintw(melee_window,3+i,10,"%s",knife[i]);
+            }
+
+            mvwprintw(melee_window,7,19,"mace  %s",wh[0]->code);
+            mvwprintw(melee_window,9,18,"damage: %d",5);
+            if(wh[0]==player->current_weapon){
+                wattroff(melee_window,WA_BLINK);
+            }
+
+
+
+
+
+            if(ww==0){
+                wattron(melee_window,COLOR_PAIR(34));
+            }
+            for(int i=0;select[i]!=NULL;i++){
+                mvwprintw(melee_window,12+i,10,"%s",select[i]);
+            }
+            if(ww==0){
+                wattroff(melee_window,COLOR_PAIR(34));
+            }
+        }
+
+        if(wh[1]!=NULL){
+            if(wh[1]==player->current_weapon){
+                wattron(melee_window,WA_BLINK);
+            }
+            switch(player->swordcount-1){
+                case 0:
+                    break;
+                case 1:
+                    wattron(melee_window,COLOR_PAIR(130));
+                    break;
+                case 2:
+                    wattron(melee_window,COLOR_PAIR(214));
+                    break;
+                case 3:
+                    wattron(melee_window,COLOR_PAIR(51));
+                    break;
+                default:
+                    wattron(melee_window,COLOR_PAIR(129));
+                    break;
+            }
+            for(int i=0;sword[i]!=NULL;i++){
+                mvwprintw(melee_window,3+i,48,"%s",sword[i]);
+            }
+            switch(player->swordcount-1){
+                case 0:
+                    break;
+                case 1:
+                    wattroff(melee_window,COLOR_PAIR(130));
+                    break;
+                case 2:
+                    wattroff(melee_window,COLOR_PAIR(214));
+                    break;
+                case 3:
+                    wattroff(melee_window,COLOR_PAIR(51));
+                    break;
+                default:
+                    wattroff(melee_window,COLOR_PAIR(129));
+                    break;
+            }
+            
+
+
+            mvwprintw(melee_window,7,69,"sword  %s",wh[1]->code);
+            mvwprintw(melee_window,9,60,"damage: %d",10 + (player->swordcount-1) * 5);
+            if(player->swordcount==1){
+                mvwprintw(melee_window,9,75,"sharpness: %d",player->swordcount-1);
+            }else{
+                char rn[20];
+                intToRoman(player->swordcount-1,rn);
+                mvwprintw(melee_window,9,75,"sharpness: %s",rn);
+            }
+            if(wh[1]==player->current_weapon){
+                wattroff(melee_window,WA_BLINK);
+            }
+
+
+
+            if(ww==1){
+                wattron(melee_window,COLOR_PAIR(34));
+            }
+            for(int i=0;select[i]!=NULL;i++){
+                mvwprintw(melee_window,12+i,61,"%s",select[i]);
+            }
+            if(ww==1){
+                wattroff(melee_window,COLOR_PAIR(34));
+            }
+        }
+        wrefresh(melee_window);
+
+
+
+        int c=wgetch(melee_window);
+        switch(c){
+            case KEY_BACKSPACE:
+                wclear(melee_window);
+                wrefresh(melee_window);
+                delwin(melee_window);
+                return;
+            case KEY_LEFT:
+            case KEY_RIGHT:
+                if(ww==1){
+                    if(wh[0]!=NULL){
+                        ww=0;
+                        break;
+                    }
+                }
+                if(ww==0){
+                    if(wh[1]!=NULL){
+                        ww=1;
+                        break;
+                    }
+                }
+                break;
+            case 10:
+                player->current_weapon=wh[ww];
+                break;
+            default:
+                break;
+        }
+    }
+
 }
 void projwin(Level *level,Player *player){
     // pre configuration
@@ -1009,34 +1209,9 @@ void projwin(Level *level,Player *player){
 
 }
 
-void intToRoman(int num, char *roman) {
-    struct Numeral {
-        int value;
-        const char *symbol;
-    } numerals[] = {
-        {1000, "M"}, {900, "CM"}, {500, "D"}, {400, "CD"},
-        {100,  "C"}, {90,  "XC"}, {50,  "L"}, {40,  "XL"},
-        {10,   "X"}, {9,   "IX"}, {5,   "V"}, {4,   "IV"},
-        {1,    "I"}
-    };
-    int i = 0;
-    roman[0] = '\0'; 
-    while (num > 0) {
-        while (num >= numerals[i].value) {
-            strcat(roman, numerals[i].symbol);
-            num -= numerals[i].value;
-        }
-        i++;
-    }
-}
 
-// int main() {
-//     int number = 3; // Example input
-//     char romanNumeral[20]; // Buffer to store the Roman numeral string
-//     intToRoman(number, romanNumeral);
-//     printf("%d in Roman numerals is %s\n", number, romanNumeral);
-//     return 0;
-// }
+
+
 
 
 
@@ -1053,8 +1228,6 @@ void weapon_window(Level *level,Player *player){
     curs_set(0);
     const char *weapon_intro = "number of weapons collected: ";
     int c;
-    wrefresh(weapon_window);
-    mvwprintw(weapon_window, 1, (width - strlen(weapon_intro)) / 2, "%s%d/%d", weapon_intro,player->weapons_count,MAX_WEAPON_COUNT);
     int highlight=0;
 
     char *axe[] = {
@@ -1097,18 +1270,16 @@ void weapon_window(Level *level,Player *player){
 
     while(1){
         box(weapon_window, 0, 0);
-        if(highlight==0){
-            wattron(weapon_window,WA_BLINK);
-        }
+        mvwprintw(weapon_window, 1, (width - strlen(weapon_intro)) / 2, "%s%d/%d",
+         weapon_intro,player->weapons_count,MAX_WEAPON_COUNT);
+        wattron(weapon_window,WA_BLINK);
         for (int i = 0; axe[i] != NULL; i++) {
             mvwprintw(weapon_window,6+i,10, "%s", axe[i]);
         }
         for (int i = 0; arrow[i] != NULL; i++) {
             mvwprintw(weapon_window, 4+i, 42, "%s", arrow[i]);
         }
-        if(highlight==0){
-            wattroff(weapon_window,WA_BLINK);
-        }
+        wattroff(weapon_window,WA_BLINK);
         int x=(player->wktaken[WAND] || player->wktaken[ARROW] || player->wktaken[DAGGER]);
 
         mvwprintw(weapon_window,22,10,"MELEE WEAPONS");
@@ -1149,7 +1320,9 @@ void weapon_window(Level *level,Player *player){
                         projwin(level,player);
                     }
                 }else{
-                    continue;
+                    wclear(weapon_window);
+                    wrefresh(weapon_window);
+                    meleewin(level,player);
                 }
                 break;
             default:
@@ -1532,6 +1705,7 @@ void init_player(){
     player->dagcount=0;
     player->arrowcount=0;
     player->wandcount=0;
+    player->swordcount=0;
     player->wktaken[0]=1;
     player->wktaken[1]=0;
     player->wktaken[2]=0;
