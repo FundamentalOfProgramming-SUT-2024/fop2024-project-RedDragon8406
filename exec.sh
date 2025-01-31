@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-source_files=("main.c" "menu.c" "exit.c" "choices.c" "design.c" "auth.c" "scoreboard.c" "profile.c" "settings.c" "game.c" "utils.c")
+source_files=("main.c" "menu.c" "exit.c" "choices.c" "design.c" "auth.c" "scoreboard.c" "profile.c" "settings.c" "game.c" "utils.c" "save.c")
 
 # -lSDL2 -lSDL2_mixer
 # -fsanitize=address -g

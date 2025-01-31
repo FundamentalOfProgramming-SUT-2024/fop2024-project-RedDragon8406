@@ -10,6 +10,7 @@
 #include "auth.h"
 #include "settings.h"
 #include "design.h"
+#include "save.h"
 
 
 
@@ -27,7 +28,7 @@ void projwin(Level *level,Player *player);
 void potion_window(Level *level,Player *player);
 void password_window(Level *level, Player *player);
 int importpasswin(Level *level, Player *player, int howmany);
-void pause_window(Level *level,Player *player);
+void pause_window(Level *level,Player *player, Level **levels, int li[5]);
 void init_player();
 
 
@@ -166,7 +167,7 @@ void StartGame(){
             //     save_user_data(current_user); // temp
             // }
             // show_main_menu();
-            pause_window(levels[current_level],player);
+            pause_window(levels[current_level],player,levels,levels_initialization);
             break;
         case 'p':
             if(current_level<3){
@@ -1772,7 +1773,7 @@ int importpasswin(Level *level, Player *player, int howmany){
 }
 
 
-void pause_window(Level *level,Player *player){
+void pause_window(Level *level,Player *player, Level **levels, int li[5]){
     // pre configuration
     int height = 25;
     int width = 30;
@@ -1835,6 +1836,7 @@ void pause_window(Level *level,Player *player){
                             current_user->points+=player->golds*5;
                             save_user_data(current_user); // temp
                         }
+                        SaveGame(levels,player,li);
                         show_main_menu();
                             break;
                 }

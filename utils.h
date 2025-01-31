@@ -1,6 +1,8 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#include <ncurses.h>
+
 int RHLG(); // random height level generator
 int RWLG();
 int RHRG(); // random height room generator

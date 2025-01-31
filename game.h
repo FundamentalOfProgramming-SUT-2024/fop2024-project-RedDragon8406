@@ -228,8 +228,6 @@ typedef struct{
     Point loc;
     int golds;
     int health;
-    Food **foods;
-    int foods_count;
     Weapon ** weapons;
     int weapons_count;
     Weapon *current_weapon;
