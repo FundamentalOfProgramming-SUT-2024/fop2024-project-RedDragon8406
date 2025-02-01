@@ -37,7 +37,6 @@ int current_level;
 WINDOW * gamewin;
 Player *player;
 void StartGame(int situation){
-    init_player();
     
     FirstTime=time(NULL);
     SecondTime=time(NULL); // just some inits
@@ -52,6 +51,7 @@ void StartGame(int situation){
     int levels_initialization[5]={1,0,0,0,0};
     
     if(!situation){
+        init_player();
         for(int i=0;i<4;i++){
             levels[i]=(Level *)malloc(sizeof(Level));
             levels[i]->len_rooms=6;
@@ -69,8 +69,10 @@ void StartGame(int situation){
         fscanf(fi,"%d %d %d %d %d",&levels_initialization[0],&levels_initialization[1],
         &levels_initialization[2],&levels_initialization[3],&levels_initialization[4]);
         fclose(fi);
+        levels=malloc(5*sizeof(Level *));
+        player=malloc(sizeof(Player));
         LoadGame(levels,player,levels_initialization);
-        add_player_to_level(levels[current_level],player);
+        // add_player_to_level(levels[current_level],player);
     }
 
     refresh();

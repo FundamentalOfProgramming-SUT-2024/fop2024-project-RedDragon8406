@@ -7,6 +7,7 @@
 #include "game.h"
 #include "settings.h"
 #include "auth.h"
+#include "save.h"
 /*
         |   |          |   |
         |   |          |   |        
