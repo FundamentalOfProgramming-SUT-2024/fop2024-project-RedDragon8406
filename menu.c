@@ -86,14 +86,26 @@ void print_menu(WINDOW *menu_win, int highlight, int n_choices) {
     x = 2;
     y = 3; //  make some space for the welcome message
     box(menu_win, 0, 0);
+    init_pair(240,240,COLOR_BLACK);
     for (i = 0; i < n_choices; ++i) {
         if (highlight == i + 1) { // highlight the current choice
-            wattron(menu_win, A_REVERSE);
-            mvwprintw(menu_win, y, x, "%s", choices[i]);
-            wattroff(menu_win, A_REVERSE);
+                wattron(menu_win, A_REVERSE);
+                mvwprintw(menu_win, y+i, x, "%s", choices[i]);
+                wattroff(menu_win, A_REVERSE);
         } else
-            mvwprintw(menu_win, y, x, "%s", choices[i]);
-        ++y;
+            mvwprintw(menu_win, y+i, x, "%s", choices[i]);
+    }
+    if(current_user!=NULL){
+        char path[100];
+        snprintf(path,sizeof(path),"saves/%s",current_user->username);
+        FILE *f=fopen(path,"rb");
+        if(f!=NULL){
+            fclose(f);
+        }else{
+            wattron(menu_win,COLOR_PAIR(240));
+            mvwprintw(menu_win, y+1, x, "%s", choices[1]);
+            wattroff(menu_win,COLOR_PAIR(240));
+        }
     }
     wrefresh(menu_win);
 }
@@ -103,9 +115,16 @@ void handle_logged_in_choice(WINDOW *menu_win, int choice, int highlight) {
         case 1: // Start Game
             StartGame(0);
             break;
-        case 2: // Load Game
-            StartGame(1);
+        case 2:{ // Load Game
+            char path[100];
+            snprintf(path,sizeof(path),"saves/%s",current_user->username);
+            FILE *f=fopen(path,"rb");
+            if(f!=NULL){
+                fclose(f);
+                StartGame(1);
+            }
             break;
+        }
         case 3: // Profile
             show_profile();
             break;

@@ -30,6 +30,7 @@ void password_window(Level *level, Player *player);
 int importpasswin(Level *level, Player *player, int howmany);
 void pause_window(Level *level,Player *player, Level **levels, int li[5]);
 void init_player();
+void delete_save();
 
 
 time_t FirstTime,SecondTime;
@@ -51,6 +52,9 @@ void StartGame(int situation){
     int levels_initialization[5]={1,0,0,0,0};
     
     if(!situation){
+        if(current_user){
+            delete_save();
+        }
         init_player();
         for(int i=0;i<4;i++){
             levels[i]=(Level *)malloc(sizeof(Level));
@@ -678,6 +682,10 @@ void win_window(){
         current_user->games_finished+=1; // games finished
         save_user_data(current_user); // temp
     }
+    if(current_user){
+        delete_save();
+    }
+
     show_main_menu();
 }
 void lost_window(){
@@ -702,6 +710,10 @@ void lost_window(){
         current_user->points+=player->golds; // losing points
         save_user_data(current_user); // temp
     }
+    if(current_user){
+        delete_save();
+    }
+
     show_main_menu();
 }
 
@@ -1802,6 +1814,7 @@ void pause_window(Level *level,Player *player, Level **levels, int li[5]){
     strcpy(texts[2],"save and quit");
     const char *pause_intro = "here is the password: ";
     int highlight=0;
+    init_pair(240,240,COLOR_BLACK);
     while(1){
         mvwprintw(pausewin,1,(width-strlen(pause_intro))/2,"%s",pause_intro);
         for(int i=0;i<3;i++){
@@ -1813,6 +1826,12 @@ void pause_window(Level *level,Player *player, Level **levels, int li[5]){
                 wattroff(pausewin,A_REVERSE);
             }
         }
+        if(current_user==NULL){
+            wattron(pausewin,COLOR_PAIR(240));
+            mvwprintw(pausewin,7,(width-strlen(texts[2]))/2,"%s",texts[2]);
+            wattroff(pausewin,COLOR_PAIR(240));
+        }
+        wrefresh(pausewin);
 
         int c=wgetch(pausewin);
         switch(c){
@@ -1823,9 +1842,15 @@ void pause_window(Level *level,Player *player, Level **levels, int li[5]){
                 return;
             case KEY_DOWN:
                 highlight=(highlight+1) % 3;
+                if(highlight==2 && current_user==NULL){
+                    highlight=(highlight+1) % 3;
+                }
                 break;
             case KEY_UP:
                 highlight=highlight?highlight-1:2;
+                if(highlight==2 && current_user==NULL){
+                    highlight=highlight?highlight-1:2;
+                }
                 break;
             case 10:
                 switch(highlight){
@@ -1849,8 +1874,10 @@ void pause_window(Level *level,Player *player, Level **levels, int li[5]){
                             current_user->points+=player->golds*5;
                             save_user_data(current_user); // temp
                         }
-                        SaveGame(levels,player,li);
-                        show_main_menu();
+                        if(current_user){
+                            SaveGame(levels,player,li);
+                            show_main_menu();
+                        }
                             break;
                 }
                 break;
@@ -1861,6 +1888,20 @@ void pause_window(Level *level,Player *player, Level **levels, int li[5]){
     curs_set(0);
 }
 
+
+
+
+void delete_save(){
+    char path[100];
+    snprintf(path,sizeof(path),"saves/%s",current_user->username);
+    FILE *f=fopen(path,"rb");
+    if(f!=NULL){
+        fclose(f);
+        remove(path);
+        strcat(path,".db");
+        remove(path);
+    }
+}
 
 
 void init_player(){

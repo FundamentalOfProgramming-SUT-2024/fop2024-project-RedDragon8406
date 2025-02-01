@@ -254,11 +254,13 @@ void LoadGame(Level **levels, Player *player, int li[5]) { // need to malloc thi
 
 
     for (int i = 0; i < 4; i++) {
-        player->takenfoods[i]=malloc(player->diffc[i]*sizeof(TakenFood *));
+        player->takenfoods[i]=(TakenFood **)malloc(MAX_TAKEN_FOOD_COUNT*sizeof(TakenFood *));
+        for(int j=0;j<MAX_FOOD_COUNT;j++){
+            player->takenfoods[i][j]=(TakenFood *)malloc(sizeof(TakenFood));
+        }
+
         for (int j = 0; j < player->diffc[i]; j++) {
-            TakenFood * tkf=malloc(sizeof(TakenFood));
-            fread(tkf, sizeof(TakenFood), 1, f);
-            player->takenfoods[i][j] = tkf;
+            fread(player->takenfoods[i][j], sizeof(TakenFood), 1, f);
             player->takenfoods[i][j]->ttaken=time(NULL);
         }
     }
