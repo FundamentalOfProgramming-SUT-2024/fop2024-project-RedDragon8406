@@ -8,6 +8,7 @@
 #include "settings.h"
 #include "auth.h"
 #include "save.h"
+#include "design.h"
 /*
         |   |          |   |
         |   |          |   |        
@@ -742,12 +743,13 @@ int LenFood(Player *player){
     return result;
 }
 
-void handleVision(Level* level,Player* player, WINDOW *gamewin){
+void handleVision(Level* level,Player* player, WINDOW *gamewin, WINDOW *chatwin){
     Room* room=which_room(level,player->loc);
     if(!player->fastmove){
         if(room!=NULL){
             if(!room->show){
                 room->show=1;
+                chat_new_room(chatwin);
             }
             for(int i=0;i<room->traps_number;i++){
                 if(player->loc.x==room->traps[i]->loc.x && player->loc.y==room->traps[i]->loc.y){
@@ -796,6 +798,7 @@ void handleVision(Level* level,Player* player, WINDOW *gamewin){
                     }
                     room->golds[i]->taken=1;
                     player->golds+=room->golds[i]->value;
+                    chat_gold(chatwin,room->golds[i]);
                     break;
                 }
             }

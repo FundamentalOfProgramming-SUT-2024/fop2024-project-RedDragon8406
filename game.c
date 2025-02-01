@@ -32,11 +32,12 @@ void pause_window(Level *level,Player *player, Level **levels, int li[5]);
 void init_player();
 void delete_save();
 
-
 time_t FirstTime,SecondTime;
 int current_level;
 WINDOW * gamewin;
 Player *player;
+WINDOW *chatwin;
+int countchat;
 void StartGame(int situation){
     
     FirstTime=time(NULL);
@@ -45,6 +46,8 @@ void StartGame(int situation){
     current_level=0;
     Level **levels;
     levels=(Level **)malloc(5*sizeof(Level *));
+
+    chatwin =newwin(chat_height,chat_width,win_height-chat_height-1,1);
     gamewin = newwin(win_height,win_width,0,0);
     noecho();
     keypad(gamewin,true);
@@ -115,12 +118,9 @@ void StartGame(int situation){
         handleRegen(player);
         handleRot(player);
 
-
-        handleVision(levels[current_level],player,gamewin);
+        handleVision(levels[current_level],player,gamewin,chatwin);
         PrintLevel(levels[current_level]);
 
-
-        
         if(in_staircase(levels[current_level],player->loc) && player->changelevel){
             player->changelevel=0;
             if(current_level<3){
@@ -132,6 +132,8 @@ void StartGame(int situation){
                 add_player_to_level(levels[current_level],player);
                 levels[current_level]->rooms[0]->show=1;
                 PrintLevel(levels[current_level]);
+
+                welcome_message(chatwin);
             }else if(current_level==3){
                 wclear(gamewin);
                 if(!levels_initialization[++current_level]){
@@ -141,6 +143,8 @@ void StartGame(int situation){
                 add_player_to_level(levels[current_level],player);
                 levels[current_level]->rooms[0]->show=1;
                 PrintLevel(levels[current_level]);
+
+                welcome_message(chatwin);
             }else{
                 wclear(gamewin); //  // maybe not?
                 wrefresh(gamewin);
@@ -159,31 +163,31 @@ void StartGame(int situation){
                 add_player_to_level(levels[current_level],player);
                 levels[current_level]->rooms[0]->show=1;
                 PrintLevel(levels[current_level]);
+
+                welcome_message(chatwin);
             }
         }
         player->changelevel=0;
 
         const char *title = "LEVEL: ";
         mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) / 2, "%s%d", title,current_level+1);
-        // mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4 - 5, "Golds: %d", player->golds);
-        // mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4 - 15, "Foods: %d", LenFood(player));
-        // mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4 - 27, "Weapons: %d", player->weapons_count);
-        // mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4 + 5, "Potions: %d ", player->potions_count);
-        // mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4 + 16, "Sat: %d ", player->sat);
-        // mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4 + 26, "Health: %d ", player->health);
-        // mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) / 2 - 10, "AKEYS:%d ", player->akey_count);
+        init_pair(220,220,COLOR_BLACK);
+        wattron(gamewin,COLOR_PAIR(220));
+        mvwprintw(gamewin, 4, 1, "Golds : %d ", player->golds);
+        wattroff(gamewin,COLOR_PAIR(220));
+
+
+
+        wattron(gamewin,A_ITALIC);
+        mvwprintw(gamewin,win_height-chat_height-2,2,"message box:");
+        wattroff(gamewin,A_ITALIC);
+        wrefresh(chatwin);
+        wrefresh(gamewin);
         c=wgetch(gamewin);
+        chatclear(chatwin);
+        countchat=0;
         switch (c){
         case KEY_BACKSPACE:
-            // clear();
-            // endwin();
-            // refresh();
-            // if(current_user!=NULL){
-            //     current_user->golds+=player->golds;
-            //     current_user->points+=player->golds*5;
-            //     save_user_data(current_user); // temp
-            // }
-            // show_main_menu();
             pause_window(levels[current_level],player,levels,levels_initialization);
             break;
         case 'p':
@@ -196,6 +200,8 @@ void StartGame(int situation){
                 add_player_to_level(levels[current_level],player);
                 levels[current_level]->rooms[0]->show=1;
                 PrintLevel(levels[current_level]);
+
+                welcome_message(chatwin);
             }else if(current_level==3){
                 wclear(gamewin);
                 if(!levels_initialization[++current_level]){
@@ -205,6 +211,8 @@ void StartGame(int situation){
                 add_player_to_level(levels[current_level],player);
                 levels[current_level]->rooms[0]->show=1;
                 PrintLevel(levels[current_level]);
+                
+                welcome_message(chatwin);
             }
             break;
         case 'o':
@@ -217,6 +225,8 @@ void StartGame(int situation){
                 add_player_to_level(levels[current_level],player);
                 levels[current_level]->rooms[0]->show=1;
                 PrintLevel(levels[current_level]);
+
+                welcome_message(chatwin);
             }
             break;
 
@@ -301,7 +311,7 @@ void StartGame(int situation){
             }
             else{
                 while(handlePlayermove(levels[current_level],c,player,gamewin)){
-                    handleVision(levels[current_level],player,gamewin);
+                    handleVision(levels[current_level],player,gamewin,chatwin);
                     player->sat+=1;
                     if(player->pcount[SPEED]>0){
                         player->pcount[SPEED]++;
@@ -351,9 +361,12 @@ void StartGame(int situation){
             }
         }
         // mvwprintw(gamewin, 16, 1, "       ");
-        // wrefresh(gamewin);
+        wrefresh(gamewin);
+
+
 
         usleep(10000);
+
     }
 }
 
@@ -585,7 +598,7 @@ void PrintLevel(Level* level){
         //     mvwprintw(gamewin,20+i,1,"%s:%d:%d",room->enemies[i]->code
         //     ,room->enemies[i]->health,room->enemies[i]->alive);
         // }
-        wrefresh(gamewin);
+        // wrefresh(gamewin);
     }
 
 
@@ -651,6 +664,9 @@ void PrintLevel(Level* level){
         }
     }
     PrintPlayer(gamewin,player,settings);
+
+
+    wrefresh(gamewin);
 }
 
 

@@ -22,5 +22,9 @@ void PrintGold(WINDOW *gamewin, Gold* gold , Settings* settings);
 void PrintFood(WINDOW *gamewin, Food* food , Settings* settings);
 void PrintDoor(WINDOW *gamewin, Room * room);
 void PrintRoom(WINDOW *gamewin, Room *room);
-void PrintHS(WINDOW *gamewin,Player *player, int x, int y, int padding);
+void PrintHS(WINDOW *win,Player *player, int x, int y, int padding);
+void welcome_message(WINDOW *chatwin);
+void chatclear(WINDOW *chatwin);
+void chat_new_room(WINDOW *chatwin);
+void chat_gold(WINDOW *chatwin, Gold *gold);
 #endif

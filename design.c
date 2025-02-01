@@ -168,21 +168,72 @@ void PrintRoom(WINDOW *gamewin, Room *room){
 }
 
 
-void PrintHS(WINDOW *gamewin,Player *player, int x, int y, int padding){
+void PrintHS(WINDOW *win,Player *player, int x, int y, int padding){
     int hc=(player->health-1) * 10 / MAXHEALTH + 1;
     int sc=(player->sat-1) * 10 / MAXSAT + 1;
-    mvwprintw(gamewin,y,x,"                     ");
-    mvwprintw(gamewin,y+padding,x,"                     ");
+    mvwprintw(win,y,x,"                     ");
+    mvwprintw(win,y+padding,x,"                     ");
     for(int i=0;i<hc;i++){
         if(hc<=3){
-            mvwprintw(gamewin,y,x+2*i,"\u2764");
+            mvwprintw(win,y,x+2*i,"\u2764");
         }else if(hc <= 6){
-            mvwprintw(gamewin,y,x+2*i,"\U0001F49B");
+            mvwprintw(win,y,x+2*i,"\U0001F49B");
         }else{
-            mvwprintw(gamewin,y,x+2*i,"\U0001F49A");
+            mvwprintw(win,y,x+2*i,"\U0001F49A");
         }
     }
     for(int i=0;i<sc;i++){
-        mvwprintw(gamewin,y+padding,x+2*i,"\U0001F352");
+        mvwprintw(win,y+padding,x+2*i,"\U0001F352");
     }
+}
+
+
+void welcome_message(WINDOW *chatwin){
+    if(current_level==4){
+        wattron(chatwin,A_ITALIC);
+        mvwprintw(chatwin,1+countchat,1,"Welcome to the Trasure Room");
+        wattroff(chatwin,A_ITALIC);
+
+    }else{
+        wattron(chatwin,A_ITALIC);
+        mvwprintw(chatwin,1+countchat,1,"Welcome to the Level %d",current_level+1);
+        wattroff(chatwin,A_ITALIC);
+    }
+    countchat++;
+}
+
+void chatclear(WINDOW *chatwin){
+    for(int i=1;i<chat_width;i++){
+        for(int j=1;j<=2;j++){
+            mvwprintw(chatwin,j,i," ");
+        }
+    }
+}
+
+void chat_new_room(WINDOW *chatwin){
+    wattron(chatwin,A_ITALIC);
+    mvwprintw(chatwin,1+countchat,1,"Entered a new room!");
+    wattroff(chatwin,A_ITALIC);
+    countchat++;
+}
+
+void chat_gold(WINDOW *chatwin, Gold *gold){
+    init_pair(220,220,COLOR_BLACK);
+    wattron(chatwin,A_ITALIC);
+    wattron(chatwin,COLOR_PAIR(220));
+    switch (gold->gtype)
+    {
+    case GOLD:
+
+        mvwprintw(chatwin,1+countchat,1,"You recieved a normal gold");
+        break;
+    case BLACK:
+        mvwprintw(chatwin,1+countchat,1,"You recieved a black gold");
+        break;
+    default:
+        break;
+    }
+    wattroff(chatwin,COLOR_PAIR(220));
+    wattroff(chatwin,A_ITALIC);
+    countchat++;
 }
