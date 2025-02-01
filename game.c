@@ -116,7 +116,7 @@ void StartGame(int situation){
         handleRot(player);
 
 
-        handleVision(levels[current_level],player);
+        handleVision(levels[current_level],player,gamewin);
         PrintLevel(levels[current_level]);
 
 
@@ -165,13 +165,13 @@ void StartGame(int situation){
 
         const char *title = "LEVEL: ";
         mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) / 2, "%s%d", title,current_level+1);
-        mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4 - 5, "Golds: %d", player->golds);
-        mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4 - 15, "Foods: %d", LenFood(player));
-        mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4 - 27, "Weapons: %d", player->weapons_count);
-        mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4 + 5, "Potions: %d ", player->potions_count);
-        mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4 + 16, "Sat: %d ", player->sat);
-        mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4 + 26, "Health: %d ", player->health);
-        mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) / 2 - 10, "AKEYS:%d ", player->akey_count);
+        // mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4 - 5, "Golds: %d", player->golds);
+        // mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4 - 15, "Foods: %d", LenFood(player));
+        // mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4 - 27, "Weapons: %d", player->weapons_count);
+        // mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4 + 5, "Potions: %d ", player->potions_count);
+        // mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4 + 16, "Sat: %d ", player->sat);
+        // mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) * 3 / 4 + 26, "Health: %d ", player->health);
+        // mvwprintw(gamewin, win_height-2, (win_width - strlen(title)) / 2 - 10, "AKEYS:%d ", player->akey_count);
         c=wgetch(gamewin);
         switch (c){
         case KEY_BACKSPACE:
@@ -284,16 +284,16 @@ void StartGame(int situation){
             break;
         }
         if(player->passive){
-            mvwprintw(gamewin, 15, 1, "pm");
-            wrefresh(gamewin);
+            // mvwprintw(gamewin, 15, 1, "pm");
+            // wrefresh(gamewin);
         }else{
-            mvwprintw(gamewin, 15, 1, "  ");
-            wrefresh(gamewin);
+            // mvwprintw(gamewin, 15, 1, "  ");
+            // wrefresh(gamewin);
         }
 
         if(player->fastmove){
-            mvwprintw(gamewin, 16, 1, "fm mode");
-            wrefresh(gamewin);
+            // mvwprintw(gamewin, 16, 1, "fm mode");
+            // wrefresh(gamewin);
 
             c=wgetch(gamewin);
             if(c=='e'){
@@ -301,7 +301,7 @@ void StartGame(int situation){
             }
             else{
                 while(handlePlayermove(levels[current_level],c,player,gamewin)){
-                    handleVision(levels[current_level],player);
+                    handleVision(levels[current_level],player,gamewin);
                     player->sat+=1;
                     if(player->pcount[SPEED]>0){
                         player->pcount[SPEED]++;
@@ -350,8 +350,8 @@ void StartGame(int situation){
                 handleEnemymove(levels[current_level],player,gamewin);
             }
         }
-        mvwprintw(gamewin, 16, 1, "       ");
-        wrefresh(gamewin);
+        // mvwprintw(gamewin, 16, 1, "       ");
+        // wrefresh(gamewin);
 
         usleep(10000);
     }
@@ -514,8 +514,9 @@ void InitFinalLevel(Level *level){
 
 void PrintLevel(Level* level){
     box(gamewin,0,0);
-    mvwprintw(gamewin,3,1,"show:%d",level->show);
+    // mvwprintw(gamewin,3,1,"show:%d",level->show);
     init_colors();
+    PrintHS(gamewin,player,1,1,1);
     for(int which=0;which<level->len_rooms;which++){
         Room * room=level->rooms[which];
         if(!room->show && !level->show){
@@ -556,46 +557,49 @@ void PrintLevel(Level* level){
                 mvwprintw(gamewin,room->traps[i]->loc.y,room->traps[i]->loc.x,"T"); // traps
             }
         }
-        mvwprintw(gamewin,5,1,"scount : %d:%d ",player->pcof[SPEED],player->pcount[SPEED]);
-        mvwprintw(gamewin,6,1,"hcount : %d:%d ",player->pcof[HEALTH],player->pcount[HEALTH]);
-        mvwprintw(gamewin,7,1,"dcount : %d:%d ",player->pcof[DAMAGE],player->pcount[DAMAGE]);
-        mvwprintw(gamewin,8,1,"mam:%d aala:%d",player->diffc[0],player->diffc[1]);
-        mvwprintw(gamewin,9,1,"jadoo:%d fased:%d",player->diffc[2],player->diffc[3]);
+        // mvwprintw(gamewin,5,1,"scount : %d:%d ",player->pcof[SPEED],player->pcount[SPEED]);
+        // mvwprintw(gamewin,6,1,"hcount : %d:%d ",player->pcof[HEALTH],player->pcount[HEALTH]);
+        // mvwprintw(gamewin,7,1,"dcount : %d:%d ",player->pcof[DAMAGE],player->pcount[DAMAGE]);
+        // mvwprintw(gamewin,8,1,"mam:%d aala:%d",player->diffc[0],player->diffc[1]);
+        // mvwprintw(gamewin,9,1,"jadoo:%d fased:%d",player->diffc[2],player->diffc[3]);
 
-        mvwprintw(gamewin,38+(which),3,"{h:%d w:%d y:%d x:%d}",room->height,room->width,room->start.y,room->start.x);
-        mvwprintw(gamewin,34,1,"wcount:%d ",player->wandcount);
-        mvwprintw(gamewin,35,1,"acount:%d ",player->arrowcount);
-        mvwprintw(gamewin,36,1,"dcount:%d ",player->dagcount);
-        mvwprintw(gamewin,37,1,"wktaken:d:%d %d %d %d %d "
-        ,player->wktaken[0],player->wktaken[1],player->wktaken[2],player->wktaken[3],player->wktaken[4]);
-        for(int i=0;i<room->enemies_number;i++){
-            mvwprintw(gamewin,30+(which),3,"[y:%d x:%d,t:%s]"
-            ,room->enemies[i]->loc.y,room->enemies[i]->loc.x,room->enemies[i]->code);
-        }
-        for(int i=0;i<room->door_number;i++){
-            mvwprintw(gamewin,38+(which),25+11*i,"(%d,%d|%d)",room->doors[i]->loc.y,room->doors[i]->loc.x,room->doors[i]->kind); //doors
-        }
-        mvwprintw(gamewin,38+(which),47,"[%d]",room->rt);
-        mvwprintw(gamewin,38+(which),53,"en:(%d)",room->enemies_number);
-        for(int i=0;i<5;i++){
-            mvwprintw(gamewin,20+i,1,"             ");
-        }
-        for(int i=0;i<room->enemies_number;i++){
-            mvwprintw(gamewin,20+i,1,"%s:%d:%d",room->enemies[i]->code
-            ,room->enemies[i]->health,room->enemies[i]->alive);
-        }
+        // mvwprintw(gamewin,38+(which),3,"{h:%d w:%d y:%d x:%d}",room->height,room->width,room->start.y,room->start.x);
+        // mvwprintw(gamewin,34,1,"wcount:%d ",player->wandcount);
+        // mvwprintw(gamewin,35,1,"acount:%d ",player->arrowcount);
+        // mvwprintw(gamewin,36,1,"dcount:%d ",player->dagcount);
+        // mvwprintw(gamewin,37,1,"wktaken:d:%d %d %d %d %d "
+        // ,player->wktaken[0],player->wktaken[1],player->wktaken[2],player->wktaken[3],player->wktaken[4]);
+        // for(int i=0;i<room->enemies_number;i++){
+        //     mvwprintw(gamewin,30+(which),3,"[y:%d x:%d,t:%s]"
+        //     ,room->enemies[i]->loc.y,room->enemies[i]->loc.x,room->enemies[i]->code);
+        // }
+        // for(int i=0;i<room->door_number;i++){
+        //     mvwprintw(gamewin,38+(which),25+11*i,"(%d,%d|%d)",room->doors[i]->loc.y,room->doors[i]->loc.x,room->doors[i]->kind)
+        // }
+        // mvwprintw(gamewin,38+(which),47,"[%d]",room->rt);
+        // mvwprintw(gamewin,38+(which),53,"en:(%d)",room->enemies_number);
+        // for(int i=0;i<5;i++){
+        //     mvwprintw(gamewin,20+i,1,"             ");
+        // }
+        // for(int i=0;i<room->enemies_number;i++){
+        //     mvwprintw(gamewin,20+i,1,"%s:%d:%d",room->enemies[i]->code
+        //     ,room->enemies[i]->health,room->enemies[i]->alive);
+        // }
         wrefresh(gamewin);
     }
 
 
-    if(which_room(level,player->loc)!=NULL){
-        if(which_room(level,player->loc)->shouldgen){
-            mvwprintw(gamewin,4,1,"pass:[%.4d]",which_room(level,player->loc)->gen->generated?
-             which_room(level,player->loc)->gen->password : 0);
-        }
-    }else{
-        mvwprintw(gamewin,5,1,"hehe           ");
-    }
+    // if(which_room(level,player->loc)!=NULL){
+    //     if(which_room(level,player->loc)->shouldgen){
+    //         mvwprintw(gamewin,4,1,"pass:[%.4d]",which_room(level,player->loc)->gen->generated?
+    //          which_room(level,player->loc)->gen->password : 0);
+    //     }
+    // }else{
+    //     mvwprintw(gamewin,5,1,"hehe           ");
+    // }
+    // if(which_room(level,player->loc)==NULL){
+    //     mvwprintw(gamewin,5,1,"           ");
+    // }
 
     for(int i=0;i<level->corrs_number;i++){
         for(int j=0;j<level->corrs[i]->locs_count;j++){
@@ -620,9 +624,6 @@ void PrintLevel(Level* level){
         }
     }
 
-    if(which_room(level,player->loc)==NULL){
-        mvwprintw(gamewin,5,1,"           ");
-    }
     for(int i=0;i<level->len_rooms;i++){
         Room *room=level->rooms[i];
         if(!room->show && !level->show){
@@ -672,21 +673,30 @@ void win_window(){
     mvwprintw(win_win, 5, 3, "your golds : %d", player->golds);
     mvwprintw(win_win, 7, 3, "your health : %d", player->health);
     wrefresh(win_win);
-    wgetch(win_win);
-    wclear(win_win);
-    delwin(win_win);
-    if(current_user!=NULL){
-        current_user->golds+=player->golds;
-        current_user->points+=player->golds*5; // winning points
-        current_user->points+=player->health*3; // winning points
-        current_user->games_finished+=1; // games finished
-        save_user_data(current_user); // temp
-    }
-    if(current_user){
-        delete_save();
-    }
+    int c;
+    while(1){
+        c=wgetch(win_win);
+        switch(c){
+            case 10:
+                wclear(win_win);
+                delwin(win_win);
+                if(current_user!=NULL){
+                    current_user->golds+=player->golds;
+                    current_user->points+=player->golds*5; // winning points
+                    current_user->points+=player->health*3; // winning points
+                    current_user->games_finished+=1; // games finished
+                    save_user_data(current_user); // temp
+                }
+                if(current_user){
+                    delete_save();
+                }
 
-    show_main_menu();
+                show_main_menu();
+                break;
+            default:
+                break;
+        }
+    }
 }
 void lost_window(){
     // pre configuration
@@ -699,22 +709,31 @@ void lost_window(){
     keypad(lose_win, TRUE); // enable keypad
     box(lose_win, 0, 0);
     curs_set(0);
-    const char *lose_text = "You lost :( ! Press any key to return to main menu...";
+    const char *lose_text = "You lost :( ! Press enter to return to main menu...";
     mvwprintw(lose_win, 1, (width - strlen(lose_text)) / 2, "%s", lose_text);
     mvwprintw(lose_win, 3, 3, "your score : %d", player->golds);
     wrefresh(lose_win);
-    wgetch(lose_win);
-    wclear(lose_win);
-    delwin(lose_win);
-    if(current_user!=NULL){
-        current_user->points+=player->golds; // losing points
-        save_user_data(current_user); // temp
-    }
-    if(current_user){
-        delete_save();
-    }
+    int c;
+    while(1){
+        c=wgetch(lose_win);
+        switch(c){
+            case 10:
+                wclear(lose_win);
+                delwin(lose_win);
+                if(current_user!=NULL){
+                    current_user->points+=player->golds; // losing points
+                    save_user_data(current_user); // temp
+                }
+                if(current_user){
+                    delete_save();
+                }
 
-    show_main_menu();
+                show_main_menu();
+                break;
+            default:
+                break;
+        }
+    }
 }
 
 
@@ -764,8 +783,7 @@ void food_window(Level *level,Player *player){
             }
         }
         
-        mvwprintw(food_window, 12, (width - 10) / 2, "Health: %d", player->health); // need some serious design
-        mvwprintw(food_window, 14, (width - 14) / 2, "Saturation: %d", player->sat); // need some serious design
+        PrintHS(food_window,player,10,12,2);
 
         wrefresh(food_window);
         c=wgetch(food_window);
@@ -858,13 +876,6 @@ void intToRoman(int num, char *roman) {
 }
 
 
-// int main() {
-//     int number = 3; // Example input
-//     char romanNumeral[20]; // Buffer to store the Roman numeral string
-//     intToRoman(number, romanNumeral);
-//     printf("%d in Roman numerals is %s\n", number, romanNumeral);
-//     return 0;
-// }
 
 void meleewin(Level *level,Player *player){
     // pre configuration

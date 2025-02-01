@@ -430,8 +430,6 @@ int handleTrajectorymove(Level *level,Weapon * weapon,Point wloc,WINDOW *gamewin
         return 0;
     }
     if(check_wall_collide(level,room,np) || in_corridor(level,np)!=NULL){
-        mvwprintw(gamewin,27,1,"%d,%d",wloc.y,wloc.x);
-        mvwprintw(gamewin,28,1,"%d,%d",np.y,np.x);
         wrefresh(gamewin);
         for(int i=0;i<room->enemies_number;i++){
             if(np.x==room->enemies[i]->loc.x && np.y==room->enemies[i]->loc.y && room->enemies[i]->alive){
@@ -600,9 +598,7 @@ int handleDamage(Player *player,Level * level,WINDOW *gamewin, int lh){
                 return 0;
             }
             for(int i=0;i<traj;i++){
-                mvwprintw(gamewin,25,1,"%d",i);
                 int res=handleTrajectorymove(level,wep,player->loc,gamewin,wway,i,player);
-                mvwprintw(gamewin,26,1,"%d",res);
                 if(res==0){
                     spawnNewWeapon(room,player,i,wway,wep);
                     return 0;
@@ -746,7 +742,7 @@ int LenFood(Player *player){
     return result;
 }
 
-void handleVision(Level* level,Player* player){
+void handleVision(Level* level,Player* player, WINDOW *gamewin){
     Room* room=which_room(level,player->loc);
     if(!player->fastmove){
         if(room!=NULL){
@@ -1807,7 +1803,6 @@ void add_corridors_to_level(Level *level,WINDOW *gamewin){
     corrs[which]->node2=(Door *)malloc(sizeof(Door));
     corrs[which]->node1=rooms[which]->doors[(which?1:0)]; // bottom
     corrs[which]->node2=rooms[which+1]->doors[0]; // bottom
-    // mvwprintw(gamewin,0,0,"%d,%d",rooms[which]->doors[0]->loc.y,rooms[which]->doors[0]->loc.x);
     random_down= ( rand() % (basic_padding-2))+1;
     n1=corrs[which]->node1->loc;
     n2=corrs[which]->node2->loc;
@@ -1815,9 +1810,6 @@ void add_corridors_to_level(Level *level,WINDOW *gamewin){
     static_up=(which?2*MaxHeightSubWindow+3*basic_padding:MaxHeightSubWindow+basic_padding)- n2.y+random_down;
     static_narrow = n2.x - n1.x-1; // -1 is for not counting the first and last ones
     corrs[which]->locs_count=static_down+static_narrow+static_up;
-    // mvwprintw(gamewin,0,0,"%d %d %d",static_down,static_narrow,static_up);
-    // mvwprintw(gamewin,1,0,"%d %d, %d %d",n1.y,n1.x,n2.y,n2.x);
-    // mvwprintw(gamewin,2,0,"%d %d",(which?2*MaxHeightSubWindow+3*basic_padding:MaxHeightSubWindow+basic_padding),random_down);
     corrs[which]->locs=(Point *)malloc((static_down+static_up+static_narrow)*sizeof(Point));
     for(int i=0;i<static_down;i++){
         corrs[which]->locs[i].x=n1.x;
@@ -1854,9 +1846,6 @@ void add_corridors_to_level(Level *level,WINDOW *gamewin){
     static_down=-(which-1?MaxHeightSubWindow+3*basic_padding:basic_padding)+n2.y+random_up;
     static_narrow = n2.x - n1.x-1; // -1 is for not counting the first and last ones
     corrs[which]->locs_count=static_down+static_narrow+static_up;
-    // mvwprintw(gamewin,0,0,"%d %d %d",static_down,static_narrow,static_up);
-    // mvwprintw(gamewin,1,0,"%d %d, %d %d",n1.y,n1.x,n2.y,n2.x);
-    // mvwprintw(gamewin,2,0,"%d %d",(which-1?MaxHeightSubWindow+3*basic_padding:basic_padding),random_up);
     corrs[which]->locs=(Point *)malloc((static_down+static_up+static_narrow)*sizeof(Point));
     for(int i=0;i<static_up;i++){
         corrs[which]->locs[i].x=n1.x;
@@ -1925,10 +1914,6 @@ void add_corridors_to_level(Level *level,WINDOW *gamewin){
         corrs[which]->locs[static_down+static_narrow+ i].x=n1.x+ way*(static_narrow+1);
         corrs[which]->locs[static_down+static_narrow+ i].y=n1.y+static_down+i;
     }
-    mvwprintw(gamewin,0,0,"%d %d %d, count:%d way:%d",static_down,static_narrow,static_up,corrs[which]->locs_count,way);
-    mvwprintw(gamewin,1,0,"%d %d, %d %d",n1.y,n1.x,n2.y,n2.x);
-    // mvwprintw(gamewin,2,0,"%d %d",(which-1?MaxHeightSubWindow+3*basic_padding:basic_padding),random_up);
-    mvwprintw(gamewin,0,win_width/2,"%d %d %d",static_down,static_narrow,down);
 
 
     kind = set_kind();
@@ -1947,7 +1932,6 @@ void add_corridors_to_level(Level *level,WINDOW *gamewin){
     corrs[which]->node2=(Door *)malloc(sizeof(Door));
     corrs[which]->node1=rooms[which]->doors[(which?1:0)]; // bottom
     corrs[which]->node2=rooms[which+1]->doors[0]; // bottom
-    // mvwprintw(gamewin,0,0,"%d,%d",rooms[which]->doors[0]->loc.y,rooms[which]->doors[0]->loc.x);
     random_down= ( rand() % (basic_padding-2))+1;
     n1=corrs[which]->node1->loc;
     n2=corrs[which]->node2->loc;
@@ -1956,9 +1940,6 @@ void add_corridors_to_level(Level *level,WINDOW *gamewin){
     static_narrow = n1.x - n2.x-1; // -1 is for not counting the first and last ones
     way=-1;
     corrs[which]->locs_count=static_down+static_narrow+static_up;
-    // mvwprintw(gamewin,0,0,"%d %d %d",static_down,static_narrow,static_up);
-    // mvwprintw(gamewin,1,0,"%d %d, %d %d",n1.y,n1.x,n2.y,n2.x);
-    // mvwprintw(gamewin,2,0,"%d %d",(which?2*MaxHeightSubWindow+3*basic_padding:MaxHeightSubWindow+basic_padding),random_down);
     corrs[which]->locs=(Point *)malloc((static_down+static_up+static_narrow)*sizeof(Point));
     for(int i=0;i<static_down;i++){
         corrs[which]->locs[i].x=n1.x;
@@ -1996,9 +1977,6 @@ void add_corridors_to_level(Level *level,WINDOW *gamewin){
     static_narrow = n1.x - n2.x-1; // -1 is for not counting the first and last ones
     way=-1;
     corrs[which]->locs_count=static_down+static_narrow+static_up;
-    // mvwprintw(gamewin,0,0,"%d %d %d",static_down,static_narrow,static_up);
-    // mvwprintw(gamewin,1,0,"%d %d, %d %d",n1.y,n1.x,n2.y,n2.x);
-    // mvwprintw(gamewin,2,0,"%d %d",(which-1?MaxHeightSubWindow+3*basic_padding:basic_padding),random_up);
     corrs[which]->locs=(Point *)malloc((static_down+static_up+static_narrow)*sizeof(Point));
     for(int i=0;i<static_up;i++){
         corrs[which]->locs[i].x=n1.x;

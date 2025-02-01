@@ -166,3 +166,23 @@ void PrintRoom(WINDOW *gamewin, Room *room){
             break;
     }
 }
+
+
+void PrintHS(WINDOW *gamewin,Player *player, int x, int y, int padding){
+    int hc=(player->health-1) * 10 / MAXHEALTH + 1;
+    int sc=(player->sat-1) * 10 / MAXSAT + 1;
+    mvwprintw(gamewin,y,x,"                     ");
+    mvwprintw(gamewin,y+padding,x,"                     ");
+    for(int i=0;i<hc;i++){
+        if(hc<=3){
+            mvwprintw(gamewin,y,x+2*i,"\u2764");
+        }else if(hc <= 6){
+            mvwprintw(gamewin,y,x+2*i,"\U0001F49B");
+        }else{
+            mvwprintw(gamewin,y,x+2*i,"\U0001F49A");
+        }
+    }
+    for(int i=0;i<sc;i++){
+        mvwprintw(gamewin,y+padding,x+2*i,"\U0001F352");
+    }
+}

@@ -24,7 +24,7 @@ Corridor * in_corridor(Level *level,Point loc);
 int in_staircase(Level *level,Point loc);
 int in_bstaircase(Level *level,Point loc);
 int corr_index(Point loc, Corridor * corr);
-void handleVision(Level* level,Player* player);
+void handleVision(Level* level,Player* player, WINDOW *gamewin);
 void add_golds_to_room(Room *room);
 void add_foods_to_room(Room *room);
 void add_weapons_to_room(Room *room);
