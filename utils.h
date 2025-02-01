@@ -44,9 +44,10 @@ void defuse_traps(Level *level,Player *player);
 void handleRegen(Player *player);
 void handleRot(Player *player);
 
-int handleEnemymove(Level *level,Player *player,WINDOW *gamewin);
-int handleTrajectorymove(Level *level,Weapon * weapon,Point wloc,WINDOW *gamewin, int wway,int x,Player *player);
-int handleDamage(Player *player,Level * level,WINDOW *gamewin, int lh);
+int handleEnemymove(Level *level,Player *player,WINDOW *gamewin,WINDOW *chatwin);
+int handleTrajectorymove(Level *level,Weapon * weapon,Point wloc,WINDOW *gamewin,
+ int wway,int x,Player *player , WINDOW *chatwin);
+int handleDamage(Player *player,Level * level,WINDOW *gamewin, int lh,WINDOW *chatwin);
 void handleEnemyDeath(Level *level, Player *player);
 void spawnNewWeapon(Room *room,Player *player,int i, int wway,Weapon *wep);
 

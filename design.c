@@ -191,12 +191,12 @@ void PrintHS(WINDOW *win,Player *player, int x, int y, int padding){
 void welcome_message(WINDOW *chatwin){
     if(current_level==4){
         wattron(chatwin,A_ITALIC);
-        mvwprintw(chatwin,1+countchat,1,"Welcome to the Trasure Room");
+        mvwprintw(chatwin,1+countchat,1,"Welcome to The Trasure Room!");
         wattroff(chatwin,A_ITALIC);
 
     }else{
         wattron(chatwin,A_ITALIC);
-        mvwprintw(chatwin,1+countchat,1,"Welcome to the Level %d",current_level+1);
+        mvwprintw(chatwin,1+countchat,1,"Welcome to Level %d!",current_level+1);
         wattroff(chatwin,A_ITALIC);
     }
     countchat++;
@@ -225,15 +225,97 @@ void chat_gold(WINDOW *chatwin, Gold *gold){
     {
     case GOLD:
 
-        mvwprintw(chatwin,1+countchat,1,"You recieved a normal gold");
+        mvwprintw(chatwin,1+countchat,1,"You recieved a normal gold.");
         break;
     case BLACK:
-        mvwprintw(chatwin,1+countchat,1,"You recieved a black gold");
+        mvwprintw(chatwin,1+countchat,1,"You recieved a black gold.");
         break;
     default:
         break;
     }
     wattroff(chatwin,COLOR_PAIR(220));
     wattroff(chatwin,A_ITALIC);
+    countchat++;
+}
+
+
+void chat_enemy_hit(WINDOW *chatwin, Enemy *enemy){
+    init_pair(160,160,COLOR_BLACK);
+    wattron(chatwin,A_ITALIC);
+    wattron(chatwin,COLOR_PAIR(160));
+    switch (enemy->en)
+    {
+    case DEAMON:
+         mvwprintw(chatwin,1+countchat,1,"Deamon gave you %d damage :(",5);
+        break;
+    case FBM:
+         mvwprintw(chatwin,1+countchat,1,"Fire Breathing Monster gave you %d damage :(",10);
+        break;
+    case GIANT:
+         mvwprintw(chatwin,1+countchat,1,"Giant gave you %d damage :(",15);
+        break;
+    case SNAKE:
+         mvwprintw(chatwin,1+countchat,1,"Snake gave you %d damage :(",20);
+        break;
+    case UNDEED:
+        mvwprintw(chatwin,1+countchat,1,"Undeed gave you %d damage :(",30);
+        break;
+    default:
+        break;
+    }
+    wattroff(chatwin,COLOR_PAIR(160));
+    wattroff(chatwin,A_ITALIC);
+    countchat++;
+}
+
+
+void chat_hit_enemy(WINDOW *chatwin, Player *player,Enemy *enemy){
+    char hwep[40];
+    char ename[40];
+    switch(player->current_weapon->weapon){
+        case MACE:
+            strcpy(hwep,"Mace");
+            break;
+        case DAGGER:
+            strcpy(hwep,"Dagger");
+            break;
+        case WAND:
+            strcpy(hwep,"Magic Wand");
+            break;
+        case ARROW:
+            strcpy(hwep,"Arrow");
+            break;
+        case SWORD:
+            strcpy(hwep,"Sword");
+            break;
+    }
+    switch (enemy->en){
+        case DEAMON:
+            strcpy(ename,"Deamon");
+            break;
+        case FBM:
+            strcpy(ename,"Fire Breathing Monster");
+            break;
+        case GIANT:
+            strcpy(ename,"Giant");
+            break;
+        case SNAKE:
+            strcpy(ename,"Snake");
+            break;
+        case UNDEED:
+            strcpy(ename,"Undeed");
+            break;
+    }
+
+    init_pair(124,124,COLOR_BLACK);
+    wattron(chatwin,A_ITALIC);
+    wattron(chatwin,COLOR_PAIR(124));
+    if(enemy->health>0){
+        mvwprintw(chatwin,1+countchat,1,"You hit %s with your mighty %s! Remaining Health: %d",ename,hwep,enemy->health);
+    }else{
+        mvwprintw(chatwin,1+countchat,1,"You killed %s with your mighty %s.",ename,hwep);
+    }
+    wattroff(chatwin,A_ITALIC);
+    wattroff(chatwin,COLOR_PAIR(124));
     countchat++;
 }

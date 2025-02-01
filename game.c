@@ -282,10 +282,10 @@ void StartGame(int situation){
             player->passive = (player->passive + 1) % 2;
             break;
         case ' ':
-            handleDamage(player,levels[current_level],gamewin,0);
+            handleDamage(player,levels[current_level],gamewin,0,chatwin);
             break;
         case 'r':
-            handleDamage(player,levels[current_level],gamewin,player->lasthit);
+            handleDamage(player,levels[current_level],gamewin,player->lasthit,chatwin);
             break;
         case 10:
             player->changelevel=1;
@@ -354,10 +354,10 @@ void StartGame(int situation){
             if(player->pcof[SPEED]==2){
                 player->onspeed = (player->onspeed + 1) % 2;
                 if(!player->onspeed){
-                    handleEnemymove(levels[current_level],player,gamewin);
+                    handleEnemymove(levels[current_level],player,gamewin,chatwin);
                 }
             }else{
-                handleEnemymove(levels[current_level],player,gamewin);
+                handleEnemymove(levels[current_level],player,gamewin,chatwin);
             }
         }
         // mvwprintw(gamewin, 16, 1, "       ");

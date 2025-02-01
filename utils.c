@@ -309,6 +309,9 @@ int handlePlayermove(Level *level,int ch,Player *player,WINDOW *gamewin){
         return 0;
     }
     if(is_door(level,np)!=NULL && is_door(level,np)->kind==PASS){
+        if(room==NULL){
+            return 0;
+        }
         for(;room->tries<3;room->tries++){
             if(in_corridor(level,player->loc)==NULL){
                 int takenpass=importpasswin(level,player, room->tries);
@@ -389,7 +392,8 @@ void handleEnemyDeath(Level *level, Player *player){
 }
 
 
-int handleTrajectorymove(Level *level,Weapon * weapon,Point wloc,WINDOW *gamewin, int wway,int x,Player *player){
+int handleTrajectorymove(Level *level,Weapon * weapon,Point wloc,WINDOW *gamewin,
+int wway,int x,Player *player, WINDOW *chatwin ){
     Point np;
     int nx,ny;
     char xx;
@@ -453,6 +457,7 @@ int handleTrajectorymove(Level *level,Weapon * weapon,Point wloc,WINDOW *gamewin
                         break;
                 }
                 room->enemies[i]->health-= damage * player->pcof[DAMAGE];
+                chat_hit_enemy(chatwin,player,room->enemies[i]);
                 return 2;
             }
         }
@@ -515,7 +520,7 @@ void spawnNewWeapon(Room *room,Player *player,int i, int wway,Weapon *wep){
     room->weapons[room->weapons_number++]=newwep;
 }
 
-int handleDamage(Player *player,Level * level,WINDOW *gamewin, int lh){
+int handleDamage(Player *player,Level * level,WINDOW *gamewin, int lh,WINDOW *chatwin){
     Room * room=which_room(level,player->loc);
     if(room == NULL){
         return 0;
@@ -546,7 +551,9 @@ int handleDamage(Player *player,Level * level,WINDOW *gamewin, int lh){
                                 default:
                                     break;
                             }
+                            chat_hit_enemy(chatwin,player,e);
                         }
+
                     }
                 }
             }
@@ -599,7 +606,7 @@ int handleDamage(Player *player,Level * level,WINDOW *gamewin, int lh){
                 return 0;
             }
             for(int i=0;i<traj;i++){
-                int res=handleTrajectorymove(level,wep,player->loc,gamewin,wway,i,player);
+                int res=handleTrajectorymove(level,wep,player->loc,gamewin,wway,i,player,chatwin);
                 if(res==0){
                     spawnNewWeapon(room,player,i,wway,wep);
                     return 0;
@@ -620,7 +627,7 @@ int handleDamage(Player *player,Level * level,WINDOW *gamewin, int lh){
 
 
 
-int handleEnemymove(Level *level,Player *player,WINDOW *gamewin){
+int handleEnemymove(Level *level,Player *player,WINDOW *gamewin,WINDOW *chatwin){
     Room * room=which_room(level,player->loc);
     if(room==NULL){
         return 0;
@@ -657,6 +664,7 @@ int handleEnemymove(Level *level,Player *player,WINDOW *gamewin){
                     player->health-=30;
                     break;
             }
+            chat_enemy_hit(chatwin,e);
         }
         else if(e->trigerred){
             Point np;

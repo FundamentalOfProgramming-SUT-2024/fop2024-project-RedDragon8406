@@ -27,4 +27,8 @@ void welcome_message(WINDOW *chatwin);
 void chatclear(WINDOW *chatwin);
 void chat_new_room(WINDOW *chatwin);
 void chat_gold(WINDOW *chatwin, Gold *gold);
+void chat_enemy_hit(WINDOW *chatwin, Enemy *enemy);
+void chat_hit_enemy(WINDOW *chatwin, Player *player,Enemy *enemy);
+
+
 #endif
