@@ -1598,7 +1598,7 @@ void add_akey(Level *level){
     level->akey->loc=first_guess;
     level->akey->taken=0;
     int randomnum;
-    randomnum = rand() % 2; //  randomnum = rand() % 10; for being broken by 10%
+    randomnum = rand() % 5; //  randomnum = rand() % 10; for being broken by 10%
     if(!randomnum){
         level->akey->broken=1;
     }else{
