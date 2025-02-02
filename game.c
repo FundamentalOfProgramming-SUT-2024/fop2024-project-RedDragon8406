@@ -11,7 +11,8 @@
 #include "settings.h"
 #include "design.h"
 #include "save.h"
-
+#include "music.h"
+#include "main.h"
 
 
 #define FOOD_HEALTH 30
@@ -145,6 +146,10 @@ void StartGame(int situation){
                 PrintLevel(levels[current_level]);
 
                 welcome_message(chatwin);
+                if(current_song!=4){
+                    Mix_PlayMusic(musics[4],1);
+                    current_song=4;
+                }
             }else{
                 wclear(gamewin); //  // maybe not?
                 wrefresh(gamewin);
@@ -213,6 +218,10 @@ void StartGame(int situation){
                 PrintLevel(levels[current_level]);
                 
                 welcome_message(chatwin);
+                if(current_song!=4){
+                    Mix_PlayMusic(musics[4],1);
+                    current_song=4;
+                }
             }
             break;
         case 'o':
@@ -286,6 +295,9 @@ void StartGame(int situation){
             break;
         case 'r':
             handleDamage(player,levels[current_level],gamewin,player->lasthit,chatwin);
+            break;
+        case '\t':
+            show_music_win();
             break;
         case 10:
             player->changelevel=1;

@@ -11,6 +11,8 @@
 #include "profile.h" 
 #include "settings.h" 
 #include "game.h" // last include
+#include "music.h"
+
 void print_menu(WINDOW *menu_win, int highlight, int n_choices);
 void handle_logged_in_choice(WINDOW *menu_win, int choice, int highlight, WINDOW *design_win);
 void handle_logged_out_choice(WINDOW *menu_win, int choice, int highlight, WINDOW *design_win);
@@ -62,7 +64,6 @@ void show_main_menu() {
 
 
     refresh();
-    print_menu(menu_win, highlight, n_choices);
     design_menu_win(design_win);
     while (1) {
         print_menu(menu_win, highlight, n_choices);
@@ -83,6 +84,10 @@ void show_main_menu() {
                 break;
             case 10: // Enter key
                 choice = highlight;
+                break;
+            case '\t':
+                show_music_win();
+                design_menu_win(design_win);
                 break;
             default:
                 break;

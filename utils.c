@@ -9,6 +9,10 @@
 #include "auth.h"
 #include "save.h"
 #include "design.h"
+#include "music.h"
+#include "main.h"
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_mixer.h>
 /*
         |   |          |   |
         |   |          |   |        
@@ -758,6 +762,17 @@ void handleVision(Level* level,Player* player, WINDOW *gamewin, WINDOW *chatwin)
             if(!room->show){
                 room->show=1;
                 chat_new_room(chatwin);
+                if(room->rt==ENCHANT){
+                    if(current_song!=0){
+                        Mix_PlayMusic(musics[0],1);
+                        current_song=0;
+                    }
+                }else if(room->rt==NIGHTMARE){
+                    if(current_song!=1){
+                        Mix_PlayMusic(musics[1],1);
+                        current_song=1;
+                    }
+                }
             }
             for(int i=0;i<room->traps_number;i++){
                 if(player->loc.x==room->traps[i]->loc.x && player->loc.y==room->traps[i]->loc.y){

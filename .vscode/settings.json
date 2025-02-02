@@ -66,6 +66,7 @@
     "string.h": "c",
     "ncurses.h": "c",
     "game.h": "c",
-    "stdlib.h": "c"
+    "stdlib.h": "c",
+    "time.h": "c"
   }
 }

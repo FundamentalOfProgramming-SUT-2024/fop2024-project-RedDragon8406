@@ -9,6 +9,10 @@
 #include "main.h"
 #include "settings.h"
 #include "auth.h"
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_mixer.h>
+#include "music.h"
+
 void print_menu(WINDOW *menu_win, int highlight, int n_choices);
 
 
@@ -81,6 +85,7 @@ void show_exit_confirmation(WINDOW *menu_win, int highlight) {
                         set_default_settings();
                     }
                     // free(settings);
+                    closeSDL();
                     exit(0);
                     // ------------------------------ exit part -------------------------------------
                 } else {
