@@ -1108,7 +1108,7 @@ void add_foods_to_room(Room *room){
 }
 
 void add_traps_to_room(Room *room){
-    room->traps_number = rand() %((room->height*room->width)/30);
+    room->traps_number = rand() %((room->height*room->width)/40);
     room->traps_number+=1;
     if(room->rt==TREASURE){
         room->traps_number= rand() %((room->height*room->width)/20) + 3;
@@ -1157,10 +1157,11 @@ void add_traps_to_room(Room *room){
 
 
 void add_potions_to_room(Room *room){
-    room->potions_number = rand() %((room->height*room->width)/40);
+    room->potions_number = rand() %((room->height*room->width)/35);
     if(room->rt==ENCHANT){
-        room->potions_number += 3;
-        room->potions_number *= 2;
+        room->potions_number += 2;
+        room->potions_number *= 3;
+        room->potions_number /= 2;
     }else if(room->rt==TREASURE){
         room->potions_number=0;
     }
@@ -1236,9 +1237,11 @@ void add_potions_to_room(Room *room){
 
 
 void add_weapons_to_room(Room *room){
-    room->weapons_number = rand() %((room->height*room->width)/50);
+    room->weapons_number = rand() %((room->height*room->width)/35);
     if(room->rt==TREASURE){
         room->weapons_number=0;
+    }else if(room->rt==ENCHANT){
+        room->weapons_number+=2;
     }
     room->weapons=(Weapon **)malloc(MAX_WEAPON_IN_ROOM*sizeof(Weapon *));
     for(int i=0;i<room->weapons_number;i++){
@@ -1605,7 +1608,7 @@ void add_akey(Level *level){
 
 
 void add_enemies_to_room(Room *room,Level * level){
-    room->enemies_number = rand() %((room->height*room->width)/50);
+    room->enemies_number = rand() %((room->height*room->width)/40);
     if(room->rt==ENCHANT){
         room->enemies_number=0;
     }
@@ -1788,9 +1791,13 @@ void defuse_traps(Level *level,Player *player){
 
 
 int set_kind(){
-    int kind = rand() % 6;
-    if(kind>=2){
+    int kind = rand() % 12;
+    if(kind>=4){
         kind=2;
+    }else if(kind >= 2){
+        kind=1;
+    }else{
+        kind=0;
     }
     return kind;
 }

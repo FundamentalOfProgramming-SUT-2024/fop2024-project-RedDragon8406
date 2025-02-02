@@ -389,7 +389,7 @@ void InitLevelRoom(Level * level){
             room->show=0;
             room->index=which;
             room->tries=0;
-            int rt = rand() % 3;
+            int rt = rand() % 7;
             if(!rt){
                 room->rt=NIGHTMARE;
             }else{
@@ -424,6 +424,20 @@ void InitLevelRoom(Level * level){
                 }
             }
 
+
+            // add_potions_to_room(room);
+            
+            // mvwprintw(gamewin,0,0,"%d,%d",level->rooms[0]->doors[0]->loc.y,level->rooms[0]->doors[0]->loc.x);
+            // mvwprintw(gamewin,0,0,"%d,%d",room->doors[3]->loc.y,room->doors[3]->loc.x);
+
+            // mvwprintw(gamewin,38+(which),25,"{%d}",room->door_number);
+        }
+    }
+    add_corridors_to_level(level,gamewin);
+    for(int iter=0;iter<2;iter++){
+        for(int jter=0;jter<3;jter++){
+            int which =(iter?5-jter:jter);
+            Room * room=level->rooms[which];
             add_foods_to_room(room);
             add_traps_to_room(room);
             add_potions_to_room(room);
@@ -434,10 +448,16 @@ void InitLevelRoom(Level * level){
             // mvwprintw(gamewin,38+(which),25,"{%d}",room->door_number);
         }
     }
-    add_corridors_to_level(level,gamewin);
     add_staircase_to_level(level);
     add_lockshow_to_level(level);
     add_gen(level);
+    
+
+
+
+
+
+
     // for(int which=0;which<6;which++){
     //     Room * room=level->rooms[which];
     //     mvwprintw(gamewin,38+(which),3,"{h:%d w:%d y:%d x:%d}",room->height,room->width,room->start.y,room->start.x);    
@@ -530,6 +550,14 @@ void PrintLevel(Level* level){
     // mvwprintw(gamewin,3,1,"show:%d",level->show);
     init_colors();
     PrintHS(gamewin,player,1,1,1);
+    show_current_weapon(gamewin,player);
+    potion_situation(gamewin,player);
+    if(level->rooms[level->len_rooms-1]->show || level->show){
+        mvwprintw(gamewin, level->staircase->loc.y, level->staircase->loc.x, "%c",level->staircase->c); // staircase
+    }
+    if(level->rooms[0]->show || level->show){
+        mvwprintw(gamewin, level->bstaircase->loc.y, level->bstaircase->loc.x, "%c",level->bstaircase->c); // staircase
+    }   
     for(int which=0;which<level->len_rooms;which++){
         Room * room=level->rooms[which];
         if(!room->show && !level->show){
@@ -540,6 +568,55 @@ void PrintLevel(Level* level){
             if(!room->golds[i]->taken){
                 PrintGold(gamewin,room->golds[i],settings); // golds
             }
+        }
+        for(int i=0;i<room->traps_number;i++){
+            if(room->traps[i]->taken){
+                mvwprintw(gamewin,room->traps[i]->loc.y,room->traps[i]->loc.x,"^"); // traps
+            }
+            else if(level->showtrap){
+                mvwprintw(gamewin,room->traps[i]->loc.y,room->traps[i]->loc.x,"T"); // traps
+            }
+        }
+        if(room->shouldgen){
+            init_pair(51,51,COLOR_BLACK);
+            wattron(gamewin,COLOR_PAIR(51));
+            mvwprintw(gamewin,room->gen->loc.y,room->gen->loc.x,"&"); // password generator
+            wattroff(gamewin,COLOR_PAIR(51));
+        }
+
+
+
+        for(int i=0;i<room->enemies_number;i++){
+            if(room->enemies[i]->alive){
+                mvwprintw(gamewin,room->enemies[i]->loc.y,room->enemies[i]->loc.x,"%s",room->enemies[i]->code); // enemies
+            }
+        }
+    }
+
+    for(int i=0;i<level->corrs_number;i++){
+        for(int j=0;j<level->corrs[i]->locs_count;j++){
+            if(level->corrs[i]->show[j] || level->show){
+                mvwprintw(gamewin, level->corrs[i]->locs[j].y, level->corrs[i]->locs[j].x,"#"); // corridors
+            }
+        }
+    }
+
+
+    if(level->rooms[level->wroomkey]->show || level->show){
+        if(!level->akey->taken){
+            init_pair(94,94,COLOR_BLACK);
+            wattron(gamewin,COLOR_PAIR(94));
+            mvwprintw(gamewin, level->akey->loc.y, level->akey->loc.x,"\u25B3"); // ancient key
+            wattroff(gamewin,COLOR_PAIR(94));
+        }
+    }
+
+
+    PrintPlayer(gamewin,player,settings);
+    for(int which=0;which<level->len_rooms;which++){
+        Room * room=level->rooms[which];
+        if(!room->show && !level->show){
+            continue;
         }
         for(int i=0;i<room->foods_number;i++){
             if(!room->foods[i]->taken){
@@ -556,20 +633,8 @@ void PrintLevel(Level* level){
                 mvwprintw(gamewin,room->potions[i]->loc.y,room->potions[i]->loc.x,"%s", room->potions[i]->code); // potions
             }
         }
-        if(room->shouldgen){
-            init_pair(51,51,COLOR_BLACK);
-            wattron(gamewin,COLOR_PAIR(51));
-            mvwprintw(gamewin,room->gen->loc.y,room->gen->loc.x,"&"); // password generator
-            wattroff(gamewin,COLOR_PAIR(51));
-        }
-        for(int i=0;i<room->traps_number;i++){
-            if(room->traps[i]->taken){
-                mvwprintw(gamewin,room->traps[i]->loc.y,room->traps[i]->loc.x,"^"); // traps
-            }
-            else if(level->showtrap){
-                mvwprintw(gamewin,room->traps[i]->loc.y,room->traps[i]->loc.x,"T"); // traps
-            }
-        }
+
+
         // mvwprintw(gamewin,5,1,"scount : %d:%d ",player->pcof[SPEED],player->pcount[SPEED]);
         // mvwprintw(gamewin,6,1,"hcount : %d:%d ",player->pcof[HEALTH],player->pcount[HEALTH]);
         // mvwprintw(gamewin,7,1,"dcount : %d:%d ",player->pcof[DAMAGE],player->pcount[DAMAGE]);
@@ -614,40 +679,9 @@ void PrintLevel(Level* level){
     //     mvwprintw(gamewin,5,1,"           ");
     // }
 
-    for(int i=0;i<level->corrs_number;i++){
-        for(int j=0;j<level->corrs[i]->locs_count;j++){
-            if(level->corrs[i]->show[j] || level->show){
-                mvwprintw(gamewin, level->corrs[i]->locs[j].y, level->corrs[i]->locs[j].x,"#"); // corridors
-            }
-        }
-    }
-    if(level->rooms[level->len_rooms-1]->show || level->show){
-        mvwprintw(gamewin, level->staircase->loc.y, level->staircase->loc.x, "%c",level->staircase->c); // staircase
-    }
-    if(level->rooms[0]->show || level->show){
-        mvwprintw(gamewin, level->bstaircase->loc.y, level->bstaircase->loc.x, "%c",level->bstaircase->c); // staircase
-    }
 
-    if(level->rooms[level->wroomkey]->show || level->show){
-        if(!level->akey->taken){
-            init_pair(94,94,COLOR_BLACK);
-            wattron(gamewin,COLOR_PAIR(94));
-            mvwprintw(gamewin, level->akey->loc.y, level->akey->loc.x,"\u25B3"); // ancient key
-            wattroff(gamewin,COLOR_PAIR(94));
-        }
-    }
 
-    for(int i=0;i<level->len_rooms;i++){
-        Room *room=level->rooms[i];
-        if(!room->show && !level->show){
-            continue;
-        }
-        for(int i=0;i<room->enemies_number;i++){
-            if(room->enemies[i]->alive){
-                mvwprintw(gamewin,room->enemies[i]->loc.y,room->enemies[i]->loc.x,"%s",room->enemies[i]->code); // enemies
-            }
-        }
-    }
+
     Room*room=which_room(level,player->loc);
     if(room!=NULL && !level->show){
         if(room->rt==NIGHTMARE){
@@ -663,7 +697,6 @@ void PrintLevel(Level* level){
             }
         }
     }
-    PrintPlayer(gamewin,player,settings);
 
 
     wrefresh(gamewin);
@@ -1615,7 +1648,7 @@ void password_window(Level *level,Player *player){
 
 
     int pass=which_room(level,player->loc)->gen->password;
-    int random= rand() % 2; // int random= rand() % 5; for 20% chance of being reversed
+    int random= rand() % 4; // int random= rand() % 5; for 20% chance of being reversed
     if(!random){
         pass=ReverseNumber(pass);
     }

@@ -29,6 +29,7 @@ void chat_new_room(WINDOW *chatwin);
 void chat_gold(WINDOW *chatwin, Gold *gold);
 void chat_enemy_hit(WINDOW *chatwin, Enemy *enemy);
 void chat_hit_enemy(WINDOW *chatwin, Player *player,Enemy *enemy);
-
+void potion_situation(WINDOW *gamewin, Player *player);
+void show_current_weapon(WINDOW *gamewin, Player *player);
 
 #endif

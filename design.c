@@ -319,3 +319,52 @@ void chat_hit_enemy(WINDOW *chatwin, Player *player,Enemy *enemy){
     wattroff(chatwin,COLOR_PAIR(124));
     countchat++;
 }
+
+void potion_situation(WINDOW *gamewin, Player *player){
+    init_pair(168,168,COLOR_BLACK); // r
+    init_pair(83,83,COLOR_BLACK); //g
+    init_pair(146,146,COLOR_BLACK); // fake b lol
+    int padding=0;
+    for(int i=0;i<3;i++){
+        if(player->pcof[i]!=1){
+            padding+=1;
+        }
+    }
+    int cp=padding;
+    for(int i=0;i<3;i++){
+        char text[40];
+        if(player->pcof[i]==1){
+            continue;
+        }
+        switch(i){
+            case SPEED:
+                wattron(gamewin,COLOR_PAIR(83));
+                snprintf(text,sizeof(text),"Speedy! \U0001F37E");
+                break;
+            case DAMAGE:
+                wattron(gamewin,COLOR_PAIR(146));
+                snprintf(text,sizeof(text),"Powerful! \U0001F37C");
+                break;
+            case HEALTH:
+                wattron(gamewin,COLOR_PAIR(168));
+                snprintf(text,sizeof(text),"Healthy! \U0001F377");
+                break;
+        }
+        mvwprintw(gamewin,8 + padding-cp,1,"%s",text);
+        switch(i){
+            case SPEED:
+                wattroff(gamewin,COLOR_PAIR(83));
+                break;
+            case DAMAGE:
+                wattroff(gamewin,COLOR_PAIR(146));
+                break;
+            case HEALTH:
+                wattroff(gamewin,COLOR_PAIR(168));
+                break;
+        }
+        cp--;
+    }
+}
+void show_current_weapon(WINDOW *gamewin, Player *player){
+    mvwprintw(gamewin,6,1,"Current Weapon: %s ",player->current_weapon->code);
+}
