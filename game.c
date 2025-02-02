@@ -1827,39 +1827,112 @@ int importpasswin(Level *level, Player *player, int howmany){
 
 void pause_window(Level *level,Player *player, Level **levels, int li[5]){
     // pre configuration
-    int height = 25;
-    int width = 30;
-    int starty = (LINES - height) / 2;
+    int height = 40;
+    int width = 60;
+    int starty = (LINES - height) / 2 - 2;
     int startx = (COLS - width) / 2;
 
     WINDOW *pausewin = newwin(height, width, starty, startx);
     keypad(pausewin, TRUE);
-    box(pausewin, 0, 0);
     char texts[3][100];
     strcpy(texts[0],"resume");
     strcpy(texts[1],"quit");
     strcpy(texts[2],"save and quit");
-    const char *pause_intro = "here is the password: ";
     int highlight=0;
     init_pair(240,240,COLOR_BLACK);
+
+
+    char **buttons[] = {
+        (char *[]){
+            " _ __ ___  ___ _   _ _ __ ___   ___ ",
+            "| '__/ _ \\/ __| | | | '_ ` _ \\ / _ \\",
+            "| | |  __/\\__ \\ |_| | | | | | |  __/",
+            "|_|  \\___||___/\\__,_|_| |_| |_|\\___|",
+            NULL
+        },
+        (char *[]){
+            "  __ _ _   _(_) |_ ",
+            " / _` | | | | | __|",
+            "| (_| | |_| | | |_ ",
+            " \\__, |\\__,_|_|\\__|",
+            "    |_|            ",
+            NULL 
+        },
+        (char *[]){
+            " ___  __ ___   _____   ( _ )     __ _ _   _(_) |_ ",
+            "/ __|/ _` \\ \\ / / _ \\  / _ \\/\\  / _` | | | | | __|",
+            "\\__ \\ (_| |\\ V /  __/ | (_>  < | (_| | |_| | | |_ ",
+            "|___/\\__,_| \\_/ \\___|  \\___/\\/  \\__, |\\__,_|_|\\__|",
+            "                                   |_|            ",
+            NULL 
+        }
+    };
+
+
+
+    char* skull[] = {
+        "                       ______",
+        "                    .-\"      \"-.",
+        "                   /            \\",
+        "       _          |              |          _",
+        "      ( \\         |,  .-.  .-.  ,|         / )",
+        "       > \"=._     | )(__/  \\__)( |     _.=\" <",
+        "      (_/\"=._\"=._ |/     /\\     \\| _.=\"_.=\"\\_)",
+        "             \"=._ (_     ^^     _)\"_.=\"",
+        "                 \"=\\__|IIIIII|__/=\"",
+        "                _.=\"| \\IIIIII/ |\"=._",
+        "      _     _.=\"_.=\"\\          /\"=._\"=._     _",
+        "     ( \\_.=\"_.=\"     `--------`     \"=._\"=._/ )",
+        "      > _.=\"                            \"=._ <",
+        "     (_/                                    \\_)",
+        NULL
+    };
+    init_pair(88,88,COLOR_BLACK);
+    init_pair(94,94,COLOR_BLACK);
+    init_color(69,1000,840,0);
+    init_pair(69,69,COLOR_BLACK);
+    int padding[3]={8,16,0};
     while(1){
-        mvwprintw(pausewin,1,(width-strlen(pause_intro))/2,"%s",pause_intro);
+
+        // mvwprintw(pausewin,1,(width-strlen(pause_intro))/2,"%s",pause_intro);
         for(int i=0;i<3;i++){
             if(highlight==i){
-                wattron(pausewin,A_REVERSE);
+                wattron(pausewin,COLOR_PAIR(94));
             }
-            mvwprintw(pausewin,3+2*i,(width-strlen(texts[i]))/2,"%s",texts[i]);
+            // mvwprintw(pausewin,3+2*i,(width-strlen(texts[i]))/2,"%s",texts[i]);
+            for(int k=0;buttons[i][k]!=NULL;k++){
+                mvwprintw(pausewin,17+6*i+k,5+padding[i],"%s",buttons[i][k]);
+            }
             if(highlight==i){
-                wattroff(pausewin,A_REVERSE);
+                wattroff(pausewin,COLOR_PAIR(94));
             }
         }
         if(current_user==NULL){
             wattron(pausewin,COLOR_PAIR(240));
-            mvwprintw(pausewin,7,(width-strlen(texts[2]))/2,"%s",texts[2]);
+            for(int k=0;buttons[2][k]!=NULL;k++){
+                mvwprintw(pausewin,17+6*2+k,5+padding[2],"%s",buttons[2][k]);
+            }
+            // mvwprintw(pausewin,7,(width-strlen(texts[2]))/2,"%s",texts[2]);
             wattroff(pausewin,COLOR_PAIR(240));
         }
-        wrefresh(pausewin);
 
+
+        wattron(pausewin,COLOR_PAIR(88));
+        for(int i=0;skull[i]!=NULL;i++){
+            mvwprintw(pausewin,1+i,4,"%s",skull[i]);
+        }
+        
+        wattroff(pausewin,COLOR_PAIR(88));
+        wattron(pausewin,COLOR_PAIR(94));
+        box(pausewin, 0, 0);
+        wattroff(pausewin,COLOR_PAIR(94));
+
+        wattron(pausewin,COLOR_PAIR(69));
+        
+        mvwprintw(pausewin,1+8,31,"I");
+        wattroff(pausewin,COLOR_PAIR(69));
+
+        wrefresh(pausewin);
         int c=wgetch(pausewin);
         switch(c){
             case KEY_BACKSPACE:

@@ -24,7 +24,7 @@
 #define MAX_TAKEN_FOOD_COUNT 150
 
 #define chat_height 4
-#define chat_width 60
+#define chat_width 67
 
 
 extern int current_level;
