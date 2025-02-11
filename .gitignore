@@ -1,5 +1,5 @@
 cores/*
 music/*
-!saves
-!music
-!cores
+!saves/
+!music/
+!cores/
