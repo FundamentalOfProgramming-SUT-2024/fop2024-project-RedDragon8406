@@ -1,5 +1,12 @@
 cores/*
 music/*
-!saves/
-!music/
+saves/*
+
 !cores/
+!music/
+!saves/
+
+!saves/.gitkeep
+!music/.gitkeep
+!cores/.gitkeep
+
