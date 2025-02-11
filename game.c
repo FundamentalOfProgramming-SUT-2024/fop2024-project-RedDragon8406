@@ -564,12 +564,7 @@ void PrintLevel(Level* level){
     PrintHS(gamewin,player,1,1,1);
     show_current_weapon(gamewin,player);
     potion_situation(gamewin,player);
-    if(level->rooms[level->len_rooms-1]->show || level->show){
-        mvwprintw(gamewin, level->staircase->loc.y, level->staircase->loc.x, "%c",level->staircase->c); // staircase
-    }
-    if(level->rooms[0]->show || level->show){
-        mvwprintw(gamewin, level->bstaircase->loc.y, level->bstaircase->loc.x, "%c",level->bstaircase->c); // staircase
-    }   
+
     for(int which=0;which<level->len_rooms;which++){
         Room * room=level->rooms[which];
         if(!room->show && !level->show){
@@ -623,6 +618,12 @@ void PrintLevel(Level* level){
         }
     }
 
+    if(level->rooms[level->len_rooms-1]->show || level->show){
+        mvwprintw(gamewin, level->staircase->loc.y, level->staircase->loc.x, "%c",level->staircase->c); // staircase
+    }
+    if(level->rooms[0]->show || level->show){
+        mvwprintw(gamewin, level->bstaircase->loc.y, level->bstaircase->loc.x, "%c",level->bstaircase->c); // staircase
+    }   
 
     PrintPlayer(gamewin,player,settings);
     for(int which=0;which<level->len_rooms;which++){
