@@ -1608,7 +1608,6 @@ void add_akey(Level *level){
             continue;   
         }
     }
-
     level->akey=(aKey *)malloc(sizeof(aKey));
     level->akey->loc=first_guess;
     level->akey->taken=0;

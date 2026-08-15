@@ -1,6 +1,8 @@
 #!/bin/bash
 
 
+mkdir -p users settings saves music
+
 source_files=("main.c" "menu.c" "exit.c" "choices.c" "design.c" "auth.c" "scoreboard.c" "profile.c" "settings.c" "game.c" "utils.c" "save.c" "music.c")
 
 # -lSDL2 -lSDL2_mixer
